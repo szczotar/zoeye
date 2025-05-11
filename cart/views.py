@@ -3,6 +3,9 @@ from .cart import Cart
 from store.models import Product
 from django.http import JsonResponse
 from django.contrib import messages
+import json
+from cart.cart import Cart
+
 
 def cart_summary(request):
 	# Get the cart

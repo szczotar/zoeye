@@ -1,11 +1,60 @@
 from django.shortcuts import render, redirect
-from .models import Product, Category
+from .models import Product, Category, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User  
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+from django.db.models import Q
+import json
+from cart.cart import Cart
+from payment.forms import ShippingForm
+from payment.models import ShippingAddress
+
+
+def search(request):
+	# Determine if they filled out the form
+	if request.method == "POST":
+		searched = request.POST['searched']
+		# Query The Products DB Model
+		searched = Product.objects.filter(Q(name__icontains=searched) | Q(description__icontains=searched))
+		# Test for null
+		if not searched:
+			messages.success(request, "That Product Does Not Exist...Please try Again.")
+			return render(request, "search.html", {})
+		else:
+			return render(request, "search.html", {'searched':searched})
+	else:
+		return render(request, "search.html", {})	
+
+
+def update_info(request):
+	if request.user.is_authenticated:
+		# Get Current User
+		current_user = Profile.objects.get(user__id=request.user.id)
+		# Get Current User's Shipping Info
+		shipping_user = ShippingAddress.objects.get(id=request.user.id)
+		
+		# Get original User Form
+		form = UserInfoForm(request.POST or None, instance=current_user)
+		# Get User's Shipping Form
+		shipping_form = ShippingForm(request.POST or None, instance=shipping_user)		
+		if form.is_valid() or shipping_form.is_valid():
+			# Save original form
+			form.save()
+			# Save shipping form
+			shipping_form.save()
+
+			messages.success(request, "Your Info Has Been Updated!!")
+			return redirect('home')
+		return render(request, "update_info.html", {'form':form, 'shipping_form':shipping_form})
+	else:
+		messages.success(request, "You Must Be Logged In To Access That Page!!")
+		return redirect('home')
+
+
+
 
 def update_password(request):
 	if request.user.is_authenticated:
@@ -73,20 +122,36 @@ def about(request):
     return render(request, 'about.html', {})
 
 def login_user(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password = password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, ("You have been logged In"))
-            return redirect("home")
-        else:
-            messages.success(request, ("Wrong user or password, try again"))
-            return redirect("login")
-        
-    else:
-        return render(request, 'login.html', {})
+	if request.method == "POST":
+		username = request.POST['username']
+		password = request.POST['password']
+		user = authenticate(request, username=username, password=password)
+		if user is not None:
+			login(request, user)
+
+			# Do some shopping cart stuff
+			current_user = Profile.objects.get(user__id=request.user.id)
+			# Get their saved cart from database
+			saved_cart = current_user.old_cart
+			# Convert database string to python dictionary
+			if saved_cart:
+				# Convert to dictionary using JSON
+				converted_cart = json.loads(saved_cart)
+				# Add the loaded cart dictionary to our session
+				# Get the cart
+				cart = Cart(request)
+				# Loop thru the cart and add the items from the database
+				for key,value in converted_cart.items():
+					cart.db_add(product=key, quantity=value)
+
+			messages.success(request, ("You Have Been Logged In!"))
+			return redirect('home')
+		else:
+			messages.success(request, ("There was an error, please try again..."))
+			return redirect('login')
+
+	else:
+		return render(request, 'login.html', {})
 
 def Logout_user(request):
      logout(request)
@@ -104,8 +169,9 @@ def register_user(request):
             # log in user
             user = authenticate(username=username, password=password)
             login(request,user)
-            messages.success(request, ("You have been register successfuly"))
-            return redirect("home")
+			
+            messages.success(request, ("Username Created - Please fill out Your user info below"))
+            return redirect("update_info")
         else:
             messages.success(request,("Please try again"))
             return redirect("register")
