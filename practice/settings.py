@@ -28,10 +28,8 @@ SECRET_KEY = 'django-insecure-@*(ukbxi6&)li3bdxd(@vsv9pii4lrobyh5$&$=dop)$no!n9)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
-# Application definition
+ALLOWED_HOSTS = ['eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -90,7 +88,7 @@ DATABASES = {
         'USER':'postgres',
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'yamabiko.proxy.rlwy.net',
-        'PORT': '18978'
+        'PORT': 'x`'
     }
 }
 
@@ -133,8 +131,6 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = ['static/']
 
 #Whiete noise static stuff
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 MEDIA_URL = "media/"
