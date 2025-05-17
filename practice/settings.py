@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-@*(ukbxi6&)li3bdxd(@vsv9pii4lrobyh5$&$=dop)$no!n9)
 DEBUG = True
 
 ALLOWED_HOSTS = ['eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://django-ecommerce-production-81b6.up.railway.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
