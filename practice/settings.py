@@ -88,7 +88,7 @@ DATABASES = {
         'USER':'postgres',
         'PASSWORD': os.environ['DB_PASSWORD'],
         'HOST': 'yamabiko.proxy.rlwy.net',
-        'PORT': 'x`'
+        'PORT': '18978'
     }
 }
 
