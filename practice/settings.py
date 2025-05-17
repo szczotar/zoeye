@@ -28,8 +28,8 @@ SECRET_KEY = 'django-insecure-@*(ukbxi6&)li3bdxd(@vsv9pii4lrobyh5$&$=dop)$no!n9)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['https://eccomestore-production.up.railway.app']
+ALLOWED_HOSTS = ['https://zoeye.pl','zoeye.pl','eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://zoeye.pl','https://eccomestore-production.up.railway.app']
 
 # ALLOWED_HOSTS = []
 
