@@ -10824,3 +10824,38 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+
+* Styl dla samej karty produktu */
+.card {
+    /* Dodaje płynne przejście dla cienia, transformacji i KOLORU borderu */
+    /* Upewnij się, że border-color jest na liście transition */
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, border-color 0.3s ease-in-out;
+
+    /* Ustaw border, ale z przezroczystym kolorem w stanie domyślnym.
+       To zapewnia, że element zawsze ma miejsce na border (1px w tym przypadku),
+       zapobiegając "skakaniu" layoutu przy pojawieniu się borderu. */
+    border: 1px solid transparent; /* Domyślnie border jest przezroczysty */
+
+    /* Opcjonalnie: upewnij się, że padding i border są wliczone w rozmiar elementu */
+    /* box-sizing: border-box; */ /* Bootstrap cards usually have this by default */
+}
+
+/* Styl, gdy kursor myszy znajduje się nad kartą */
+.card:hover {
+    box-shadow: 0 8px 16px rgba(201, 181, 181, 0.2); /* Dodaje cień, który sprawia wrażenie "uniesienia" karty */
+    /* Możesz też zmienić border */
+    border-color: #af9d8c; /* Przykładowo, zmień kolor borderu na niebieski (kolor podstawowy Bootstrapa) */
+    /* Możesz też lekko przeskalować kartę (ostrożnie z tym, może powodować problemy z layoutem) */
+    /* transform: scale(1.02); */
+}
+
+/* Opcjonalnie: Styl dla linku owijającego nazwę, aby nie wyglądał jak link po najechaniu na kartę */
+.card h5 a:hover {
+    text-decoration: none; /* Usuwa podkreślenie po najechaniu */
+    color: inherit; /* Utrzymuje kolor tekstu */
+}
+
+/* Jeśli owinąłeś całą kartę w link, możesz potrzebować innych stylów */
+/* .card a:hover { ... } */
+/*
+*

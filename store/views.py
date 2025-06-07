@@ -109,13 +109,21 @@ def category(request, foo):
 		messages.success(request, ("That Category Doesn't Exist..."))
 		return redirect('home')
     
+def categories_all(request):
+    # Fetch all categories
+	categories = Category.objects.all()
+	return render(request, 'cat.html', {'categories': categories})
+
+
 def product(request, pk):
     product = Product.objects.get(id=pk)
     return render(request, 'product.html', {'product': product})
 
 def home(request):
-    products = Product.objects.all()
-    return render(request, 'home.html', {'products': products})
+	products = Product.objects.all()
+	categories = Category.objects.all()
+	return render(request, 'home.html', {'products': products, 'categories': categories})
+
 
 
 def about(request):

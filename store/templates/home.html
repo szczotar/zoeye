@@ -1,71 +1,238 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 
-        <!-- Header-->
-        <header class="bg-dark py-5">
-            <div class="container px-4 px-lg-5 my-5">
-                <div class="text-center text-white">
-                    <h1 class="display-4 fw-bolder">Shop in style</h1>
-                    <p class="lead fw-normal text-white-50 mb-0">With this shop hompeage template</p>
-                </div>
-            </div>
-        </header>
-        <!-- Section-->
-        <section class="py-5">
-            <div class="container px-4 px-lg-5 mt-5">
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+  <br><br>
+    <!--Hero-->
+  <div class="container">
+  <div id="carouselExampleCaptions" class="carousel slide fixed-size-carousel" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+    <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+  </div>
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="{% static 'img/promo3.gif' %}" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Summer Sale!!<h5>
+        <p>Do 60% procent taniej.</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'img/hero_example2.jpg' %}" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Second slide label</h5>
+        <p>Some representative placeholder content for the second slide.</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'img/hero_example3.jpg' %}" class="d-block w-100" alt="...">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Third slide label</h5>
+        <p>Some representative placeholder content for the third slide.</p>
+      </div>
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+</div>
 
-         
-                    {% for product in products %}
-                        {% if product.is_sale %}
-                        <div class="col mb-5">
-                            <div class="card h-100">
-                                <!-- Product image-->
-                                <img class="card-img-top" src="{{product.image.url}}" alt="..." />
-                                <!-- Product details-->
-                                <div class="card-body p-4">
-                                    <div class="text-center">
-                                        <!-- Product name-->
-                                        <h5 class="fw-bolder">{{product.name}}</h5>
-                                        <!-- Product price-->
-                                        <strike>${{product.price}}</strike>$
-                                        &nbsp;
-                                        $   {{product.sale_price}}
-                                    </div>
-                                </div>
-                                <!-- Product actions-->
-                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'product' product.id %}">View Product</a></div>
-                                </div>
-                            </div>
-                        </div>
+  <br><br>
+   <!-- CATEGORIES SECTION-->
+      <div class="container">
+          <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">Carefully created collections</p>
+            <h2 class="h5 text-uppercase mb-4">Browse our categories</h2>
+          </header>
+          <div class="row">
+ 
+            {% if categories %}
+            {% for category in categories %}
+
+                     {# --- Start of Single Category Item --- #}
+              {# Klasa col-md-4 (lub inna) określa szerokość kolumny w siatce #}
+              {# mb-4/mb-md-5 dodają marginesy na dole kolumny #}
+              <div class="col-md-4 mb-4 mb-md-5"> {# Przykładowe klasy: 2,3,4,6 elementów w rzędzie w zależności od ekranu #}
+
+                {# A tag - sprawia, że cały blok jest klikalny #}
+                {# Dodajemy klasy Bootstrapa: text-decoration-none, text-dark, d-block (aby link był blokiem) #}
+                {# text-center - wycentrowuje zawartość w kolumnie #}
+                {# Adres URL w href="#": Musisz go zmienić na adres URL widoku kategorii! Patrz krok 3 #}
+                <a href="{% url 'category' category.name %}" class="category-item text-decoration-none text-dark d-block text-center"> {# <-- Zmień 'category_detail' na nazwę swojego URL kategorii i dodaj parametr category.id #}
+
+                    {# Nazwa kategorii - umieszczona PRZED obrazkiem #}
+                    {# d-block - sprawia, że element strong jest blokiem (zajmuje całą szerokość) #}
+                    {# mb-2 - dodaje mały margines na dole nazwy #}
+                    <strong class="category-item-title d-block mb-2">{{ category.name }}</strong>
+
+                    {# Kontener dla obrazka - pozwala kontrolować jego rozmiar i proporcje #}
+                    {# Nadajemy klasę 'category-img-container' do stylów CSS #}
+                    <div class="category-img-container">
+                        {% if category.image %} {# Sprawdzamy, czy kategoria ma przypisany obrazek #}
+                            {# Używamy URL przypisanego obrazka #}
+                            {# Klasa 'category-img' do stylów CSS #}
+                            <img class="category-img" src="{{ category.image.url }}" alt="{{ category.name }}">
                         {% else %}
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Product image-->
-                            <img class="card-img-top" src="{{product.image.url}}" alt="..." />
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">{{product.name}}</h5>
-                                    <!-- Product price-->
-                                    ${{product.price}}
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'product' product.id %}">View Product</a></div>
-                            </div>
-                        </div>
-                    </div>
+                            {# Jeśli obrazka nie ma, używamy domyślnego statycznego obrazka #}
+                            <img class="category-img" src="{% static 'img/placeholder_category.png' %}" alt="{{ category.name }} Placeholder"> {# Zmień 'placeholder_category.png' na ścieżkę do Twojego domyślnego obrazka #}
                         {% endif %}
-                    {% endfor %}
-                    
-                 
-                </div>
+                    </div>
+
+                </a> {# Koniec tagu A #}
+
+              </div>
+              {# --- End of Single Category Item --- #}
+
+            {% endfor %}
+          {% else %}
+             <div class="col-12 text-center">
+               <p>No categories available yet.</p> {# Zmień "Twoja stara" na bardziej standardowy komunikat :) #}
+             </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+
+    <br><br>
+            
+      
+
+      
+        <!--items Section-->
+        <div class="container">
+          <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">Nasze bestsellery</p>
+      
+          </header>
+          <br><br>
+         
+    <div class="row"> {# Wiersz, który będzie zawierał kolumny z produktami #}
+
+        {% for product in products %} {# Pętla po produktach #}
+
+            {# Każdy produkt wstawiamy do kolumny #}
+            {# Przykładowe klasy kolumn: #}
+            {# col-sm-6: 2 produkty na wiersz na małych ekranach (>= 576px) #}
+            {# col-md-4: 3 produkty na wiersz na średnich ekranach (>= 768px) #}
+            {# col-lg-3: 4 produkty na wiersz na dużych ekranach (>= 992px) #}
+            {# mb-4: Dodaje margines na dole kolumny, aby karty nie stykały się w pionie #}
+          <div class="col-lg-4 col-sm-6 mb-4"> {# Dodajemy dolny margines do kolumny dla lepszego odstępu między kartami #}
+  <div class="product text-center">
+    <div class="mb-3 position-relative">
+
+      <div class="badge text-white badge-"></div> {# Twój badge, jeśli go używasz #}
+
+      {# --- TUTAJ BĘDZIE MAŁA KARUZELA BOOTSTRAP DLA KARTY PRODUKTU --- #}
+
+      {# Owijamy karuzelę (lub fallback obrazek) linkiem do strony szczegółów produktu #}
+      <a class="d-block" href="{% url 'product' product.id  %}">
+        {% if product.images.all %} {# Sprawdź, czy produkt ma jakiekolwiek powiązane zdjęcia #}
+          {# Dodajemy klasę card-product-carousel dla własnego CSS #}
+          {# data-bs-ride="carousel" dla automatycznego przewijania na liście produktów #}
+          {# data-bs-interval ustawia czas między slajdami w milisekundach #}
+          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel">
+
+            {# Optional: Indicators (małe kropki na dole) - często usuwane na małych kartach, ale zostawmy je w HTML, ukryjemy w CSS jeśli trzeba #}
+            <div class="carousel-indicators">
+              {% for image_obj in product.images.all %}
+                {# data-bs-slide-to index jest liczony od 0 #}
+                <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
+              {% endfor %}
             </div>
-        </section>
+
+            {# Slides (pojedyncze zdjęcia) #}
+            <div class="carousel-inner">
+              {% for image_obj in product.images.all %}
+                {# Pierwszy element musi mieć klasę 'active' #}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                  {# Klasy d-block w-100 Bootstrapa są potrzebne do działania karuzeli, ale rzeczywisty rozmiar ustawimy w CSS #}
+                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:product.name }}">
+                  {# Opcjonalnie: Możesz dodać carousel-caption tutaj dla miniaturowego podpisu #}
+                </div>
+              {% endfor %}
+            </div>
+
+            {# Navigation controls (przyciski następny/poprzedni) - często usuwane na małych kartach, ukryjemy w CSS jeśli trzeba #}
+            <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Poprzednie</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Następne</span>
+            </button>
+          </div>
+
+        {% else %}
+          {# Fallback: Co wyświetlić, jeśli produkt nie ma żadnych zdjęć powiązanych z ProductImage #}
+          {# Użyj domyślnego statycznego obrazka i klasy card-fallback-img do stylowania #}
+          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
+        {% endif %}
+      </a> {# Koniec linku owijającego karuzelę/obrazek fallback #}
+
+      {# --- KONIEC KARUZELI / OBRAZKA NA KARCIE --- #}
+
+      {# Produkt Overlay (Wishlist/Add to Cart na hover) - Ten blok pozostaje na miejscu #}
+      {# Jest on absolutnie pozycjonowany względem rodzica mb-3 position-relative #}
+      <div class="product-overlay">
+        <ul class="mb-0 list-inline">
+          <!-- <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
+          <li class="list-inline-item m-0 p-0"> -->
+          
+            <!-- <form action="{% url 'home' %}" method="post"> {# Zmieniono method na post #}
+                 {% csrf_token %} {# Dodaj token CSRF jeśli używasz POST #}
+                 <input type="hidden" name="product_id" value="{{product.id}}"> {# Upewnij się, że nazwa pola jest poprawna ('product_id' zamiast 'prod_id') #}
+                 <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button> -->
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    {# Informacje o produkcie (nazwa, cena, status wyprzedaży) POD KARUZELĄ #}
+    <div class="product-info"> {# Dodajemy kontener dla łatwiejszego stylowania i centrowania #}
+       {# Nazwa produktu jako link #}
+       <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
+            <h6 class="product-name">{{ product.name }}</h6> {# Zmieniamy na h6 i dodajemy klasę #}
+        </a>
+
+       {# Status wyprzedaży i ceny #}
+       {% if product.is_sale %}
+           <div class="d-flex justify-content-center small text-warning mb-2">
+                <div class="bi-star-fill"></div>   Sale!   <div class="bi-star-fill"></div>
+           </div>
+           {# Regularna cena przekreślona #}
+           <p class="small text-muted product-sale-price"><strike>{{ product.price }} zł</strike></p>
+           {# Cena wyprzedażowa #}
+           <p class="small text-muted product-price-sale">{{ product.sale_price }} zł</p>
+
+       {% else %}
+           {# Jeśli produkt nie jest na wyprzedaży, wyświetl normalną cenę #}
+           <p class="small text-muted product-price">{{ product.price }} zł</p>
+       {% endif %}
+    </div>
+    {# Usunięto card-footer, bo nie jest już potrzebny z tą strukturą #}
+
+  </div> {# Koniec product text-center #}
+</div> {# Koniec col-lg-4 col-sm-6 mb-4 #}
+
+        {% endfor %} {# Koniec pętli for #}
+
+    </div> {# Koniec row #}
+</div> {# Koniec container #}
+   
+
+
+        
 {% endblock %}

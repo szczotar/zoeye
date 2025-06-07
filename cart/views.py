@@ -55,15 +55,31 @@ def cart_delete(request):
 		return response
 
 def cart_update(request):
-	cart = Cart(request)
-	if request.POST.get('action') == 'post':
-		# Get stuff
-		product_id = int(request.POST.get('product_id'))
-		product_qty = int(request.POST.get('product_qty'))
+    cart = Cart(request)
+    if request.method == 'POST' and request.POST.get('action') == 'post':
+         try:
+             product_id = int(request.POST.get('product_id'))
+             product_qty = int(request.POST.get('product_qty'))
 
-		cart.update(product=product_id, quantity=product_qty)
+             # Upewnij się, że cart.update modyfikuje koszyk i ZAPISUJE SESJĘ (np. przez self.save() w Cart)
+             cart.update(product=product_id, quantity=product_qty)
 
-		response = JsonResponse({'qty':product_qty})
-		messages.success(request, ("Product quanitty updated"))
-		#return redirect('cart_summary')
-		return response
+             # Przygotuj dane do odpowiedzi JSON
+             response_data = {
+                 'product_id': product_id,
+                 'product_qty': product_qty, # Nowa ilość dla tego produktu
+                 'cart_quantity': cart.__len__(), # Nowa globalna liczba różnych produktów
+                 'cart_total': cart.cart_total(), # Nowa całkowita suma koszyka (wymaga metody cart_total w Cart)
+                 # Opcjonalnie: 'item_subtotal': cart.get_item_subtotal(product_id) # Nowa suma dla tej linii produktu
+             }
+
+             messages.success(request, ("Product quantity updated")) # Wiadomość nadal będzie dodana, ale nie będzie widoczna bez przeładowania/dodatkowej logiki JS
+
+             return JsonResponse(response_data)
+
+         except (ValueError, Exception) as e:
+             # ... obsługa błędów ...
+             return JsonResponse({'error': str(e)}, status=400) # Zwróć błąd w JSON
+
+    # ... obsługa nieprawidłowego żądania ...
+    return JsonResponse({'error': 'Invalid request'}, status=400)

@@ -10824,3 +10824,42 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+
+/* --- Custom CSS for Fixed Size Carousel --- */
+.fixed-size-carousel .carousel-inner {
+  /* Optional: Add a max-width if you want the carousel itself to have a fixed width */
+  /* max-width: 800px; */
+  /* margin: auto; /* Center it if max-width is set */
+}
+
+.fixed-size-carousel .carousel-item {
+  height: 400px; /* Set your desired fixed height here */
+  /* The width will typically be 100% of the parent (.carousel-inner) */
+  /* If you set max-width on .carousel-inner, this height will apply to that width */
+  overflow: hidden; /* Hide parts of the image that might overflow */
+}
+
+.fixed-size-carousel .carousel-item img {
+  /* Override Bootstrap's potential w-100 if still present or needed */
+  /* width: 100%; */
+  /* height: auto; *//* This would maintain aspect ratio but height might not match item */
+
+  /* To make image fill the fixed height/width of the item: */
+  width: 100%; /* Make image take full width of item */
+  height: 100%; /* Make image take full height of item */
+  object-fit: cover; /* Crop the image to fit the container while maintaining aspect ratio */
+
+  /* Alternative: Use 'contain' if you want the whole image visible, even if it leaves space */
+  /* object-fit: contain; */
+  /* In this case, you might want to center the image: */
+  /* object-position: center; */
+}
+
+/* Adjust captions if needed, though they usually position relative to the item */
+.fixed-size-carousel .carousel-caption {
+    /* Default Bootstrap positioning is usually fine */
+    /* Example adjustments: */
+    /* bottom: 20px; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+}

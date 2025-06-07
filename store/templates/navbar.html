@@ -1,58 +1,104 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container px-4 px-lg-5">
-        <a class="navbar-brand" href="#!">Ecommerce zoeye</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                <li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a></li>
-                <li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'search' %}">Search</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+{% load static %}
 
-                {% if user.is_authenticated %}
+<!-- navbar-->
+      <header class="header">
+        <div class="container no-margin px-0 px-lg-3">
+          <nav class="navbar navbar-expand-lg navbar-light my-higher-navbar" style="background-color: #FFE4C6;">
+            <a class="navbar-brand" href="{% url 'home' %}">
+               <img src="{% static 'img\zoeye_logo.png' %}" alt="Zoeye"></a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav mr-auto">
+                <!-- <li class="nav-item"> -->
+                  <!-- <a class="nav-link active" href="{% url 'home' %}">Home</a> -->
+                <!-- </li> -->
+
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Profile</a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'update_user' %}">User Profile</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                         <li><a class="dropdown-item" href="{% url 'update_info'  %}">User Info</a></li>
-                                    </ul>
-                                </li>
+  <a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    {# Usuwamy tekst "DLA NIEJ" #}
+    <img src="{% static 'img/venus.png' %}" alt="Dla Niej kategoria" class="nav-icon"> {# Wstawiamy tag <img> #}
+    {# Opcjonalnie możesz dodać tu trochę tekstu, jeśli chcesz obrazek + tekst #}
+    {# np. <img ...> Dla Niej #}
+  </a>
 
-                                {% if user.is_superuser %}
-              <li class="nav-item dropdown">
-            
-            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Orders</a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="{% url 'shipped_dash' %}">Shipped Orders</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="{% url 'not_shipped_dash'  %}">UnShipped Orders</a></li>
-                            </ul>
-                        </li>
-            {% endif %}
-        
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
+                  <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown">
+                      <a class="dropdown-item border-0 transition-link"  href="{% url 'category' 'Bransoletki' %}">Bransoletki</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Kolczyki' %}">Kolczyki</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Naszyjniki' %}">Naszyjniki</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'home' %}">Wszystkie kategorie</a>
+                     
+                    </li>   
+                 <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">DLA NIEGO</a>
+                  <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown">
+                      <a class="dropdown-item border-0 transition-link"  href="{% url 'category' 'Bransoletki' %}">Bransoletki</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Naszyjniki' %}">Naszyjniki</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'home' %}">Wszystkie kategorie</a>
+                     
+                    </li>  
 
-                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Categories</a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'home' %}">All Products</a></li>
-                        <li><hr class="dropdown-divider" /></li>
-                        <li><a class="dropdown-item" href="{% url 'category' 'Books' %}">Books</a></li>
-                        <li><a class="dropdown-item" href="{% url 'category' 'ring' %}">ring</a></li>
-                    </ul>
-                    </ul>
+                <li class="nav-item">
+                  <!-- Link--><a class="nav-link" href="{% url 'home' %}">CONTACT</a>
                 </li>
-            </ul>
-            <form class="d-flex">
+
+
+              </ul>
+              
+
+              <ul class="navbar-nav ml-auto"> 
+
+<li class="nav-item">
+  <a class="nav-link active" aria-current="page" href="{% url 'search' %}">
+    {# Usunięty tekst "Search" #}
+
+    {# --- Wklejony kod SVG poniżej --- #}
+    <svg class="nav-icon-svg" version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="512.000000pt" height="512.000000pt" viewBox="0 0 512.000000 512.000000"
+ preserveAspectRatio="xMidYMid meet">
+  <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
+ stroke="none">
+<path d="M2074 4684 c-139 -19 -317 -66 -454 -121 -659 -262 -1105 -840 -1190
+-1543 -15 -123 -12 -351 5 -484 49 -372 200 -715 445 -1009 375 -449 981 -700
+1589 -656 350 25 686 140 966 333 l110 75 410 -408 c226 -225 424 -416 442
+-425 41 -21 125 -21 166 0 45 23 86 63 108 106 23 46 25 127 3 171 -9 18 -200
+217 -426 443 l-410 411 54 74 c371 506 470 1185 258 1782 -238 674 -836 1158
+-1549 1252 -132 18 -393 17 -527 -1z m407 -425 c372 -37 664 -174 920 -429
+215 -215 344 -454 411 -764 32 -147 31 -436 -1 -586 -32 -151 -74 -268 -142
+-400 -339 -655 -1114 -960 -1820 -714 -220 76 -389 184 -559 354 -127 126
+-213 245 -285 394 -204 420 -201 914 7 1330 177 354 477 616 851 742 209 70
+412 95 618 73z"/>
+</g>
+</svg>
+  </a>
+</li>
+                 {% if user.is_authenticated %}          
+               
+                <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user-alt mr-1 text-gray"></i>My Account</a></a>  
+                  <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown">
+      
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'update_user' %}">User Profile</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'update_info' %}">User Info</a>
+                 
+                    <a class="dropdown-item border-0 transition-link" href="{% url 'logout' %}">Log Out</a>
+                    
+                </li>
+                 <a href="{% url 'cart_summary' %}" class="btn btn-outline-dark"><i class="bi-cart-fill me-1"></i>
+                    Cart
+                    <span class="badge bg-dark text-white ms-1 rounded-pill" id="cart_quantity">{{ cart|length }}</span></a>
+                {% else %}
+            
+                  <!-- <input  style="width: 200px;"  class="form-control mr-sm-2" type="search" placeholder="Szukaj..." aria-label="Search"> -->
+                  <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">LOGIN</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">CREATE ACCOUNT</a></li>
+                        <form class="d-flex">
                 <a href="{% url 'cart_summary' %}" class="btn btn-outline-dark"><i class="bi-cart-fill me-1"></i>
                     Cart
                     <span class="badge bg-dark text-white ms-1 rounded-pill" id="cart_quantity">{{ cart|length }}</span></a>
          
             </form>
+                {% endif %}   
+              </ul>
+            </div>
+          </nav>
         </div>
-    </div>
-</nav>
+      </header>
+

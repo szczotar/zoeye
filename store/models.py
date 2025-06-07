@@ -35,6 +35,8 @@ post_save.connect(create_profile, sender=User)
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='uploads/category/', blank=True, null=True)
+
 
     def __str__(self):
         return self.name
@@ -57,7 +59,7 @@ class Product(models.Model):
     price = models.DecimalField(default=0, decimal_places=2, max_digits=6)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(max_length=2500, default='', blank=True, null = True)
-    image = models.ImageField(upload_to='uploads/product/')
+    # image = models.ImageField(upload_to='uploads/product/')
 
     #Add Sale stuff
     is_sale = models.BooleanField(default=False)
@@ -65,7 +67,37 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def get_main_image(self):
+        # Zakładając, że pole 'order' = 0 oznacza zdjęcie główne
+        main_image = self.images.filter(order=0).first()
+        if main_image:
+            return main_image.image.url
+        # Możesz zwrócić URL do domyślnego obrazka, jeśli brak zdjęć
+        # return '/static/path/to/default/image.png'
+        return None  
+      
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE, # Jeśli produkt zostanie usunięty, usuń też powiązane zdjęcia
+        related_name='images'     # Nazwa, której użyjesz do dostępu do zdjęć z obiektu produktu (np. product.images.all())
+    )
 
+    image = models.ImageField(upload_to='product_images/') # Ścieżka do przechowywania zdjęć (wewnątrz MEDIA_ROOT)
+    alt_text = models.CharField(max_length=255, blank=True) # Tekst alternatywny dla obrazka (SEO, dostępność)
+    order = models.PositiveIntegerField(default=0) # Numer porządkowy zdjęcia (0 może oznaczać główne)
+
+    class Meta:
+        # Ustawia domyślne sortowanie zdjęć po polu 'order'
+        ordering = ['order']
+        # Dodatkowe ograniczenie (opcjonalnie): upewnij się, że dany produkt nie ma dwóch zdjęć z tym samym numerem porządkowym
+        # unique_together = ('product', 'order')
+
+    def __str__(self):
+        return f"Image for {self.product.name} (Order: {self.order})"
+    
+    
 class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

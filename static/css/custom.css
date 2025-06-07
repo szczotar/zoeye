@@ -1,0 +1,470 @@
+/* Add this rule */
+.navbar-brand img {
+  height: 130px; /* Set the desired height for smaller screens */
+  width: auto; /* Keep the aspect ratio */
+  max-height:100%; /* Ensure it doesn't overflow the navbar */
+  vertical-align: middle; /* Helps align the image vertically */
+}
+
+/* In your custom CSS file or a <style> block */
+.my-higher-navbar {
+    padding-top: 40px; /* Or whatever value you need */
+    padding-bottom: 50px; /* Or whatever value you need */
+    /* OR you can use min-height if you want a fixed minimum */
+    /* min-height: 100px; */
+}
+
+
+/* Add this CSS *after* your Bootstrap CSS */
+
+.search-input-wrapper {
+  position: relative; /* Establishes a positioning context for the absolute icon */
+  display: inline-block; /* Or 'block' depending on layout needs */
+  /* Add your desired width here, similar to the previous method */
+  width: 200px; /* Example: fixed width */
+  /* OR */
+  /* max-width: 250px; /* Example: maximum width */
+  /* You might also want to match the height of the input if needed */
+  /* height: 38px; /* Example height, adjust as needed */
+}
+
+.search-icon {
+  position: absolute; /* Allows us to position it freely within the wrapper */
+  top: 50%; /* Align the top edge to the middle */
+  left: 10px; /* Adjust distance from the left edge */
+  transform: translateY(-50%); /* Fine-tune vertical centering */
+  color: #080808; /* Optional: Set a color for the icon (Bootstrap's muted color) */
+  /* Optional: Makes the icon non-interactive so clicks go through to the input */
+  pointer-events: none;
+  z-index: 2; /* Ensure the icon is above the input's border/focus state */
+  font-size: 1rem; /* Adjust icon size if needed */
+}
+
+.search-input-wrapper .form-control {
+  /* Add padding to the LEFT side of the input to make space for the icon */
+  padding-left: 35px; /* Adjust this value! Needs to be icon width + desired space */
+  /* Ensure height is consistent if wrapper height is set */
+  /* height: inherit; /* Or match wrapper height */
+}
+
+/* Optional: Style the icon when the input is focused */
+.search-input-wrapper .form-control:focus + .search-icon {
+    color: #0d6efd; /* Example: Change icon color to Bootstrap's primary color on focus */
+}
+
+
+/* Stylowanie kontenera input-group-xs */
+.input-group.input-group {
+    /* Upewnij się, że display: flex jest stosowany, jeśli jest nadpisywany */
+    display: flex; /* Powinno być domyślnie z .input-group, ale warto sprawdzić/dodać */
+    align-items: center; /* Wyśrodkuj elementy w pionie */
+    /* Możesz dostosować wysokość całego kontenera, jeśli potrzebujesz */
+     /* width: 20px; */
+}
+
+/* Stylowanie pola input w input-group-xs */
+.input-group.input-group .form-control {
+    /* Zmniejsz padding (Bootstrap sm ma .25rem .5rem) */
+    padding: .2rem .2rem; /* Mniejszy padding */
+    /* Zmniejsz rozmiar czcionki (Bootstrap sm ma .875rem) */
+    font-size: .8rem; /* Mniejsza czcionka */
+    /* Dostosuj wysokość (Bootstrap sm ma ok. 1.5rem) */
+    height: calc(0.8.em + (.15rem * 2)); /* Oblicz wysokość na podstawie font-size i paddingu */
+    /* Zmniejsz border-radius */
+    border-radius: .1rem;
+    /* Upewnij się, że tło jest białe, jeśli jest zmieniane */
+    background-color: #fff;
+}
+
+/* Stylowanie przycisków w input-group-xs */
+.input-group.input-group-xs .btn {
+    /* Zmniejsz padding (Bootstrap sm ma .25rem .5rem) */
+    padding: .3rem .3rem; /* Mniejszy padding */
+     /* Zmniejsz rozmiar czcionki (Bootstrap sm ma .875rem) */
+    font-size: .75rem; /* Mniejsza czcionka */
+    /* Dostosuj wysokość, aby pasowała do inputu */
+    height: calc(5.5em + (2.2rem * 2)); /* Oblicz wysokość na podstawie font-size i paddingu */
+     /* Zmniejsz border-radius */
+    border-radius: 0px;
+    /* Upewnij się, że przyciski są wyrównane */
+    /* vertical-align: top; */ /* Bootstrap input-group powinien to obsługiwać */
+}
+
+/* Korekta border-radius dla przycisków i inputu na końcach grupy */
+/* Te reguły zapewniają, że skrajne elementy mają zaokrąglone rogi */
+ .input-group.input-group-xs > .btn:first-child,
+ .input-group.input-group-xs > .form-control:first-child {
+     border-top-left-radius: .5rem;
+     border-bottom-left-radius: .5rem;
+ }
+
+ .input-group.input-group-xs > .btn:last-child,
+ .input-group.input-group-xs > .form-control:last-child {
+     border-top-right-radius: .5rem;
+     border-bottom-right-radius: .5rem;
+ }
+
+ /* Upewnij się, że elementy w środku (input) nie mają zaokrąglonych rogów na styku z przyciskami */
+ .input-group.input-group-xs .form-control {
+     border-radius: 0; /* Nadpisz ogólny border-radius ustawiony wcześniej */
+ }
+
+ /* style.css */
+
+/* Dodaj style dla kontenera obrazka */
+.category-img-container {
+    width: 250px;  /* Ustaw stałą szerokość kontenera */
+    height: 250px; /* Ustaw stałą wysokość kontenera (sprawia, że kontener jest kwadratowy) */
+    margin: 0 auto; /* Wycentruj kontener w poziomie w swojej kolumnie */
+    overflow: hidden; /* Ukryj części obrazka, które wyjdą poza kontener */
+    /* Opcjonalnie: dodaj border-radius, jeśli chcesz okrągłe lub zaokrąglone obrazki */
+    border-radius: 50%; /* Przykład: Okrągłe obrazki */
+    /* Opcjonalnie: dodaj ramkę lub cień */
+    /* border: 1px solid #ccc; */
+}
+
+/* Dodaj style dla samego obrazka */
+.category-img {
+    width: 100%; /* Spraw, aby obrazek wypełnił całą szerokość swojego kontenera (150px) */
+    height: 100%; /* Spraw, aby obrazek wypełnił całą wysokość swojego kontenera (150px) */
+    object-fit: cover; /* Kluczowa właściwość! Skaluje obrazek, tak aby wypełnił kontener,
+                         zachowując proporcje, ale ewentualnie przycinając nadmiarowe części.
+                         Alternatywnie możesz użyć 'contain', które zmieści cały obrazek
+                         w kontenerze, pozostawiając ewentualne puste przestrzenie.
+                         'cover' zazwyczaj daje bardziej spójny wygląd w siatce. */
+    display: block; /* Pomaga usunąć domyślny margines pod obrazkiem */
+}
+
+/* Style dla nazwy kategorii, jeśli potrzebujesz specyficzne formatowanie */
+.category-item-title {
+    font-size: 0.5rem; /* Przykładowy rozmiar czcionki */
+    font-weight: bold;
+    /* Dodaj inne style, np. kolor */
+    /* color: #333; */
+}
+
+/* Możesz też dodać style dla całego elementu linku, np. efekt najechania myszą */
+.category-item:hover .category-img {
+    opacity: 0.6 /* Przykład: Zmniejszenie przezroczystości obrazka przy najechaniu */
+}
+
+
+/* --- Custom CSS for Fixed Size Carousel --- */
+.fixed-size-carousel .carousel-inner {
+  /* Optional: Add a max-width if you want the carousel itself to have a fixed width */
+  /* max-width: 800px; */
+  /* margin: auto; /* Center it if max-width is set */
+}
+
+.fixed-size-carousel .carousel-item {
+  height:800px; /* Set your desired fixed height here */
+  /* The width will typically be 100% of the parent (.carousel-inner) */
+  /* If you set max-width on .carousel-inner, this height will apply to that width */
+  overflow: hidden; /* Hide parts of the image that might overflow */
+}
+
+.fixed-size-carousel .carousel-item img {
+  /* Override Bootstrap's potential w-100 if still present or needed */
+  /* width: 100%; */
+  /* height: auto; *//* This would maintain aspect ratio but height might not match item */
+
+  /* To make image fill the fixed height/width of the item: */
+  width: 100%; /* Make image take full width of item */
+  height: 100%; /* Make image take full height of item */
+  object-fit: cover; /* Crop the image to fit the container while maintaining aspect ratio */
+
+  /* Alternative: Use 'contain' if you want the whole image visible, even if it leaves space */
+  /* object-fit: contain; */
+  /* In this case, you might want to center the image: */
+  /* object-position: center; */
+}
+
+/* Adjust captions if needed, though they usually position relative to the item */
+.fixed-size-carousel .carousel-caption {
+    /* Default Bootstrap positioning is usually fine */
+    /* Example adjustments: */
+    /* bottom: 20px; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+}
+
+
+
+/* Stylowanie ikon w nawigacji */
+.nav-icon {
+    height: 30px; /* Ustaw pożądaną wysokość ikonki */
+    /* Możesz też użyć width zamiast height, np. width: 25px; */
+    vertical-align: middle; /* Pomaga wyśrodkować ikonkę pionowo w linii tekstu */
+    margin-right: 5px; /* Opcjonalnie: dodaje trochę odstępu po prawej stronie ikonki */
+    /* Jeśli obrazek ma dziwne proporcje i chcesz go przyciąć/dopasować: */
+    /* object-fit: cover; */ /* Przytnie obrazek, zachowując proporcje, aby wypełnić pole */
+    /* object-fit: contain; */ /* Zmniejszy obrazek, zachowując proporcje, aby cały był widoczny (może zostawić puste miejsce) */
+}
+
+/* Możesz potrzebować dostosować marginesy linku dropdown-toggle, jeśli obrazek ma inny rozmiar niż tekst */
+.nav-item .nav-link.dropdown-toggle {
+    padding-top: 2-px; /* Przykładowa wartość, dostosuj w razie potrzeby */
+    padding-bottom: 10px; /* Przykładowa wartość, dostosuj w razie potrzeby */
+}
+
+/* Ukrywa strzałkę przy linkach dropdown-toggle w nawigacji */
+.nav-item .nav-link.dropdown-toggle::after {
+    display: none; /* Kluczowa właściwość - ukrywa pseudo-element */
+    content: none; /* Resetuje zawartość pseudo-elementu */
+    border: none; /* Resetuje obramowanie pseudo-elementu, które tworzy strzałkę */
+}
+
+
+/* CSS dla ikonki SVG */
+.nav-icon-svg {
+    height: 25px; /* Ustaw pożądaną wysokość */
+    width: 25px;  /* Ustaw pożądaną szerokość (taką samą jak wysokość dla kwadratowej ikonki) */
+    vertical-align: middle; /* Wyrównanie pionowe */
+    margin-right: 5px; /* Opcjonalnie: odstęp po prawej */
+
+    /* Ustaw domyślny kolor ikonki - ten nadpisze fill="#000000" w path */
+    fill: #333; /* Przykład: ciemnoszary domyślny kolor */
+
+    /* Dodaj przejście dla płynnej zmiany koloru */
+    transition: fill 0.3s ease;
+}
+
+/* Styl po najechaniu myszką na link zawierający ikonkę SVG */
+.nav-item a:hover .nav-icon-svg {
+    fill: gold; /* Zmień kolor na złoty po najechaniu */
+    /* Możesz użyć kodu hex, np. */
+    /* fill: #FFD700; */
+}
+
+/* Opcjonalnie: Dodaj ten styl, jeśli chcesz, aby link miał pointer (kursor myszki) jak link,
+   nawet gdy najedziesz bezpośrednio na SVG */
+.nav-item a .nav-icon-svg {
+    cursor: pointer;
+}
+
+
+/* --- CSS dla strony szczegółów produktu --- */
+
+/* 1. Zdjęcia po lewej stronie w jednym rozmiarze */
+/* Celujemy w kontener karuzeli i jej elementy w ramach karty */
+.product-card-detail .product-carousel .carousel-item {
+  height: 600px; /* Ustaw pożądaną stałą wysokość dla slajdów karuzeli */
+  overflow: hidden; /* Ukryj elementy, które wykraczają poza wysokość */
+  /* Dodaj zaokrąglone rogi tylko do lewej strony, jeśli chcesz */
+  border-top-left-radius: 0.375rem; /* Przykład z Bootstrapa rounded-start */
+  border-bottom-left-radius: 0.375rem; /* Przykład z Bootstrapa rounded-start */
+}
+
+/* Celujemy w obrazek wewnątrz elementu karuzeli */
+.product-card-detail .product-carousel .carousel-item .carousel-img {
+  width: 100%; /* Rozciągnij obrazek na całą szerokość kontenera item */
+  height: 100%; /* Rozciągnij obrazek na całą wysokość kontenera item */
+  object-fit: cover; /* Przytnij obrazek, zachowując proporcje, aby wypełnić pole */
+  /* object-fit: contain; */ /* Alternatywnie: zmień na 'contain' jeśli chcesz, aby cały obrazek był widoczny (może zostawić puste paski) */
+}
+
+/* Styl dla domyślnego obrazka (fallback) jeśli brak zdjęć */
+.product-card-detail .product-fallback-img {
+    /* Jeśli fallback ma być taki sam rozmiar jak karuzela: */
+    height: 450px; /* Ta sama wysokość co carousel-item */
+    width: 100%; /* Wypełnij dostępną szerokość kolumny */
+    object-fit: cover; /* Dopasuj jak w karuzeli */
+    /* Dodaj zaokrąglone rogi jak w karuzeli */
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+
+/* 2. Przycisk dodaj do koszyka i selektor ilości */
+/* Domyślne klasy Bootstrapa powinny wystarczyć, ale możesz dodać własne style do .add-to-cart-section */
+.add-to-cart-section {
+
+     color: #000000;
+    /* Dodatkowe style dla sekcji "Dodaj do koszyka" */
+}
+
+.btn btn-primary {
+    /* Styl dla ceny */
+    font-weight: bold;
+    color: #000000; /* Przykład koloru Bootstrap Primary */
+    /* Dostosuj kolor i wygląd */
+}
+
+.product-price {
+    /* Styl dla ceny */
+    font-weight: bold;
+    color: #000000; /* Przykład koloru Bootstrap Primary */
+    /* Dostosuj kolor i wygląd */
+}
+
+
+/* 3. Opis produktu w osobnym akapicie */
+.product-description-section {
+    /* Margines górny jest już dodany klasą Bootstrapa mt-4 */
+}
+
+.description-heading {
+    font-size: 1.5rem; /* Rozmiar nagłówka */
+    margin-bottom: 0.5rem; /* Odstęp pod nagłówkiem przed separatorem */
+}
+
+.description-separator {
+    border: 0; /* Usuń domyślne obramowanie */
+    height: 2px; /* Grubość linii */
+    background-color: #ccc; /* Kolor linii */
+    margin-top: 0; /* Usuń górny margines, jeśli jest */
+    margin-bottom: 1rem; /* Odstęp po separatorze przed opisem */
+    width: 100%; /* Rozciągnij linię na całą szerokość */
+    opacity: 1; /* Upewnij się, że jest w pełni widoczna */
+}
+
+.product-description {
+    /* Styl dla akapitu z opisem */
+    line-height: 1.6; /* Lepsza czytelność */
+    color: #555; /* Ciemniejszy szary tekst */
+}
+
+
+.product-card-detail .card-body {
+    text-align: center;
+}
+
+
+/* Styl dla przycisku "Dodaj do koszyka" z własnym kolorem */
+.btn-custom-add-to-cart {
+    /* Domyślny stan */
+    background-color: gold; /* Ustaw kolor tła */
+    border-color: darkgoldenrod; /* Ustaw kolor obramowania */
+    color: #333; /* Ustaw kolor tekstu (np. ciemny szary) */
+
+    /* Opcjonalnie: Efekt na najechaniu myszką (hover) */
+    /* Domyślnie Bootstrap .btn style dodają efekt hover, ale możesz go nadpisać */
+    &:hover { /* Ten syntax '&:hover' działa w SCSS/SASS, w czystym CSS użyj .btn-custom-add-to-cart:hover */
+         background-color: darkgoldenrod; /* Ciemniejszy odcień złota na hover */
+         border-color: goldenrod;
+         color: #fff; /* Biały tekst na hover (możesz zostawić #333) */
+    }
+
+     /* Opcjonalnie: Efekt na kliknięciu/aktywny stan */
+     &:active { /* lub .btn-custom-add-to-cart:active */
+          background-color: sienna; /* Jeszcze ciemniejszy odcień */
+          border-color: sienna;
+     }
+
+     /* Opcjonalnie: Stan wyłączony */
+     &:disabled { /* lub .btn-custom-add-to-cart:disabled */
+          opacity: 0.65;
+     }
+}
+
+/* W czystym CSS (jeśli nie używasz preprocesora jak SCSS/SASS) */
+.btn-custom-add-to-cart {
+    background-color: gold;
+    border-color: darkgoldenrod;
+    color: #333;
+}
+
+.btn-custom-add-to-cart:hover {
+     background-color: darkgoldenrod;
+     border-color: goldenrod;
+     color: #fff;
+}
+
+.btn-custom-add-to-cart:active {
+     background-color: sienna;
+     border-color: sienna;
+}
+
+.btn-custom-add-to-cart:disabled {
+     opacity: 0.65;
+}
+
+/* Karuzel dla produktów Ustaw stałą wysokość dla elementów karuzeli w KARTACH PRODUKTÓW */
+
+/* Ustaw stałą wysokość dla elementów karuzeli w KARTACH PRODUKTÓW */
+/* Używamy klasy .card-product-carousel, aby odróżnić ją od karuzeli na stronie produktu */
+.card-product-carousel .carousel-inner .carousel-item {
+  height: 400px; /* Ustaw pożądaną, mniejszą wysokość dla zdjęć na kartach (przykładowo 300px) */
+  overflow: hidden; /* Ukryj części obrazka, które wykraczają poza wysokość */
+  /* Dodaj zaokrąglone rogi na górze karuzeli, jeśli chcesz, tak jak w card-img-top Bootstrapa */
+   border-top-left-radius: 0.25rem;
+   border-top-right-radius: 0.25rem;
+}
+
+/* Upewnij się, że obrazki wewnątrz elementów karuzeli wypełniają jej rozmiar */
+.card-product-carousel .carousel-inner .carousel-item .carousel-img {
+  width: 100%; /* Rozciągnij obrazek na całą szerokość kontenera item */
+  height: 100%; /* Rozciągnij obrazek na całą wysokość kontenera item */
+  object-fit: cover; /* Przytnij obrazek, zachowując proporcje, aby wypełnić pole */
+  /* object-fit: contain; */ /* Alternatywnie: zmień na 'contain' jeśli chcesz, aby cały obrazek był widoczny */
+}
+
+/* Styl dla domyślnego obrazka (fallback) jeśli brak zdjęć - dopasuj wysokość i rogi */
+.card-fallback-img {
+    height: 300px; /* Ustaw tę samą wysokość co elementy karuzeli */
+    width: 100%; /* Wypełnij szerokość kolumny */
+    object-fit: cover; /* Dopasuj jak w karuzeli */
+    /* Dodaj zaokrąglone rogi, jeśli są w karuzeli */
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+
+/* Ukryj wskaźniki i przyciski nawigacyjne na małych kartach, są zazwyczaj zbędne przy auto-play */
+/* Możesz je całkowicie usunąć lub pokazać tylko na hover (bardziej złożone CSS/JS) */
+.card-product-carousel .carousel-indicators,
+.card-product-carousel .carousel-control-prev,
+.card-product-carousel .carousel-control-next {
+    display: display-inside;
+}
+
+/* Styl dla sekcji info (nazwa, cena) pod obrazkiem/karuzelą */
+.product-info {
+    margin-top: 0.5rem; /* Mały odstęp od obrazka/karuzeli */
+    text-align: center; /* Wyśrodkowanie nazwy i cen */
+}
+
+/* Styl dla nazwy produktu - możesz dostosować rozmiar czcionki */
+.product-info .product-name {
+    margin-bottom: 0.25rem; /* Mały odstęp pod nazwą */
+    font-size: 1rem; /* Przykład rozmiaru */
+    font-weight: bold;
+}
+
+/* Styl dla cen - małe odstępy */
+.product-info .product-price,
+.product-info .product-sale-price,
+.product-info .product-price-sale {
+    margin-bottom: 0.25rem;
+    line-height: 1.2; /* Poprawia odstęp między liniami cen */
+}
+
+/* Dostosowanie marginesu dolnego kolumny karty */
+.col-lg-4.col-sm-6.mb-4 {
+    /* Klasa mb-4 Bootstrapa już dodaje dolny margines */
+}
+
+/* Możesz też dostosować padding wewnątrz .product, jeśli elementy są za blisko krawędzi */
+.product {
+    /* padding: 5px; */
+}
+
+/* Styl dla overlayu z przyciskami - upewnij się, że jest poprawnie pozycjonowany
+   nad karuzelą/obrazkiem fallback */
+
+/* Pokaż overlay przy najechaniu myszką na kontener .product */
+.product:hover .product-overlay {
+    opacity: 0.1;
+}
+
+/* Styl dla listy przycisków w overlay */
+/* .product-overlay ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+} */
+
+.product-overlay ul li {
+     margin: 0 5px; /* Odstęp między przyciskami */
+}
+

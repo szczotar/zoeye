@@ -1,72 +1,99 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load static %}
 
+<div class="container mt-4"> {# Dodajemy górny margines dla odstępu od nagłówka/nawigacji #}
 
+  <div class="card mb-3 product-card-detail"> {# Dodajemy klasę do łatwiejszego stylowania karty, jeśli potrzebne #}
+    <div class="row g-0">
 
-<div class="container">
-<br/>
+      {# Lewa kolumna - Karuzela Zdjęć #}
+      <div class="col-md-7"> {# Zmieniamy na col-md-5, żeby zdjęcia były trochę szersze #}
+        {% if product.images.all %}
+          {# Dodajemy klasę product-carousel dla własnego CSS #}
+          <div id="productCarousel{{ product.id }}" class="carousel slide carousel-fade product-carousel" >
+            {# Optional: Indicators #}
+            <div class="carousel-indicators">
+              {% for image_obj in product.images.all %}
+                <button type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
+              {% endfor %}
+            </div>
 
-
-<div class="card mb-3">
-  <div class="row g-0">
-    <div class="col-md-4">
-      <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="...">
-    </div>
-    <div class="col-md-8">
-      <div class="card-body">
-        <center>
-        <h5 class="card-title">{{ product.name }}</h5>
-        <br/>
-        <p class="card-text justified">{{ product.description }}</p>
-        
-        {% if product.is_sale %}
-        <div class="d-flex justify-content-center small text-warning mb-2">
-                <div class="bi-star-fill"></div>
-                &nbsp;&nbsp;Sale!&nbsp;&nbsp;
-                <div class="bi-star-fill"></div>
+            {# Slides #}
+            <div class="carousel-inner">
+              {% for image_obj in product.images.all %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                  {# Klasy d-block w-100 są potrzebne dla karuzeli, ale rozmiar ustawimy w CSS #}
+                  {# Usunięto rounded-start stąd, przeniesiemy na kontener, jeśli chcemy #}
+                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:'Zdjęcie produktu' }}">
                 </div>
+              {% endfor %}
+            </div>
 
-                <!-- Product price-->
-                <strike>
-                ${{ product.price }}
-                </strike>
-                &nbsp;
-                ${{ product.sale_price }}
-
-
+            {# Navigation controls #}
+            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Poprzednie</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Następne</span>
+            </button>
+          </div>
 
         {% else %}
-            ${{ product.price }}
-            <br/> ID: {{product.id}}
+          {# Fallback: Co wyświetlić, jeśli produkt nie ma żadnych zdjęć #}
+          {# Dodajemy klasę dla stylowania #}
+          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid rounded-start product-fallback-img" alt="Brak zdjęcia dla produktu">
         {% endif %}
-
-        <br/><br/>
-        <div class="row justify-content-center">
-            <div class="col-md-2">Quantity:</div>
-                        <div class="col-md-2">
-                        <select class="form-select form-select-sm" id="qty-cart">
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                          <option value="5">5</option>
-                        </select>
-                        </div>
-                    </div>
-
-            <br/><br/>
-        <a href="{% url 'home'%}" class="btn btn-secondary">Home</a>
-        <button type='button' value = "{{product.id}}" class ="btn btn-secondary" id = "add-cart">Add to cart</button>
-
-    </center>
       </div>
-    </div>
-  </div>
-</div>
-</div>
-        	
 
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+      {# Prawa kolumna - Informacje o produkcie i przycisk "Dodaj do koszyka" #}
+      <div class="col-md-4"> {# Zmieniamy na col-md-7 #}
+        <div class="card-body">
+          {# Usunięto tag <center> - lepiej wyśrodkować za pomocą CSS #}
+          <h5 class="card-title mb-3">{{ product.name }}</h5> {# Dodajemy margines dolny #}
+
+          {# TUTAJ DODAJ PRZYCISK DODAJ DO KOSZYKA I SELEKTOR ILOŚCI #}
+          {# Zakładamy, że masz pole price w modelu Product #}
+          <p class="product-price display-6">{{ product.price }} zł</p> {# Dodajemy cenę #}
+
+          <div class="add-to-cart-section my-3"> {# Kontener na selektor i przycisk #}
+              <label for="qty-cart" class="form-label">Ilość:</label>
+              <select id="qty-cart" class="form-select d-inline-block w-auto me-2"> {# d-inline-block w-auto dla szerokości #}
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  {# Dodaj więcej opcji ilości jeśli potrzebujesz #}
+              </select>
+
+              {# Przycisk Dodaj do koszyka - ID 'add-cart' jest ważne dla JS #}
+              <button type="button" id="add-cart" value="{{ product.id }}" class="btn btn-custom-add-to-cart">
+                  Dodaj do koszyka
+              </button>
+          </div>
+
+          {# Opis produktu został przeniesiony niżej, usunięty stąd #}
+
+        </div>
+      </div>
+
+    </div> {# Koniec row #}
+  </div> {# Koniec card #}
+
+  {# Sekcja z opisem produktu pod kartą #}
+  <div class="product-description-section mt-4"> {# Dodajemy margines górny #}
+    <h3 class="description-heading">Opis produktu</h3>
+    <hr class="description-separator"/> {# Separator w formie linii #}
+    <p class="product-description">{{ product.description }}</p> {# Akapit z opisem #}
+  </div>
+
+
+</div> {# Koniec container #}
+
+{# Twój skrypt JS do dodawania do koszyka - powinien być na dole body lub przed zamknięciem bloku content #}
 <script>
   // Check if button pressed
   $(document).on('click', '#add-cart', function(e){
@@ -76,33 +103,24 @@
           url: '{% url 'cart_add' %}',
           data: {
             product_id: $('#add-cart').val(),
-            product_qty: $('#qty-cart option:selected').text(),
+            product_qty: $('#qty-cart option:selected').text(), // Używamy text() lub val() - zależy co przekazujesz
             csrfmiddlewaretoken: '{{ csrf_token }}',
             action: 'post'
           },
-  
+
           success: function(json){
               // console.log(json)
               document.getElementById('cart_quantity').
               textContent = json.qty
-              location.reload();
+              location.reload(); // Przeładowanie strony po dodaniu do koszyka (możesz zmienić zachowanie)
           },
-  
+
           error: function(xhr, errmsg, err){
-  
+              console.error("Błąd podczas dodawania do koszyka:", errmsg, err);
+              // Tutaj możesz wyświetlić komunikat błędu użytkownikowi
           }
-  
-  
       });
-  
-  
-  
-  })
-  
-  
-  
-  
-  </script>
-  
-  
+  });
+</script>
+
 {% endblock %}
