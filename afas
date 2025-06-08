@@ -1,0 +1,89 @@
+[33mcommit 13b832582aaa5ba11e1b869c246aacf25b9d61a6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat Jun 7 15:36:41 2025 +0200
+
+    new zoeye
+
+[33mcommit ee5c9b2b66e87503809ac430bc1d77f2bc7f4639[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sun May 18 00:11:08 2025 +0200
+
+    new domain
+
+[33mcommit fa2c71182badecfde6e5fa39e53f401f412752d7[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 22:45:35 2025 +0200
+
+    csrf fix
+
+[33mcommit 4953cdf11d33eb59257ef5986d39f1a2d0696164[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 20:59:47 2025 +0200
+
+    port nr
+
+[33mcommit 9dd810a13f7a5f3550fd5d573acf26932248f134[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 20:54:23 2025 +0200
+
+    csrf thing
+
+[33mcommit 66aba0d0ab26c498c704cc82ecba45b18798a0ee[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 20:46:15 2025 +0200
+
+    change db con
+
+[33mcommit c1ddfac784a0c3fe5cc2a02f05a9b5af1d7f2620[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 20:38:17 2025 +0200
+
+    'allowed'
+
+[33mcommit 078f163b9459a620ba14a2fedb89c55217fbedbd[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 20:28:57 2025 +0200
+
+    'host'
+
+[33mcommit bab6428d9106f0c7fc3aa0655ac6c757d806b9ea[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sat May 17 18:36:04 2025 +0200
+
+    postgres sql db
+
+[33mcommit d93937edc3e1f9e2dbc481216d8f90f377f68318[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sun May 11 21:13:49 2025 +0200
+
+    billing info
+
+[33mcommit abb11b2442fd3ca68f1b99ebac37776a37b7aa23[m
+Author: unknown <szczotar@gmail.com>
+Date:   Tue May 6 19:26:46 2025 +0200
+
+    update password
+
+[33mcommit 8daf741f5963646a7f7aecc1f729a9c22ea77cfd[m
+Author: unknown <szczotar@gmail.com>
+Date:   Wed Apr 23 21:44:20 2025 +0200
+
+    shopping cart
+
+[33mcommit 043b0be1f0e0a163e704a04dc74c8f0abed7efad[m
+Author: unknown <szczotar@gmail.com>
+Date:   Mon Apr 14 23:15:03 2025 +0200
+
+    login prt 2
+
+[33mcommit f24f3cc4a5e89d696083d19e43154a428506715b[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sun Apr 13 22:38:22 2025 +0200
+
+    login
+
+[33mcommit 357190416c296e9e6745b0b151d7c5af8f4cf8c5[m
+Author: unknown <szczotar@gmail.com>
+Date:   Sun Apr 13 15:38:01 2025 +0200
+
+    first

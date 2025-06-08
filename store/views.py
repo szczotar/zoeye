@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,  get_object_or_404
 from .models import Product, Category, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -11,7 +11,9 @@ import json
 from cart.cart import Cart
 from payment.forms import ShippingForm
 from payment.models import ShippingAddress
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Case, When
+from django.db.models import Case, When, DecimalField
 
 def search(request):
 	# Determine if they filled out the form
@@ -96,19 +98,102 @@ def update_user(request):
 		return redirect('home')
 
 # Create your views here.
-def category(request, foo):
-	# Replace Hyphens with Spaces
-	foo = foo.replace('-', ' ')
-	# Grab the category from the url
-	try:
-		# Look Up The Category
-		category = Category.objects.get(name=foo)
-		products = Product.objects.filter(category=category)
-		return render(request, 'category.html', {'products':products, 'category':category})
-	except:
-		messages.success(request, ("That Category Doesn't Exist..."))
-		return redirect('home')
-    
+
+# def category(request, foo):
+# 	# Replace Hyphens with Spaces
+# 	foo = foo.replace('-', ' ')
+# 	# Grab the category from the url
+# 	try:
+# 		# Look Up The Category
+# 		category = Category.objects.get(name=foo)
+# 		products = Product.objects.filter(category=category)
+# 		return render(request, 'category.html', {'products':products, 'category':category})
+# 	except:
+# 		messages.success(request, ("That Category Doesn't Exist..."))
+# 		return redirect('home')
+
+
+def category(request, foo): # Nazwa funkcji i argument 'foo' muszą pasować do urls.py
+    """
+    Widok wyświetlający szczegóły kategorii i listę produktów z paginacją i sortowaniem.
+    Argument 'foo' przyjmuje nazwę kategorii z URL.
+    """
+    # --- Pobierz Kategorię ---
+    # Pobieramy kategorię po polu 'name', bo Twój URL pattern używa nazwy (<str:foo>)
+    category = get_object_or_404(Category, name=foo)
+
+    # --- Pobierz Produkty dla Kategorii ---
+    # Używamy Product.objects.filter(category=category), gdzie 'category' to nazwa pola ForeignKey w Twoim modelu Product
+    product_list = Product.objects.filter(category=category)
+
+    # --- DODAJ ADNOTACJĘ DLA EFEKTYWNEJ CENY ---
+    # Tworzymy tymczasowe pole 'effective_price', które będzie używane do sortowania.
+    # Jeśli is_sale jest True, effective_price = sale_price, w przeciwnym razie effective_price = price.
+    # Używamy DecimalField, aby upewnić się, że sortowanie będzie liczbowe.
+    product_list = product_list.annotate(
+        effective_price=Case(
+            When(is_sale=True, then='sale_price'), # Gdy is_sale jest True, użyj sale_price
+            default='price',                       # W przeciwnym razie (gdy is_sale jest False), użyj price
+            output_field=DecimalField()            # Zapewnij, że wynikiem jest Decimal
+        )
+    )
+
+    # --- Logika Sortowania ---
+    # Pobierz parametr sortowania z zapytania GET (np. ?sorting=low-high)
+    sort_by = request.GET.get('sorting', 'default') # Domyślnie 'default'
+
+    try:
+        if sort_by == 'low-high':
+            # Sortuj rosnąco po nowym polu 'effective_price'
+            product_list = product_list.order_by('effective_price')
+        elif sort_by == 'high-low':
+            # Sortuj malejąco po nowym polu 'effective_price'
+            product_list = product_list.order_by('-effective_price')
+        elif sort_by == 'popularity':
+             # Sortowanie "popularność" nie ma dedykowanego pola w modelu.
+             # Można zastosować inne domyślne sortowanie, np. po nazwie.
+             # Jeśli masz pole 'sales_count' lub podobne, użyj go tutaj:
+             # product_list = product_list.order_by('-sales_count')
+             product_list = product_list.order_by('name') # Przykład domyślnego sortowania
+        else: # 'default' lub jakakolwiek inna wartość
+             # Domyślne sortowanie (np. po nazwie)
+             product_list = product_list.order_by('name') # Użyj pola, które chcesz jako domyślne
+
+    except Exception:
+        # W przypadku błędu sortowania, zastosuj sortowanie domyślne
+        product_list = product_list.order_by('name')
+
+
+    # --- Logika Paginacji ---
+    # Określ, ile produktów ma być na stronie (dopasuj do swojego szablonu)
+    products_per_page = 9 # lub 12, w zależności od układu kolumn
+
+    paginator = Paginator(product_list, products_per_page)
+
+    # Pobierz numer strony z zapytania GET (np. ?page=2)
+    page_number = request.GET.get('page')
+
+    # Pobierz obiekt Page dla żądanego numeru strony
+    try:
+        products_page = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # Jeśli numer strony nie jest liczbą, pokaż pierwszą stronę
+        products_page = paginator.get_page(1)
+    except EmptyPage:
+        # Jeśli strona jest poza zakresem, pokaż ostatnią stronę
+        products_page = paginator.get_page(paginator.num_pages)
+
+    # Przygotuj kontekst do przekazania do szablonu
+    context = {
+        'category': category,           # Obiekt Category
+        'products_page': products_page, # Obiekt Page z produktami na bieżącej stronie
+        'current_sorting': sort_by,     # Aktualnie wybrane sortowanie (dla zaznaczenia w dropdownie)
+        'request': request,             # Przekazujemy obiekt request, aby w szablonie odtworzyć inne parametry GET w linkach paginacji
+    }
+
+    # Renderuj szablon category.html
+    return render(request, 'category.html', context)
+
 def categories_all(request):
     # Fetch all categories
 	categories = Category.objects.all()
@@ -186,3 +271,5 @@ def register_user(request):
     else:  
         return render(request, 'register.html', {'form':form})
 
+# Załóżmy, że Twoja funkcja widoku nazywa się category_detail
+# Przyjmuje slug kategorii jako argument, np. /category/electronics/

@@ -1,241 +1,192 @@
 {% extends 'base.html' %}
 {% load static %}
 
-    {% block content %}
-    
-      <div class="container">
-        <!-- HERO SECTION-->
-        <section class="py-5 bg-light">
-          <div class="container">
-            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
-              <div class="col-lg-6">
-                <h1 class="h2 text-uppercase mb-0">{{category.name}}</h1>
-              </div>
-              <div class="col-lg-6 text-lg-right">
-                <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Category</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{category.name}}</li>
-                  </ol>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section class="py-5">
-          <div class="container p-0">
-            <div class="row">
-              <!-- SHOP SIDEBAR-->
-              <div class="col-lg-3 order-2 order-lg-1">
-                <h5 class="text-uppercase mb-4">Categories</h5>
+{% block content %}
 
-                {% if categories %}
-                  {% for category in categories %}
-                    <a href="{% url 'home' cat.slug %}">
-                      <div class="py-2 px-4 {% if category == category %}bg-dark text-white {% else %}bg-light{% endif %} mb-3">
-                        <strong class="small text-uppercase font-weight-bold">{{category.name}}</strong>
-                      </div>
-                    </a>
-                  {% endfor %}
-                {% endif %}
-
-                <h6 class="text-uppercase mb-4">Price range</h6>
-                <div class="price-range pt-4 mb-5">
-                  <div id="range"></div>
-                  <div class="row pt-2">
-                    <div class="col-6"><strong class="small font-weight-bold text-uppercase">From</strong></div>
-                    <div class="col-6 text-right"><strong class="small font-weight-bold text-uppercase">To</strong></div>
-                  </div>
-                </div>
-                <h6 class="text-uppercase mb-3">Show only</h6>
-                <div class="custom-control custom-checkbox mb-1">
-                  <input class="custom-control-input" id="customCheck1" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck1">Returns Accepted</label>
-                </div>
-                <div class="custom-control custom-checkbox mb-1">
-                  <input class="custom-control-input" id="customCheck2" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck2">Returns Accepted</label>
-                </div>
-                <div class="custom-control custom-checkbox mb-1">
-                  <input class="custom-control-input" id="customCheck3" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck3">Completed Items</label>
-                </div>
-                <div class="custom-control custom-checkbox mb-1">
-                  <input class="custom-control-input" id="customCheck4" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck4">Sold Items</label>
-                </div>
-                <div class="custom-control custom-checkbox mb-1">
-                  <input class="custom-control-input" id="customCheck5" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck5">Deals &amp; Savings</label>
-                </div>
-                <div class="custom-control custom-checkbox mb-4">
-                  <input class="custom-control-input" id="customCheck6" type="checkbox">
-                  <label class="custom-control-label text-small" for="customCheck6">Authorized Seller</label>
-                </div>
-                <h6 class="text-uppercase mb-3">Buying format</h6>
-                <div class="custom-control custom-radio">
-                  <input class="custom-control-input" id="customRadio1" type="radio" name="customRadio">
-                  <label class="custom-control-label text-small" for="customRadio1">All Listings</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input class="custom-control-input" id="customRadio2" type="radio" name="customRadio">
-                  <label class="custom-control-label text-small" for="customRadio2">Best Offer</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input class="custom-control-input" id="customRadio3" type="radio" name="customRadio">
-                  <label class="custom-control-label text-small" for="customRadio3">Auction</label>
-                </div>
-                <div class="custom-control custom-radio">
-                  <input class="custom-control-input" id="customRadio4" type="radio" name="customRadio">
-                  <label class="custom-control-label text-small" for="customRadio4">Buy It Now</label>
-                </div>
-              </div>
-              <!-- SHOP LISTING-->
-              <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
-                <div class="row mb-3 align-items-center">
-                  <div class="col-lg-6 mb-2 mb-lg-0">
-                    <p class="text-small text-muted mb-0">Showing 1–12 of 53 results</p>
-                  </div>
-                  <div class="col-lg-6">
-                    <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
-                      <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th-large"></i></a></li>
-                      <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th"></i></a></li>
-                      <li class="list-inline-item">
-                        <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting">
-                          <option value="default">Default sorting</option>
-                          <option value="popularity">Popularity</option>
-                          <option value="low-high">Price: Low to High</option>
-                          <option value="high-low">Price: High to Low</option>
-                        </select>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="row">
-
-                  {% if products %}
-                    {% for product in products %}
-                    
-                      
-                      <div class="col-lg-4 col-sm-6 mb-4"> {# Dodajemy dolny margines do kolumny dla lepszego odstępu między kartami #}
-  <div class="product text-center">
-    <div class="mb-3 position-relative">
-
-      <div class="badge text-white badge-"></div> {# Twój badge, jeśli go używasz #}
-
-      {# --- TUTAJ BĘDZIE MAŁA KARUZELA BOOTSTRAP DLA KARTY PRODUKTU --- #}
-
-      {# Owijamy karuzelę (lub fallback obrazek) linkiem do strony szczegółów produktu #}
-      <a class="d-block" href="{% url 'product' product.id  %}">
-        {% if product.images.all %} {# Sprawdź, czy produkt ma jakiekolwiek powiązane zdjęcia #}
-          {# Dodajemy klasę card-product-carousel dla własnego CSS #}
-          {# data-bs-ride="carousel" dla automatycznego przewijania na liście produktów #}
-          {# data-bs-interval ustawia czas między slajdami w milisekundach #}
-          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel">
-
-            {# Optional: Indicators (małe kropki na dole) - często usuwane na małych kartach, ale zostawmy je w HTML, ukryjemy w CSS jeśli trzeba #}
-            <div class="carousel-indicators">
-              {% for image_obj in product.images.all %}
-                {# data-bs-slide-to index jest liczony od 0 #}
-                <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
-              {% endfor %}
-            </div>
-
-            {# Slides (pojedyncze zdjęcia) #}
-            <div class="carousel-inner">
-              {% for image_obj in product.images.all %}
-                {# Pierwszy element musi mieć klasę 'active' #}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  {# Klasy d-block w-100 Bootstrapa są potrzebne do działania karuzeli, ale rzeczywisty rozmiar ustawimy w CSS #}
-                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:product.name }}">
-                  {# Opcjonalnie: Możesz dodać carousel-caption tutaj dla miniaturowego podpisu #}
-                </div>
-              {% endfor %}
-            </div>
-
-            {# Navigation controls (przyciski następny/poprzedni) - często usuwane na małych kartach, ukryjemy w CSS jeśli trzeba #}
-            <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Poprzednie</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Następne</span>
-            </button>
-          </div>
-
-        {% else %}
-          {# Fallback: Co wyświetlić, jeśli produkt nie ma żadnych zdjęć powiązanych z ProductImage #}
-          {# Użyj domyślnego statycznego obrazka i klasy card-fallback-img do stylowania #}
-          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
-        {% endif %}
-      </a> {# Koniec linku owijającego karuzelę/obrazek fallback #}
-
-      {# --- KONIEC KARUZELI / OBRAZKA NA KARCIE --- #}
-
-      {# Produkt Overlay (Wishlist/Add to Cart na hover) - Ten blok pozostaje na miejscu #}
-      {# Jest on absolutnie pozycjonowany względem rodzica mb-3 position-relative #}
-      <div class="product-overlay">
-        <ul class="mb-0 list-inline">
-          <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
-          <li class="list-inline-item m-0 p-0">
-            <form action="{% url 'home' %}" method="post"> {# Zmieniono method na post #}
-                 {% csrf_token %} {# Dodaj token CSRF jeśli używasz POST #}
-                 <input type="hidden" name="product_id" value="{{product.id}}"> {# Upewnij się, że nazwa pola jest poprawna ('product_id' zamiast 'prod_id') #}
-                 <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
-            </form>
-          </li>
-        </ul>
+<div class="container">
+  <!-- HERO SECTION-->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+        <div class="col-lg-6">
+          <h1 class="h2 text-uppercase mb-0">{{category.name}}</h1>
+        </div>
+        <div class="col-lg-6 text-lg-right">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+              {# Użyj category.name w linku do kategorii #}
+              <li class="breadcrumb-item"><a href="{% url 'category' category.name %}">Category</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{{category.name}}</li>
+            </ol>
+          </nav>
+        </div>
       </div>
     </div>
+  </section>
+  <section class="py-5">
+    <div class="container p-0">
+      <div class="row">
+        <!-- SHOP SIDEBAR-->
+        {# Twoja sekcja sidebar, jeśli istnieje #}
 
-    {# Informacje o produkcie (nazwa, cena, status wyprzedaży) POD KARUZELĄ #}
-    <div class="product-info"> {# Dodajemy kontener dla łatwiejszego stylowania i centrowania #}
-       {# Nazwa produktu jako link #}
-       <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
-            <h6 class="product-name">{{ product.name }}</h6> {# Zmieniamy na h6 i dodajemy klasę #}
-        </a>
-
-       {# Status wyprzedaży i ceny #}
-       {% if product.is_sale %}
-           <div class="d-flex justify-content-center small text-warning mb-2">
-                <div class="bi-star-fill"></div>   Sale!   <div class="bi-star-fill"></div>
-           </div>
-           {# Regularna cena przekreślona #}
-           <p class="small text-muted product-sale-price"><strike>{{ product.price }} zł</strike></p>
-           {# Cena wyprzedażowa #}
-           <p class="small text-muted product-price-sale">{{ product.sale_price }} zł</p>
-
-       {% else %}
-           {# Jeśli produkt nie jest na wyprzedaży, wyświetl normalną cenę #}
-           <p class="small text-muted product-price">{{ product.price }} zł</p>
-       {% endif %}
-    </div>
-    {# Usunięto card-footer, bo nie jest już potrzebny z tą strukturą #}
-
-  </div> {# Koniec product text-center #}
-</div> {# Koniec col-lg-4 col-sm-6 mb-4 #}
-
+        <!-- SHOP LISTING-->
+        <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
+          <div class="row mb-3 align-items-center">
+            <div class="col-lg-6 mb-2 mb-lg-0">
+              {# Dynamiczny tekst o liczbie wyników #}
+              <p class="text-small text-muted mb-0">Showing {{ products_page.start_index }}–{{ products_page.end_index }} of {{ products_page.paginator.count }} results</p>
+            </div>
+            <div class="col-lg-6">
+              <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
+                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th-large"></i></a></li>
+                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th"></i></a></li>
+                <li class="list-inline-item">
+                  {# Formularz sortowania #}
+                  {# Akcja formularza używa nazwy kategorii (category.name) #}
+                  <form method="get" action="{% url 'category' category.name %}" id="sortingForm">
+                    <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting" onchange="document.getElementById('sortingForm').submit();">
+                      <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Default sorting</option>
+                      <option value="popularity" {% if current_sorting == 'popularity' %}selected{% endif %}>Popularity</option>
+                      <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Price: Low to High</option>
+                      <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                    {# Dodajemy ukryte pola dla innych parametrów GET (np. filtry, które możesz dodać później), aby zachować je przy sortowaniu #}
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'sorting' and key != 'page' %} {# Nie dodajemy ponownie 'sorting' i 'page' #}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
                     {% endfor %}
-                  {% endif %}
-
-
-                </div>
-                <!-- PAGINATION-->
-                <nav aria-label="Page navigation example">
-                  <ul class="pagination justify-content-center justify-content-lg-end">
-                    <li class="page-item"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">»</span></a></li>
-                  </ul>
-                </nav>
-              </div>
+                  </form>
+                </li>
+              </ul>
             </div>
           </div>
-        </section>
+
+          <div class="row">
+            {# Iterujemy po produktach na BIEŻĄCEJ STRONIE #}
+            {% if products_page %}
+              {% for product in products_page %}
+
+                <div class="col-lg-4 col-sm-6 mb-4">
+                  <div class="product text-center">
+                    <div class="mb-3 position-relative">
+                      <div class="badge text-white badge-"></div>
+                      <a class="d-block" href="{% url 'product' product.id  %}">
+                        {% if product.images.all %}
+                          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel" data-bs-interval="5000"> {# Możesz dodać data-bs-interval #}
+                            <div class="carousel-indicators">
+                              {% for image_obj in product.images.all %}
+                                <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
+                              {% endfor %}
+                            </div>
+                            <div class="carousel-inner">
+                              {% for image_obj in product.images.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:product.name }}">
+                                </div>
+                              {% endfor %}
+                            </div>
+                            {# Przyciski nawigacyjne karuzeli - mogą być ukryte w CSS dla małych kart #}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
+                              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Poprzednie</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="next">
+                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Następne</span>
+                            </button>
+                          </div>
+                        {% else %}
+                          {# Fallback jeśli brak zdjęć #}
+                          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
+                        {% endif %}
+                      </a>
+                      {# Produkt Overlay (Wishlist/Add to Cart) #}
+                      <div class="product-overlay">
+                        <ul class="mb-0 list-inline">
+                          <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
+                          {# Formularz Add to Cart - użyj poprawniej nazwy URL 'cart_add' #}
+                          <li class="list-inline-item m-0 p-0">
+                            <form action="{% url 'cart_add' %}" method="post"> {# <-- POPRAWIONA LINIA #}
+                               {% csrf_token %}
+                               <input type="hidden" name="product_id" value="{{product.id}}">
+                                <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
+                            </form>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    {# Informacje o produkcie #}
+                    <div class="product-info">
+                       <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
+                            <h6 class="product-name">{{ product.name }}</h6>
+                        </a>
+                       {% if product.is_sale %}
+                           <div class="d-flex justify-content-center small text-warning mb-2">
+                                {# Użyj ikon bootstrap (bi-star-fill) jeśli są dostępne, lub zmień na inny tekst/ikony #}
+                                <i class="bi-star-fill me-1"></i>   Sale!   <i class="bi-star-fill ms-1"></i>
+                           </div>
+                           <p class="small text-muted product-sale-price"><strike>{{ product.price }} zł</strike></p>
+                           <p class="small text-muted product-price-sale">{{ product.sale_price }} zł</p>
+                       {% else %}
+                           <p class="small text-muted product-price">{{ product.price }} zł</p>
+                       {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+              {% endfor %}
+            {% else %}
+              {# Komunikat jeśli brak produktów na tej stronie #}
+              <div class="col-12">
+                  <p>Brak produktów w tej kategorii.</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- PAGINATION-->
+          <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center justify-content-lg-end">
+
+              {# Przycisk "Previous" #}
+              <li class="page-item {% if not products_page.has_previous %}disabled{% endif %}">
+                  {# Link generuje pełny URL: ścieżka do kategorii (używając category.name), numer strony, aktualne sortowanie i inne parametry GET #}
+                  <a class="page-link" href="{% if products_page.has_previous %}?page={{ products_page.previous_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Previous">
+                      <span aria-hidden="true">«</span>
+                  </a>
+              </li>
+
+              {# Linki do poszczególnych stron #}
+              {% for num in products_page.paginator.page_range %}
+                  {# Prosta logika wyświetlania kilku stron w okolicy bieżącej + pierwsza/ostatnia + kropki #}
+                  {% if products_page.number|add:"-2" <= num and num <= products_page.number|add:"2" or num == 1 or num == products_page.paginator.num_pages %}
+                       {% if num == products_page.number %} {# Aktywna strona #}
+                          <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ num }}</a></li>
+                       {% else %} {# Inne strony #}
+                          <li class="page-item">
+                              {# Link generuje pełny URL: ścieżka do kategorii, numer strony, aktualne sortowanie i inne parametry GET #}
+                              <a class="page-link" href="?page={{ num }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                          </li>
+                       {% endif %}
+                  {% elif num == products_page.number|add:"-3" or num == products_page.number|add:"3" %} {# Dodaje kropki #}
+                     <li class="page-item disabled"><span class="page-link">...</span></li>
+                  {% endif %}
+              {% endfor %}
+
+              {# Przycisk "Next" #}
+              <li class="page-item {% if not products_page.has_next %}disabled{% endif %}">
+                   {# Link generuje pełny URL: ścieżka do kategorii, numer strony, aktualne sortowanie i inne parametry GET #}
+                   <a class="page-link" href="{% if products_page.has_next %}?page={{ products_page.next_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Next">
+                      <span aria-hidden="true">»</span>
+                  </a>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
       </div>
-      {% endblock content %}
+    </div>
+  </section>
+</div>
+{% endblock content %}
