@@ -54,20 +54,34 @@ class Customer(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
     
+class Material(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    
 class Product(models.Model):
+    GENDER_CHOICES = [
+        ('unisex', 'Unisex'),
+        ('women', 'Kobiety'),
+        ('men', 'Mężczyźni'),
+    ]
+
     name = models.CharField(max_length=100)
     price = models.DecimalField(default=0, decimal_places=2, max_digits=6)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
     description = models.CharField(max_length=2500, default='', blank=True, null = True)
-    # image = models.ImageField(upload_to='uploads/product/')
 
-    #Add Sale stuff
+    # Add Sale stuff
     is_sale = models.BooleanField(default=False)
     sale_price = models.DecimalField(default=0, decimal_places=2, max_digits=6)
 
-    def __str__(self):
-        return self.name
-    
+    # --- NOWE POLA FILTRÓW ---
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='unisex') # Filtr płci
+    materials = models.ManyToManyField(Material, blank=True) # Filtr materiałów/kamieni
+    # -------------------------
+
     def get_main_image(self):
         # Zakładając, że pole 'order' = 0 oznacza zdjęcie główne
         main_image = self.images.filter(order=0).first()

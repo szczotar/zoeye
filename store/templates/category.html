@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %} {# Załaduj niestandardowy filtr do sprawdzania iterowalności #}
 
 {% block content %}
 
@@ -15,7 +16,7 @@
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
               <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-              {# Użyj category.name w linku do kategorii #}
+              {# Użyj category.name w linku do kategorii, zgodnie z Twoim urls.py #}
               <li class="breadcrumb-item"><a href="{% url 'category' category.name %}">Category</a></li>
               <li class="breadcrumb-item active" aria-current="page">{{category.name}}</li>
             </ol>
@@ -27,10 +28,106 @@
   <section class="py-5">
     <div class="container p-0">
       <div class="row">
-        <!-- SHOP SIDEBAR-->
-        {# Twoja sekcja sidebar, jeśli istnieje #}
+
+        {# =============================================== #}
+        {# SHOP SIDEBAR - POŁĄCZONY FORMULARZ FILTRÓW #}
+        {# Ta kolumna będzie po lewej stronie na dużych ekranach (order-lg-1) #}
+
+        <div class="col-lg-3 order-2 order-lg-1 mb-5 mb-lg-0">
+
+            {# === JEDEN FORMULARZ DLA WSZYSTKICH FILTRÓW SIDEBAR === #}
+            {# Metoda GET, akcja na URL kategorii #}
+            <form method="get" action="{% url 'category' category.name %}" id="sidebarFilterForm">
+
+                 {# Zachowaj parametry 'sorting' i 'page' #}
+                 {% for key, value in request.GET.items %} {% if key != 'gender' and key != 'material' and key != 'min_price' and key != 'max_price' and key != 'sale_only' %} {# <-- WYKLUCZ NOWY PARAMETR FILTRA #}
+                     {% if value|iterable %}
+                         {% for item in value %}
+                             <input type="hidden" name="{{ key }}" value="{{ item }}">
+                         {% endfor %}
+                     {% else %}
+                         <input type="hidden" name="{{ key }}" value="{{ value }}">
+                     {% endif %}
+                 {% endif %}{% endfor %}
+
+                 <!-- Filtr dla płci (gender) -->
+                 <h5 class="text-uppercase mb-4">For Whom</h5>
+                 {# Radio buttony dla płci - name="gender" #}
+                 <div class="form-check mb-1">
+                     {# value="" dla opcji "Wszystkie" #}
+                     <input class="form-check-input" type="radio" name="gender" value="" id="genderAll" {% if not selected_gender or selected_gender == 'all' %}checked{% endif %}>
+                     <label class="form-check-label" for="genderAll">All</label>
+                 </div>
+                 <div class="form-check mb-1">
+                     <input class="form-check-input" type="radio" name="gender" value="men" id="genderMen" {% if selected_gender == 'men' %}checked{% endif %}>
+                     <label class="form-check-label" for="genderMen">Men</label>
+                 </div>
+                 <div class="form-check mb-1">
+                     <input class="form-check-input" type="radio" name="gender" value="women" id="genderWomen" {% if selected_gender == 'women' %}checked{% endif %}>
+                     <label class="form-check-label" for="genderWomen">Women</label>
+                 </div>
+                 <div class="form-check mb-1">
+                     <input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}> {# <-- DODANO UNISEX #}
+                     <label class="form-check-label" for="genderUnisex">Unisex</label>
+                 </div>
+
+
+                 <!-- Filtr rodzaju materiału -->
+                 <h5 class="text-uppercase mb-4 mt-4">Material</h5>
+                 {# Checkboxy dla opcji materiału - name="material" #}
+                 <ul class="list-unstyled small text-muted pl-lg-4 font-weight-normal">
+                     {% for material in all_materials %}
+                         <li class="mb-1">
+                             <div class="form-check">
+                                 {# name="material" - ważne, aby pasowało do request.GET.getlist('material') w widoku #}
+                                 <input class="form-check-input" type="checkbox" name="material" value="{{ material.name }}" id="material{{ material.id }}" {% if material.name in selected_materials %}checked{% endif %}>
+                                 <label class="form-check-label" for="material{{ material.id }}">{{ material.name }}</label>
+                             </div>
+                         </li>
+                     {% endfor %}
+                 </ul>
+
+                 <!-- Filtr ceny -->
+                 <h5 class="text-uppercase mb-4 mt-4">Price Filter</h5>
+                 <div class="d-flex align-items-center mb-3">
+                     {# Pola input dla filtra ceny - name="min_price", name="max_price" #}
+                     <input type="number" name="min_price" placeholder="Min" value="{{ selected_min_price|default:'' }}" class="form-control form-control-sm w-50 me-2">
+                     <input type="number" name="max_price" placeholder="Max" value="{{ selected_max_price|default:'' }}" class="form-control form-control-sm w-50">
+                 </div>
+
+                 {# --- NOWY FILTR PROMOCJI (IS_SALE) - TOGGLE SWITCH --- #}
+                 <h5 class="text-uppercase mb-4 mt-4">Promotions</h5>
+                 {# Zastosuj klasy form-check i form-switch do kontenera #}
+                 <div class="form-check form-switch mb-1"> {# <-- DODANO form-switch #}
+                     {# Checkbox dla promocji - name="sale_only", value="true" #}
+                     {# Dodaj klasę form-check-input do inputa #}
+                     {# value="true" jest ważne, aby widok wiedział, że checkbox jest zaznaczony #}
+                     <input class="form-check-input" type="checkbox" name="sale_only" value="true" id="filterSaleOnly" {% if selected_sale_only %}checked{% endif %} role="switch"> {# <-- DODANO KLASY I ROLE #}
+                     {# Dodaj klasę form-check-label do labelki #}
+                     <label class="form-check-label" for="filterSaleOnly">Show only Sale items</label>
+                 </div>
+
+
+                 {# === JEDEN PRZYCISK ZASTOSUJ FILTRY === #}
+                 {# Przycisk submit dla całego formularza sidebar #}
+                 <button type="submit" class="btn btn-outline-dark btn-sm w-100 mt-3">Apply Filters</button>
+
+            </form> {# === KONIEC JEDNEGO FORMULARZA FILTRÓW === #}
+
+
+            <!-- Przycisk Resetuj filtry -->
+            {# Ten link kieruje na URL kategorii bez żadnych parametrów GET #}
+            <div class="mt-4">
+                <a href="{% url 'category' category.name %}" class="btn btn-secondary btn-sm w-100">Reset Filters</a>
+            </div>
+
+        </div>
+        {# KONIEC SHOP SIDEBAR #}
+        {# =============================================== #}
+
 
         <!-- SHOP LISTING-->
+        {# Ta kolumna będzie po prawej stronie na dużych ekranach (order-lg-2) #}
         <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
           <div class="row mb-3 align-items-center">
             <div class="col-lg-6 mb-2 mb-lg-0">
@@ -39,6 +136,7 @@
             </div>
             <div class="col-lg-6">
               <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
+                {# Przyciski zmiany widoku (grid/list) - jeśli są zaimplementowane #}
                 <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th-large"></i></a></li>
                 <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th"></i></a></li>
                 <li class="list-inline-item">
@@ -51,12 +149,19 @@
                       <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Price: Low to High</option>
                       <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Price: High to Low</option>
                     </select>
-                    {# Dodajemy ukryte pola dla innych parametrów GET (np. filtry, które możesz dodać później), aby zachować je przy sortowaniu #}
-                    {% for key, value in request.GET.items %}
-                        {% if key != 'sorting' and key != 'page' %} {# Nie dodajemy ponownie 'sorting' i 'page' #}
+                    {# Dodajemy ukryte pola dla WSZYSTKICH AKTYWNYCH FILTRÓW z sidebar oraz 'page' #}
+                    {# Iterujemy po elementach request.GET, aby zachować wszystkie parametry oprócz 'sorting' #}
+                    {% for key, value in request.GET.items %} {% if key != 'sorting' %} {# <-- Zmieniono warunek #}
+                        {% if value|iterable %}
+                            {% for item in value %}
+                                <input type="hidden" name="{{ key }}" value="{{ item }}">
+                            {% endfor %}
+                        {% else %}
                             <input type="hidden" name="{{ key }}" value="{{ value }}">
                         {% endif %}
-                    {% endfor %}
+                    {% endif %}{% endfor %}
+                    {# Dodaj ukryte pole dla 'page', aby resetować paginację przy zmianie sortowania/filtrów #}
+                    <input type="hidden" name="page" value="1">
                   </form>
                 </li>
               </ul>
@@ -71,10 +176,12 @@
                 <div class="col-lg-4 col-sm-6 mb-4">
                   <div class="product text-center">
                     <div class="mb-3 position-relative">
-                      <div class="badge text-white badge-"></div>
+                      <div class="badge text-white badge-"></div> {# Jeśli używasz badge, pozostaw lub dostosuj #}
+                      {# Link do strony szczegółów produktu #}
                       <a class="d-block" href="{% url 'product' product.id  %}">
-                        {% if product.images.all %}
-                          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel" data-bs-interval="5000"> {# Możesz dodać data-bs-interval #}
+                        {% if product.images.all %} {# Sprawdź, czy produkt ma zdjęcia #}
+                          {# Mini karuzela dla zdjęć produktu #}
+                          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel" data-bs-interval="5000">
                             <div class="carousel-indicators">
                               {% for image_obj in product.images.all %}
                                 <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
@@ -87,7 +194,7 @@
                                 </div>
                               {% endfor %}
                             </div>
-                            {# Przyciski nawigacyjne karuzeli - mogą być ukryte w CSS dla małych kart #}
+                            {# Przyciski nawigacyjne karuzeli (poprzedni/następny) #}
                             <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
                               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                               <span class="visually-hidden">Poprzednie</span>
@@ -98,17 +205,19 @@
                             </button>
                           </div>
                         {% else %}
-                          {# Fallback jeśli brak zdjęć #}
+                          {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
                           <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
                         {% endif %}
                       </a>
-                      {# Produkt Overlay (Wishlist/Add to Cart) #}
+                      {# Produkt Overlay (Wishlist/Add to Cart) - wyświetlane na hover #}
                       <div class="product-overlay">
                         <ul class="mb-0 list-inline">
                           <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
                           {# Formularz Add to Cart - użyj poprawniej nazwy URL 'cart_add' #}
+                          {# Zakładamy, że 'cart_add' to nazwa URL dla widoku dodającego produkt do koszyka #}
+                          {# I że ten widok oczekuje product_id w danych POST #}
                           <li class="list-inline-item m-0 p-0">
-                            <form action="{% url 'cart_add' %}" method="post"> {# <-- POPRAWIONA LINIA #}
+                            <form action="{% url 'cart_add' %}" method="post">
                                {% csrf_token %}
                                <input type="hidden" name="product_id" value="{{product.id}}">
                                 <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
@@ -117,11 +226,13 @@
                         </ul>
                       </div>
                     </div>
-                    {# Informacje o produkcie #}
+                    {# Informacje o produkcie (nazwa, cena) #}
                     <div class="product-info">
+                       {# Nazwa produktu jako link do strony szczegółów #}
                        <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
                             <h6 class="product-name">{{ product.name }}</h6>
                         </a>
+                       {# Wyświetlanie ceny (regularna lub wyprzedażowa) #}
                        {% if product.is_sale %}
                            <div class="d-flex justify-content-center small text-warning mb-2">
                                 {# Użyj ikon bootstrap (bi-star-fill) jeśli są dostępne, lub zmień na inny tekst/ikony #}
@@ -135,12 +246,11 @@
                     </div>
                   </div>
                 </div>
-
               {% endfor %}
             {% else %}
-              {# Komunikat jeśli brak produktów na tej stronie #}
+              {# Komunikat jeśli brak produktów na tej stronie lub w kategorii #}
               <div class="col-12">
-                  <p>Brak produktów w tej kategorii.</p>
+                  <p>Brak produktów spełniających kryteria filtrów.</p>
               </div>
             {% endif %}
           </div>
@@ -151,33 +261,34 @@
 
               {# Przycisk "Previous" #}
               <li class="page-item {% if not products_page.has_previous %}disabled{% endif %}">
-                  {# Link generuje pełny URL: ścieżka do kategorii (używając category.name), numer strony, aktualne sortowanie i inne parametry GET #}
-                  <a class="page-link" href="{% if products_page.has_previous %}?page={{ products_page.previous_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Previous">
+                  {# Generuj pełny URL: ścieżka do kategorii, numer poprzedniej strony, aktualne sortowanie i WSZYSTKIE AKTYWNE FILTRY #}
+                  <a class="page-link" href="{% if products_page.has_previous %}?page={{ products_page.previous_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Previous">
                       <span aria-hidden="true">«</span>
                   </a>
               </li>
 
               {# Linki do poszczególnych stron #}
+              {# Ulepszona logika wyświetlania kilku stron w okolicy bieżącej + pierwsza/ostatnia + kropki #}
               {% for num in products_page.paginator.page_range %}
-                  {# Prosta logika wyświetlania kilku stron w okolicy bieżącej + pierwsza/ostatnia + kropki #}
+                  {% comment %} Display a few pages around the current page, plus the first and last. {% endcomment %}
                   {% if products_page.number|add:"-2" <= num and num <= products_page.number|add:"2" or num == 1 or num == products_page.paginator.num_pages %}
                        {% if num == products_page.number %} {# Aktywna strona #}
                           <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ num }}</a></li>
                        {% else %} {# Inne strony #}
                           <li class="page-item">
-                              {# Link generuje pełny URL: ścieżka do kategorii, numer strony, aktualne sortowanie i inne parametry GET #}
-                              <a class="page-link" href="?page={{ num }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                              {# Generuj pełny URL: ścieżka do kategorii, numer strony, aktualne sortowanie i WSZYSTKIE AKTYWNE FILTRY #}
+                              <a class="page-link" href="?page={{ num }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                           </li>
                        {% endif %}
-                  {% elif num == products_page.number|add:"-3" or num == products_page.number|add:"3" %} {# Dodaje kropki #}
+                  {% elif products_page.number|add:"-3" == num or products_page.number|add:"3" == num %} {# Dodaje kropki ... między stronami #}
                      <li class="page-item disabled"><span class="page-link">...</span></li>
                   {% endif %}
               {% endfor %}
 
               {# Przycisk "Next" #}
               <li class="page-item {% if not products_page.has_next %}disabled{% endif %}">
-                   {# Link generuje pełny URL: ścieżka do kategorii, numer strony, aktualne sortowanie i inne parametry GET #}
-                   <a class="page-link" href="{% if products_page.has_next %}?page={{ products_page.next_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Next">
+                   {# Generuj pełny URL: ścieżka do kategorii, numer następnej strony, aktualne sortowanie i WSZYSTKIE AKTYWNE FILTRY #}
+                   <a class="page-link" href="{% if products_page.has_next %}?page={{ products_page.next_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Next">
                       <span aria-hidden="true">»</span>
                   </a>
               </li>

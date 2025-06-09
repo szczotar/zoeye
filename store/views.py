@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect,  get_object_or_404
-from .models import Product, Category, Profile
+from .models import Product, Category, Profile, Material 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User  
@@ -113,86 +113,173 @@ def update_user(request):
 # 		return redirect('home')
 
 
-def category(request, foo): # Nazwa funkcji i argument 'foo' muszą pasować do urls.py
+# W Twoim pliku views.py
+from django.shortcuts import render, get_object_or_404
+from .models import Category, Product, Material # Upewnij się, że importujesz Material
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Case, When, DecimalField, Q # Upewnij się, że importujesz Q i DecimalField
+
+def category(request, foo):
     """
-    Widok wyświetlający szczegóły kategorii i listę produktów z paginacją i sortowaniem.
+    Widok wyświetlający szczegóły kategorii i listę produktów z paginacją, sortowaniem i filtrami.
     Argument 'foo' przyjmuje nazwę kategorii z URL.
     """
     # --- Pobierz Kategorię ---
-    # Pobieramy kategorię po polu 'name', bo Twój URL pattern używa nazwy (<str:foo>)
     category = get_object_or_404(Category, name=foo)
 
+    # --- Pobierz Wszystkie Materiały dla Sidebar ---
+    all_materials = Material.objects.all().order_by('name')
+
+
     # --- Pobierz Produkty dla Kategorii ---
-    # Używamy Product.objects.filter(category=category), gdzie 'category' to nazwa pola ForeignKey w Twoim modelu Product
+    # Zaczynamy od produktów w danej kategorii
     product_list = Product.objects.filter(category=category)
 
+
     # --- DODAJ ADNOTACJĘ DLA EFEKTYWNEJ CENY ---
-    # Tworzymy tymczasowe pole 'effective_price', które będzie używane do sortowania.
-    # Jeśli is_sale jest True, effective_price = sale_price, w przeciwnym razie effective_price = price.
-    # Używamy DecimalField, aby upewnić się, że sortowanie będzie liczbowe.
+    # Tworzymy tymczasowe pole 'effective_price' do sortowania
     product_list = product_list.annotate(
         effective_price=Case(
-            When(is_sale=True, then='sale_price'), # Gdy is_sale jest True, użyj sale_price
-            default='price',                       # W przeciwnym razie (gdy is_sale jest False), użyj price
-            output_field=DecimalField()            # Zapewnij, że wynikiem jest Decimal
+            When(is_sale=True, then='sale_price'),
+            default='price',
+            output_field=DecimalField()
         )
     )
 
+
+    # --- Logika Filtrowania ---
+    # Pobieramy wartości filtrów z request.GET
+    selected_gender = request.GET.get('gender')
+    selected_min_price = request.GET.get('min_price')
+    selected_max_price = request.GET.get('max_price')
+    selected_materials = request.GET.getlist('material') # Użyj getlist dla checkboxów
+    selected_sale_only = request.GET.get('sale_only') == 'true' # <-- POBIERZ NOWY PARAMETR FILTRA
+
+    print(f"Selected 'Gender': {selected_gender}")
+    print(f"Selected 'Material': {selected_materials}")
+    print(f"Price Min: {selected_min_price}, Price Max: {selected_max_price}")
+    print(f"Sale Only: {selected_sale_only}") # <-- WYDRUK NOWEGO FILTRA
+    print(f"Product list count before filtering: {product_list.count()}")
+
+
+    # Zastosuj filtry na product_list PRZED sortowaniem i paginacją
+    try:
+        # Filtr płci (gender)
+        if selected_gender and selected_gender != 'all':
+            # Zakładamy, że w modelu Product masz pole 'gender'
+            product_list = product_list.filter(gender=selected_gender)
+            print(f"Applied Gender filter: {selected_gender}. Count: {product_list.count()}")
+        elif selected_gender == 'all':
+             print("Gender filter 'all' selected.")
+             pass
+
+        # Filtr ceny (min_price, max_price)
+        if selected_min_price:
+            try:
+                min_price_float = float(selected_min_price)
+                product_list = product_list.filter(effective_price__gte=min_price_float)
+                print(f"Applied Min Price filter: {min_price_float}. Count: {product_list.count()}")
+            except ValueError:
+                print(f"Invalid min_price value: {selected_min_price}")
+                pass
+        if selected_max_price:
+            try:
+                max_price_float = float(selected_max_price)
+                product_list = product_list.filter(effective_price__lte=max_price_float)
+                print(f"Applied Max Price filter: {max_price_float}. Count: {product_list.count()}")
+            except ValueError:
+                 print(f"Invalid max_price value: {selected_max_price}")
+                 pass
+
+        # Filtr materiału (material)
+        if selected_materials:
+            material_q_objects = Q()
+            for material_name in selected_materials:
+                material_q_objects |= Q(materials__name=material_name) # Dostosuj 'materials__name' jeśli trzeba
+            product_list = product_list.filter(material_q_objects).distinct()
+            print(f"Applied Material filter: {selected_materials}. Count: {product_list.count()}")
+
+        # --- ZASTOSUJ NOWY FILTR PROMOCJI ---
+        if selected_sale_only:
+            product_list = product_list.filter(is_sale=True)
+            print(f"Applied Sale Only filter. Count: {product_list.count()}")
+
+    except Exception as e:
+        print(f"Error during filtering: {e}")
+        pass
+
+    print(f"Product list count after ALL filtering: {product_list.count()}")
+
+
     # --- Logika Sortowania ---
-    # Pobierz parametr sortowania z zapytania GET (np. ?sorting=low-high)
-    sort_by = request.GET.get('sorting', 'default') # Domyślnie 'default'
+    sort_by = request.GET.get('sorting', 'default')
+    print(f"Sorting requested: {sort_by}")
 
     try:
         if sort_by == 'low-high':
-            # Sortuj rosnąco po nowym polu 'effective_price'
-            product_list = product_list.order_by('effective_price')
+            product_list = product_list.order_by('effective_price', 'pk')
+            print("Sorted by effective_price low-high.")
         elif sort_by == 'high-low':
-            # Sortuj malejąco po nowym polu 'effective_price'
-            product_list = product_list.order_by('-effective_price')
+            product_list = product_list.order_by('-effective_price', 'pk')
+            print("Sorted by effective_price high-low.")
         elif sort_by == 'popularity':
-             # Sortowanie "popularność" nie ma dedykowanego pola w modelu.
-             # Można zastosować inne domyślne sortowanie, np. po nazwie.
-             # Jeśli masz pole 'sales_count' lub podobne, użyj go tutaj:
-             # product_list = product_list.order_by('-sales_count')
-             product_list = product_list.order_by('name') # Przykład domyślnego sortowania
-        else: # 'default' lub jakakolwiek inna wartość
-             # Domyślne sortowanie (np. po nazwie)
-             product_list = product_list.order_by('name') # Użyj pola, które chcesz jako domyślne
+             # product_list = product_list.order_by('-sales_count', 'pk')
+             product_list = product_list.order_by('name', 'pk')
+             print("Popularity sort selected, falling back to default (name, pk).")
+        else: # 'default'
+             product_list = product_list.order_by('name', 'pk')
+             print("Sorted by default (name, pk).")
 
-    except Exception:
-        # W przypadku błędu sortowania, zastosuj sortowanie domyślne
-        product_list = product_list.order_by('name')
+    except Exception as e:
+        product_list = product_list.order_by('name', 'pk')
+        print(f"Error during sorting, applying default sort (name, pk). Error: {e}")
 
 
     # --- Logika Paginacji ---
-    # Określ, ile produktów ma być na stronie (dopasuj do swojego szablonu)
-    products_per_page = 9 # lub 12, w zależności od układu kolumn
+    products_per_page = 9
 
     paginator = Paginator(product_list, products_per_page)
 
-    # Pobierz numer strony z zapytania GET (np. ?page=2)
     page_number = request.GET.get('page')
 
-    # Pobierz obiekt Page dla żądanego numeru strony
     try:
         products_page = paginator.get_page(page_number)
+        print(f"Total items for pagination: {paginator.count}")
+        print(f"Total pages: {paginator.num_pages}")
+        print(f"Products on current page ({products_page.number}): {len(products_page.object_list) if hasattr(products_page, 'object_list') else 'N/A'}")
     except PageNotAnInteger:
-        # Jeśli numer strony nie jest liczbą, pokaż pierwszą stronę
         products_page = paginator.get_page(1)
+        print("Invalid page number, getting page 1.")
     except EmptyPage:
-        # Jeśli strona jest poza zakresem, pokaż ostatnią stronę
         products_page = paginator.get_page(paginator.num_pages)
+        print("Empty page requested, getting last page.")
+    except Exception as e:
+         print(f"Unexpected error during pagination: {e}")
+         from django.core.paginator import Page
+         products_page = Page([], 1, paginator)
+         print("Unexpected pagination error, providing empty page.")
 
-    # Przygotuj kontekst do przekazania do szablonu
+
+    # Przygotuj kontekst
     context = {
-        'category': category,           # Obiekt Category
-        'products_page': products_page, # Obiekt Page z produktami na bieżącej stronie
-        'current_sorting': sort_by,     # Aktualnie wybrane sortowanie (dla zaznaczenia w dropdownie)
-        'request': request,             # Przekazujemy obiekt request, aby w szablonie odtworzyć inne parametry GET w linkach paginacji
+        'category': category,
+        'products_page': products_page,
+        'current_sorting': sort_by,
+        'request': request,
+
+        'all_materials': all_materials,
+        'selected_gender': selected_gender,
+        'selected_min_price': selected_min_price,
+        'selected_max_price': selected_max_price,
+        'selected_materials': selected_materials,
+        'selected_sale_only': selected_sale_only, # <-- DODAJ NOWY STAN FILTRA DO KONTEKSTU
     }
 
-    # Renderuj szablon category.html
+    print(f"Context keys: {context.keys()}")
+    print(f"--- End category view ---")
+
     return render(request, 'category.html', context)
+
 
 def categories_all(request):
     # Fetch all categories
