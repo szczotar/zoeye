@@ -193,10 +193,10 @@
 
 /* Stylowanie ikon w nawigacji */
 .nav-icon {
-    height: 30px; /* Ustaw pożądaną wysokość ikonki */
+    height: 40px; /* Ustaw pożądaną wysokość ikonki */
     /* Możesz też użyć width zamiast height, np. width: 25px; */
     vertical-align: middle; /* Pomaga wyśrodkować ikonkę pionowo w linii tekstu */
-    margin-right: 5px; /* Opcjonalnie: dodaje trochę odstępu po prawej stronie ikonki */
+    margin-right: 20px; /* Opcjonalnie: dodaje trochę odstępu po prawej stronie ikonki */
     /* Jeśli obrazek ma dziwne proporcje i chcesz go przyciąć/dopasować: */
     /* object-fit: cover; */ /* Przytnie obrazek, zachowując proporcje, aby wypełnić pole */
     /* object-fit: contain; */ /* Zmniejszy obrazek, zachowując proporcje, aby cały był widoczny (może zostawić puste miejsce) */
@@ -218,21 +218,22 @@
 
 /* CSS dla ikonki SVG */
 .nav-icon-svg {
-    height: 25px; /* Ustaw pożądaną wysokość */
-    width: 25px;  /* Ustaw pożądaną szerokość (taką samą jak wysokość dla kwadratowej ikonki) */
+    height: 22px; /* Ustaw pożądaną wysokość */
+    width: 22px;  /* Ustaw pożądaną szerokość (taką samą jak wysokość dla kwadratowej ikonki) */
     vertical-align: middle; /* Wyrównanie pionowe */
     margin-right: 5px; /* Opcjonalnie: odstęp po prawej */
 
     /* Ustaw domyślny kolor ikonki - ten nadpisze fill="#000000" w path */
-    fill: #333; /* Przykład: ciemnoszary domyślny kolor */
+    fill: rgba(104, 39, 39, 0.1);
 
     /* Dodaj przejście dla płynnej zmiany koloru */
     transition: fill 0.3s ease;
+
 }
 
 /* Styl po najechaniu myszką na link zawierający ikonkę SVG */
 .nav-item a:hover .nav-icon-svg {
-    fill: gold; /* Zmień kolor na złoty po najechaniu */
+    fill: #dcb14a; /* Zmień kolor na złoty po najechaniu */
     /* Możesz użyć kodu hex, np. */
     /* fill: #FFD700; */
 }
@@ -336,7 +337,7 @@
     /* Domyślny stan */
     background-color: gold; /* Ustaw kolor tła */
     border-color: darkgoldenrod; /* Ustaw kolor obramowania */
-    color: #333; /* Ustaw kolor tekstu (np. ciemny szary) */
+    color: #FFE4C6; /* Ustaw kolor tekstu (np. ciemny szary) */
 
     /* Opcjonalnie: Efekt na najechaniu myszką (hover) */
     /* Domyślnie Bootstrap .btn style dodają efekt hover, ale możesz go nadpisać */
@@ -422,7 +423,8 @@
 /* Styl dla sekcji info (nazwa, cena) pod obrazkiem/karuzelą */
 .product-info {
     margin-top: 0.1rem; /* Mały odstęp od obrazka/karuzeli */
-    text-align: center; /* Wyśrodkowanie nazwy i cen */
+    text-align: justify; /* Wyśrodkowanie nazwy i cen */
+
 }
 
 /* Styl dla nazwy produktu - możesz dostosować rozmiar czcionki */

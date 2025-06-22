@@ -57,7 +57,7 @@
   --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
-  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-family:  "Bodoni Moda", serif;
   --bs-body-font-size: 1rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
@@ -3610,7 +3610,7 @@ textarea.form-control-lg {
   --bs-nav-link-font-weight: ;
   --bs-nav-link-color: var(--bs-link-color);
   --bs-nav-link-hover-color: var(--bs-link-hover-color);
-  --bs-nav-link-disabled-color: #6c757d;
+  --bs-nav-link-disabled-color: #7d6c77;
   display: flex;
   flex-wrap: wrap;
   padding-left: 0;
@@ -11443,12 +11443,6 @@ textarea.form-control-lg {
 }
 
 .navbar-light 
-
-
-
-
-
-
 {
   color: rgba(17, 17, 17, 0.99);
   font-weight: 800;
@@ -11537,7 +11531,7 @@ textarea.form-control-lg {
 
 /* Styl dla glownych linkow w navbarze (DLA NIEGO, CONTACT, LOGIN, CREATE ACCOUNT, My Account) */
 .navbar-nav .nav-link {
-    font-family: 'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+       font-family: "Bodoni Moda", serif;
     /* Mozesz tez dostosowac wage czcionki (font-weight), jesli zaladowales rozne wagi */
     /* font-weight: 600; */
     /* Mozesz tez dostosowac rozmiar (font-size) */
@@ -11546,7 +11540,7 @@ textarea.form-control-lg {
 
 /* Styl dla elementow rozwijanego menu (Bransoletki, Kolczyki, Naszyjniki, etc.) */
 .navbar .dropdown-menu .dropdown-item {
-    font-family: 'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+       font-family: "Bodoni Moda", serif; /* Zmien 'Nazwa Wybranej Czcionki' */
     /* font-weight: 400; */ /* Zazwyczaj elementy dropdown sa regularne */
     /* font-size: 0.95rem; */
 }
@@ -11557,6 +11551,6 @@ textarea.form-control-lg {
    lub dla wszystkich przyciskow w projekcie, jesli chcesz.
    Ten selektor '.navbar .btn' jest bardziej specyficzny niz tylko '.btn'. */
 .navbar .btn {
-    font-family:'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+      font-family: "Bodoni Moda", serif;/* Zmien 'Nazwa Wybranej Czcionki' */
     /* font-weight: 600; */ /* Przyciski czesto sa pogrubione */
 }
