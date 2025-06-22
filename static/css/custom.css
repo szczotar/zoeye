@@ -137,7 +137,8 @@
 
 /* Style dla nazwy kategorii, jeśli potrzebujesz specyficzne formatowanie */
 .category-item-title {
-    font-size: 0.5rem; /* Przykładowy rozmiar czcionki */
+    font-family: 'Merriweather', sans-serif;
+    font-size: 0.7rem; /* Przykładowy rozmiar czcionki */
     font-weight: bold;
     /* Dodaj inne style, np. kolor */
     /* color: #333; */
@@ -145,7 +146,7 @@
 
 /* Możesz też dodać style dla całego elementu linku, np. efekt najechania myszą */
 .category-item:hover .category-img {
-    opacity: 0.6 /* Przykład: Zmniejszenie przezroczystości obrazka przy najechaniu */
+    opacity: 0.5 /* Przykład: Zmniejszenie przezroczystości obrazka przy najechaniu */
 }
 
 
@@ -420,7 +421,7 @@
 
 /* Styl dla sekcji info (nazwa, cena) pod obrazkiem/karuzelą */
 .product-info {
-    margin-top: 0.5rem; /* Mały odstęp od obrazka/karuzeli */
+    margin-top: 0.1rem; /* Mały odstęp od obrazka/karuzeli */
     text-align: center; /* Wyśrodkowanie nazwy i cen */
 }
 
@@ -429,14 +430,19 @@
     margin-bottom: 0.25rem; /* Mały odstęp pod nazwą */
     font-size: 1rem; /* Przykład rozmiaru */
     font-weight: bold;
+
 }
 
 /* Styl dla cen - małe odstępy */
-.product-info .product-price,
+.product-info .product-price {
+     font-weight: 1;
+      margin-bottom: 0.25rem;
+}
 .product-info .product-sale-price,
 .product-info .product-price-sale {
+    color :#0d6efd;
     margin-bottom: 0.25rem;
-    line-height: 1.2; /* Poprawia odstęp między liniami cen */
+    line-height: 1; /* Poprawia odstęp między liniami cen */
 }
 
 /* Dostosowanie marginesu dolnego kolumny karty */
@@ -454,7 +460,7 @@
 
 /* Pokaż overlay przy najechaniu myszką na kontener .product */
 .product:hover .product-overlay {
-    opacity: 0.1;
+    opacity: 0.5;
 }
 
 /* Styl dla listy przycisków w overlay */

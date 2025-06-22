@@ -3867,7 +3867,14 @@ textarea.form-control-lg {
   .navbar-expand-sm .navbar-nav .dropdown-menu {
     position: absolute;
   }
-  .navbar-expand-sm .navbar-nav .nav-link {
+  .navbar-expand-sm 
+  
+  
+  
+  
+  
+  
+  {
     padding-right: var(--bs-navbar-nav-link-padding-x);
     padding-left: var(--bs-navbar-nav-link-padding-x);
   }
@@ -3914,7 +3921,14 @@ textarea.form-control-lg {
   .navbar-expand-md .navbar-nav .dropdown-menu {
     position: absolute;
   }
-  .navbar-expand-md .navbar-nav .nav-link {
+  .navbar-expand-md 
+  
+  
+  
+  
+  
+  
+  {
     padding-right: var(--bs-navbar-nav-link-padding-x);
     padding-left: var(--bs-navbar-nav-link-padding-x);
   }
@@ -3961,7 +3975,14 @@ textarea.form-control-lg {
   .navbar-expand-lg .navbar-nav .dropdown-menu {
     position: absolute;
   }
-  .navbar-expand-lg .navbar-nav .nav-link {
+  .navbar-expand-lg 
+  
+  
+  
+  
+  
+  
+  {
     padding-right: var(--bs-navbar-nav-link-padding-x);
     padding-left: var(--bs-navbar-nav-link-padding-x);
   }
@@ -4008,7 +4029,14 @@ textarea.form-control-lg {
   .navbar-expand-xl .navbar-nav .dropdown-menu {
     position: absolute;
   }
-  .navbar-expand-xl .navbar-nav .nav-link {
+  .navbar-expand-xl 
+  
+  
+  
+  
+  
+  
+  {
     padding-right: var(--bs-navbar-nav-link-padding-x);
     padding-left: var(--bs-navbar-nav-link-padding-x);
   }
@@ -4055,7 +4083,14 @@ textarea.form-control-lg {
   .navbar-expand-xxl .navbar-nav .dropdown-menu {
     position: absolute;
   }
-  .navbar-expand-xxl .navbar-nav .nav-link {
+  .navbar-expand-xxl 
+  
+  
+  
+  
+  
+  
+  {
     padding-right: var(--bs-navbar-nav-link-padding-x);
     padding-left: var(--bs-navbar-nav-link-padding-x);
   }
@@ -4101,7 +4136,14 @@ textarea.form-control-lg {
 .navbar-expand .navbar-nav .dropdown-menu {
   position: absolute;
 }
-.navbar-expand .navbar-nav .nav-link {
+.navbar-expand 
+
+
+
+
+
+
+{
   padding-right: var(--bs-navbar-nav-link-padding-x);
   padding-left: var(--bs-navbar-nav-link-padding-x);
 }
@@ -10824,9 +10866,12 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
+/* ------------------------------------------------------------------ */
+/* --- OGÓLNE STYLE DLA KARTY PRODUKTU (W HOME.HTML i CATEGORY.HTML) --- */
+/* ------------------------------------------------------------------ */
 
-* Styl dla samej karty produktu */
-.card {
+/* Styl dla kontenera karty produktu (.product) */
+.product {
     /* Dodaje płynne przejście dla cienia, transformacji i KOLORU borderu */
     /* Upewnij się, że border-color jest na liście transition */
     transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, border-color 0.3s ease-in-out;
@@ -10836,26 +10881,682 @@ textarea.form-control-lg {
        zapobiegając "skakaniu" layoutu przy pojawieniu się borderu. */
     border: 1px solid transparent; /* Domyślnie border jest przezroczysty */
 
-    /* Opcjonalnie: upewnij się, że padding i border są wliczone w rozmiar elementu */
-    /* box-sizing: border-box; */ /* Bootstrap cards usually have this by default */
+    /* Zapewnij, że karta wypełnia całą wysokość kolumny Bootstrapa */
+    height: 100%;
+
+    /* Użyj Flexboxa do układania zawartości w pionie (obrazek na górze, info na dole) */
+    display: flex;
+    flex-direction: column; /* Elementy wewnątrz układane w kolumnie */
+
+    text-align: center; /* Centruj tekst w karcie */
+
+    /* Opcjonalnie: dodaj border, box-shadow, background-color dla wyglądu karty */
+    /* border-radius: 5px; */
+    /* background-color: #fff; */
+    /* overflow: hidden; /* Przydatne, jeśli obrazek ma zaokrąglone rogi lub object-fit */
 }
 
 /* Styl, gdy kursor myszy znajduje się nad kartą */
-.card:hover {
+.product:hover {
     box-shadow: 0 8px 16px rgba(201, 181, 181, 0.2); /* Dodaje cień, który sprawia wrażenie "uniesienia" karty */
     /* Możesz też zmienić border */
-    border-color: #af9d8c; /* Przykładowo, zmień kolor borderu na niebieski (kolor podstawowy Bootstrapa) */
-    /* Możesz też lekko przeskalować kartę (ostrożnie z tym, może powodować problemy z layoutem) */
+    border-color: #af9d8c; /* Przykładowo, zmień kolor borderu */
+    /* Możesz też lekko przeskalować kartę (ostrożnie z tym) */
     /* transform: scale(1.02); */
 }
 
-/* Opcjonalnie: Styl dla linku owijającego nazwę, aby nie wyglądał jak link po najechaniu na kartę */
-.card h5 a:hover {
-    text-decoration: none; /* Usuwa podkreślenie po najechaniu */
-    color: inherit; /* Utrzymuje kolor tekstu */
+/* Styl dla linku owijającego nazwę produktu w karcie, aby nie wyglądał jak link po najechaniu */
+.product .product-name a:hover {
+     text-decoration: none;
+     color: inherit;
 }
 
-/* Jeśli owinąłeś całą kartę w link, możesz potrzebować innych stylów */
-/* .card a:hover { ... } */
+/* Jeśli w Twoim projekcie używasz też ogólnej klasy .card poza produktami, zachowaj te style */
+.card {
+     transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, border-color 0.3s ease-in-out;
+     border: 1px solid transparent;
+}
+.card:hover {
+      box-shadow: 0 8px 16px rgba(201, 181, 181, 0.2);
+      border-color: #af9d8c;
+}
+/* Możesz też usunąć ogólne style .card i stosować hover tylko do .product */
+
+
+/* Styl dla obszaru obrazka w karcie produktu (kontener mb-3 position-relative) */
+/* Klasa 'product-image-area' została dodana w HTML w tym celu */
+.product-image-area {
+    flex: 4; /* Pozwól tej sekcji zająć 4 części z 5 dostępnych (4/5 = 80% wysokości karty) */
+    position: relative; /* Upewnij się, że jest relative/absolute/fixed - już jest z position-relative */
+    overflow: hidden; /* Przycinaj obrazek, jeśli wychodzi poza obszar (np. z border-radius) */
+    width: 100%; /* Upewnij się, że obszar obrazka zajmuje pełną szerokość karty */
+
+    /* Użyj Flexboxa do centrowania obrazka w pionie w tym obszarze */
+    display: flex;
+    align-items: center; /* Centruj w pionie */
+    justify-content: center; /* Centruj w poziomie */
+}
+
+/* Styl dla samego obrazka (w karuzeli lub fallback) w obszarze obrazka */
+.product-image-area .carousel-img,
+.product-image-area .card-fallback-img {
+    display: block;
+    width: 100%; /* Rozciągnij obrazek na całą szerokość obszaru obrazka */
+    height: 100%; /* Rozciągnij obrazek na całą wysokość obszaru obrazka (80%) */
+    object-fit: cover; /* Kadruj obrazek, aby wypełnił przestrzeń bez deformacji, zachowując proporcje */
+    /* Opcjonalnie: dodaj border-top-left/right-radius jeśli karta ma zaokrąglone rogi */
+    /* border-top-left-radius: inherit; */
+    /* border-top-right-radius: inherit; */
+}
+
+/* Ukryj domyślne wskaźniki (kropki) i nawigację (strzałki) Karuzeli Bootstrapa WEWNĄTRZ karty produktu,
+   jeśli są niepożądane lub kolidują ze sliderem Swipera na stronie głównej */
+/* Usunięto niepoprawne display: display-inside; */
+/* .card-product-carousel .carousel-indicators,
+.card-product-carousel .carousel-control-prev,
+.card-product-carousel .carousel-control-next {
+   display: none;
+} */
+
+
+/* Styl dla obszaru informacji o produkcie (nazwa + price-area) */
+.product-info {
+    flex: 1; /* Pozwól tej sekcji zająć pozostałą 1 część z 5 dostępnych (1/5 = 20% wysokości karty) */
+    flex-shrink: 0; /* Zapobiega kurczeniu się tej sekcji poniżej jej minimalnej zawartości */
+    padding: 10px; /* Dodaj padding wokół informacji */
+    width: 100%; /* Upewnij się, że zajmuje pełną szerokość karty */
+
+    /* Użyj Flexboxa do układania zawartości w pionie (nazwa na górze, price-area na dole) */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Wyrównaj zawartość (nazwa i price-area) do góry */
+    align-items: start; /* Centruj w poziomie (dla nazwy i price-area) */
+    text-align: start; /* Centruj tekst ogólnie w tym bloku */
+}
+
+/* Styl dla nazwy produktu */
+.product-info .product-name {
+    margin-top: 0; /* Usuń domyślny górny margines h6 */
+    margin-bottom: 5px; /* Mały margines pod nazwą */
+    font-size: 0.9rem; /* Dostosuj rozmiar czcionki nazwy */
+    font-weight: bold;
+    text-transform: uppercase;
+    /* Upewnij się, że długie nazwy nie psują układu */
+    white-space: nowrap; /* Zapobiegaj zawijaniu tekstu w nazwie */
+    overflow: hidden; /* Ukrywaj tekst, który wychodzi poza */
+    text-overflow: ellipsis; /* Dodaje '...' */
+    max-width: 100%; /* Ogranicz szerokość, aby ellipsis działał */
+    display: block; /* Upewnij się, że jest blokiem */
+}
+
+/* Styl dla kontenera linii cenowych (utrzymanie stałej wysokości) */
+/* Ten kontener zawsze zawiera tę samą liczbę <p>. */
+.price-area {
+    width: 100%; /* Zajmuje całą dostępną szerokość w product-info */
+    /* Opcjonalnie: Ustaw min-height, jeśli metoda ze stałą strukturą HTML nie działa idealnie,
+       ale powinna działać dobrze z równymi paddingami i line-height */
+    /* min-height: 60px; /* Przykładowa min-wysokość dla 3 linii tekstu */
+}
+
+/* Styl dla każdej linii cenowej w obszarze ceny (<p> wewnątrz .price-area) */
+.price-area .price-line {
+    margin: 0; /* Usuń domyślne marginesy paragrafów */
+    padding: 1px 0; /* Mały padding pionowy między liniami dla odstępu */
+    line-height: 1.2; /* Wysokość linii tekstu, dostosuj jeśli potrzebujesz większych odstępów */
+    white-space: nowrap; /* Zapobiegaj zawijaniu tekstu */
+    overflow: hidden; /* Ukrywaj wychodzący tekst */
+    text-overflow: ellipsis; /* Dodawaj '...' */
+    display: block; /* Upewnij się, że jest blokiem */
+    text-align: center; /* Centruj tekst w linii */
+}
+
+/* Style dla konkretnych linii cenowych (kolory, rozmiary czcionek) */
+.price-area .sale-status-line {
+    margin: 0; /* Usuń domyślne marginesy paragrafów */
+    padding: 1px 0; /* Mały padding pionowy między liniami dla odstępu */
+    line-height: 1.2; /* Wysokość linii tekstu, dostosuj jeśli potrzebujesz większych odstępów */
+    white-space: nowrap; /* Zapobiegaj zawijaniu tekstu */
+    overflow: hidden; /* Ukrywaj wychodzący tekst */
+    text-overflow: ellipsis; /* Dodawaj '...' */
+    display: block; /* Upewnij się, że jest blokiem */
+    text-align: center; /* Centruj tekst w linii */
+};
+
+.price-area .current-price-line {
+    font-weight: bold;
+    font-size: 1rem; /* Rozmiar aktualnej ceny */
+    color: #333; /* Standardowy kolor tekstu ceny */
+}
+.price-area .regular-price-on-sale-line {
+    font-size: 0.8rem; /* Mniejszy rozmiar dla przekreślonej ceny */
+    color: #888; /* Przygaszony kolor */
+}
+.price-area .lowest-price-line {
+    font-size: .7rem; /* Najmniejszy rozmiar dla najniższej ceny */
+    color: #666; /* Przygaszony kolor */
+}
+
+/* ------------------------------------------------------------------ */
+/* --- STYLE DLA SWIPERA (SEKCJE KATEGORII I PRODUKTÓW NA HOME.HTML) --- */
+/* ------------------------------------------------------------------ */
+
+/* Nowy wrapper dla slidera i przycisków Swipera */
+.swiper-container-wrapper {
+    position: relative; /* Ustawia kontekst pozycjonowania dla strzałek */
+    padding: 0 50px; /* Dodaj padding, aby zrobić miejsce na strzałki na zewnątrz */
+    margin: 20px 0; /* Dodaj margines pionowy */
+    overflow: hidden; /* Zapobiega problemom, jeśli coś wyjdzie poza bounds */
+}
+
+/* Kontenery Swipera - są wewnątrz wrappera z paddingiem */
+.swiper-categories,
+.swiper-items {
+  width: 100%; /* Slider zajmuje całą szerokość kontenera nadrzędnego (wrappera z paddingiem) */
+  height: auto;
+  padding-bottom: 30px; /* Zostaw miejsce na kropki paginacji na dole */
+}
+
+/* Slajdy Swipera (pojedyncze karty/elementy) */
+.swiper-categories .swiper-slide,
+.swiper-items .swiper-slide {
+  /* Swiper ustawi szerokość slajdu na podstawie spaceBetween i slidePerView */
+  /* Upewnij się, że zawartość wewnątrz slajdu nie jest za duża */
+  display: flex;
+  flex-direction: column; /* Zawartość slajdu układana w kolumnie */
+  justify-content: center; /* Wycentruj w pionie (jeśli content nie wypełnia całej wysokości) */
+  align-items: center; /* Wycentruj w poziomie */
+  height: auto; /* Domyślnie wysokość dostosowuje się do zawartości */
+  /* W przypadku swiper-items, element .product wewnątrz ma height: 100% */
+}
+
+/* Styl dla elementu .product W SWIPERZE przedmiotów (równa wysokość kart) */
+.swiper-items .swiper-slide .product {
+    height: 100%; /* Sprawia, że element .product wewnątrz slajdu rozciąga się na całą jego wysokość */
+    display: flex; /* Upewnij się, że jest flexbox */
+    flex-direction: column; /* Upewnij się, że jest column */
+    justify-content: space-between; /* Rozdziela obrazek i info w pionie */
+    /* Dodaj inne style .product z początku pliku jeśli potrzebne */
+}
+/* Styl dla obszaru obrazka W SWIPERZE przedmiotów (dostosowanie flex grow) */
+.swiper-items .swiper-slide .product .product-image-area { /* Klasa dodana w HTML do .mb-3 position-relative */
+     flex-grow: 1; /* Pozwala obrazkowi zająć dostępną przestrzeń powyżej bloku info (20%) */
+     flex-shrink: 0; /* Zapobiega kurczeniu */
+     flex-basis: auto; /* Resetuj basis */
+     /* Upewnij się, że centrowanie obrazka w pionie działa */
+     display: flex;
+     align-items: center;
+     justify-content: center;
+}
+/* Styl dla obszaru informacji W SWIPERZE przedmiotów (dostosowanie flex shrink) */
+.swiper-items .swiper-slide .product .product-info {
+     flex-shrink: 0; /* Zapobiega kurczeniu się bloku info */
+     flex-grow: 0; /* Nie pozwala na rośnięcie */
+     flex-basis: auto; /* Resetuj basis */
+     /* Dodaj inne style .product-info z początku pliku jeśli potrzebne */
+}
+
+
+/* Styl dla elementów kategorii w slajdach Swipera kategorii */
+.category-item {
+    position: relative; /* Kluczowe dla pozycjonowania nazwy NA obrazku */
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Kontener obrazka kategorii */
+.category-img-container {
+    width: 100%; /* Zajmuje całą szerokość linku */
+    max-width: 350px; /* Ograniczenie max-width z Twojego CSS */
+    margin: 0 auto; /* Centrowanie */
+    position: relative; /* Przydatne dla gradientu lub innych efektów na obrazku */
+}
+
+/* Obrazek kategorii */
+.category-img {
+    display: block;
+    width: 100%;
+    height: auto; /* Zachowaj proporcje */
+}
+
+/* Styl dla nazwy kategorii - pozycjonowana absolutnie NA obrazku */
+.category-item-title {
+    position: absolute; /* Pozycjonuj absolutnie względem .category-item */
+    bottom: 0; /* Na dole rodzica */
+    left:7.2em;; /* Od lewej krawędzi rodzica */
+    right: 7.2em; /* Od prawej krawędzi rodzica (rozciąga na całą szerokość) */
+    text-align: center; /* Centruj tekst w elemencie title */
+    color: #fff; /* Biały tekst */
+    /* background-color: rgba(0, 0, 0, 0.4); Półprzezroczyste czarne tło */
+    padding: 8px 5px; /* Padding wewnętrzny */
+    font-size: 0.9rem; /* Rozmiar czcionki */
+    font-weight: bold;
+    z-index: 1; /* Nad obrazkiem i gradientem */
+    /* Upewnij się, że tekst nie zawija się */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Opcjonalny gradient na dole obrazka kategorii */
+.category-img-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60%; /* Wysokość gradientu */
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    z-index: 0; /* Pod tekstem kategorii */
+}
+
+
+/* --- Stylowanie NAWIGACJI Swipera (strzałki w kółkach na zewnątrz) --- */
+
+/* Ogólne style przycisków (strzałek) */
+.swiper-container-wrapper .swiper-button-next,
+.swiper-container-wrapper .swiper-button-prev {
+    position: absolute; /* Absolutne pozycjonowanie względem .swiper-container-wrapper */
+    top: 50%; /* Ustaw na połowie wysokości */
+    transform: translateY(-50%); /* Przesuń w górę o połowę własnej wysokości, aby wycentrować pionowo */
+    width: 40px; /* Rozmiar przycisku */
+    height: 40px; /* Rozmiar przycisku */
+    /* margin-top: -20px; */ /* Zwykle niepotrzebne z transform: translateY */
+    z-index: 10; /* Upewnij się, że przyciski są na wierzchu */
+    cursor: pointer;
+    display: flex; /* Użyj flexbox do centrowania zawartości (strzałki) */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%; /* Nadaj kształt kółka */
+    background-color: rgba(255, 255, 255, 0.8); /* Białe tło z przezroczystością */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Lekki cień */
+    transition: background-color 0.3s ease; /* Efekt przejścia na hover */
+    /* Usuń domyślne tło ze strzałką */
+    background-image: none;
+}
+
+.swiper-container-wrapper .swiper-button-next:hover,
+.swiper-container-wrapper .swiper-button-prev:hover {
+    background-color: rgba(255, 255, 255, 1); /* Pełne białe tło na hover */
+}
+
+
+/* Pozycjonowanie przycisków */
+.swiper-container-wrapper .swiper-button-prev {
+    left: 10px; /* Odległość od lewej krawędzi wrappera */
+    right: auto;
+}
+
+.swiper-container-wrapper .swiper-button-next {
+    right: 10px; /* Odległość od prawej krawędzi wrappera */
+    left: auto;
+}
+
+/* Stylowanie samej strzałki wewnątrz przycisku (pseudoelement ::after) */
+.swiper-container-wrapper .swiper-button-next::after,
+.swiper-container-wrapper .swiper-button-prev::after {
+    font-family: 'swiper-icons'; /* Użyj czcionki Swipera */
+    font-size: 18px; /* Rozmiar strzałki */
+    font-weight: bold;
+    color: #000; /* Kolor strzałki */
+    text-transform: none !important; /* Upewnij się, że nie jest uppercase/lowercase */
+    letter-spacing: 0;
+    font-variant: initial;
+    line-height: 1;
+}
+
+/* Domyślna zawartość strzałki prev */
+.swiper-container-wrapper .swiper-button-prev::after {
+    content: 'prev';
+}
+
+/* Domyślna zawartość strzałki next */
+.swiper-container-wrapper .swiper-button-next::after {
+    content: 'next';
+}
+
+/* Ukryj przyciski nawigacji, jeśli Swiper ich deaktywuje */
+.swiper-button-disabled {
+  opacity: 0.35;
+  cursor: auto;
+  pointer-events: none;
+}
+
+
+/* Stylowanie paginacji Swipera (kropki) */
+.swiper-categories .swiper-pagination,
+.swiper-items .swiper-pagination {
+  position: absolute;
+  bottom: 0px !important;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.swiper-pagination-bullet {
+  background: #000; /* Kolor nieaktywnej kropki */
+  opacity: 0.5;
+  margin: 0 4px; /* Odstęp między kropkami */
+}
+
+.swiper-pagination-bullet-active {
+  background: #000; /* Kolor aktywnej kropki */
+  opacity: 1;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* --- MEDIA QUERIES (Dostosowanie na różnych rozmiarach ekranów) --- */
+/* ------------------------------------------------------------------ */
+
+/* Na ekranach poniżej 576px (extra small) */
+@media (max-width: 575.98px) {
+    /* Dostosowanie paddingu wrappera Swipera i rozmiaru strzałek */
+    .swiper-container-wrapper {
+        padding: 0 20px;
+    }
+     .swiper-container-wrapper .swiper-button-next,
+     .swiper-container-wrapper .swiper-button-prev {
+        width: 30px;
+        height: 30px;
+        /* margin-top: -15px; */
+     }
+    .swiper-container-wrapper .swiper-button-prev {
+        left: 5px;
+    }
+    .swiper-container-wrapper .swiper-button-next {
+        right: 5px;
+    }
+     .swiper-container-wrapper .swiper-button-next::after,
+     .swiper-container-wrapper .swiper-button-prev::after {
+         font-size: 14px;
+     }
+
+     /* Dostosowanie paddingu w karcie produktu gdy jest tylko 1 kolumna */
+     .product-info {
+         padding: 0px 0px;
+     }
+     /* Dostosowanie rozmiarów czcionek w karcie produktu */
+     .product-info .product-name {
+        font-size: 0.9rem;
+     }
+      .price-area .current-price-line {
+        font-size: 1rem;
+       }
+       .price-area .price-line {
+           padding: 1px 5px; /* Dodaj boczny padding do linii cenowych */
+       }
+}
+
+/* Na ekranach poniżej 768px (small) */
+@media (max-width: 767.98px) {
+    /* Bootstrap automatycznie zmienia kolumny na 2 (.col-sm-6) */
+    /* Podział 80/20 i równa wysokość powinny działać dzięki Flexbox */
+
+     /* Dostosowanie rozmiarów czcionek w karcie produktu */
+      .product-info .product-name {
+        font-size: 0.8rem;
+      }
+       .price-area .current-price-line {
+        font-size: 0.85rem;
+       }
+        .price-area .price-line {
+            padding: 1px 5px; /* Dodaj boczny padding na małych ekranach */
+        }
+}
+
+/* Na ekranach poniżej 992px (medium) */
+@media (max-width: 991.98px) {
+    /* Bootstrap automatycznie zmienia kolumny na 3 (.col-md-4) */
+    /* Podział 80/20 i równa wysokość powinny działać dzięki Flexbox */
+
+    /* Dostosowanie rozmiarów czcionek w karcie produktu */
+    .product-info .product-name {
+        font-size: 0.85rem;
+    }
+     .price-area .current-price-line {
+        font-size: 0.9rem;
+     }
+}
+
+/* Na ekranach poniżej 1200px (large) */
+/* @media (max-width: 1199.98px) { ... } */
+
+/* Na ekranach poniżej 1400px (extra large) */
+/* @media (max-width: 1399.98px) { ... } */
+
+
+/* ------------------------------------------------------------------ */
+/* --- INNE STYLE (Jeśli masz je w swoim pliku) --- */
+/* ------------------------------------------------------------------ */
+
+/* Przykład: Style dla Hero Section na category.html */
+.py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; } /* Przykład */
+.bg-light { background-color: #f8f9fa !important; } /* Przykład */
+/* ... i tak dalej dla wszystkich innych elementów ... */
+
+
+
 /*
 *
+* ==========================================
+* NAVBAR
+* ==========================================
+*
+*/
+.navbar {
+  position: relative;
+}
+
+.navbar .dropdown-menu {
+  border-top: 2px solid #dcb14a;
+}
+
+.navbar .dropdown-menu::before {
+  content: '';
+  display: block;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
+  border-bottom: 0.5rem solid #dcb14a;
+  position: absolute;
+  top: -0.5rem;
+  left: 1rem;
+}
+
+@media (min-width: 992px) {
+  .navbar-brand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+  }
+}
+
+.navbar .dropdown-menu {
+  visibility: hidden;
+  opacity: 0;
+  -webkit-transform: translateY(0.5rem);
+  transform: translateY(0.5rem);
+  transition: .2s ease all;
+}
+
+@media (min-width: 992px) {
+  .navbar .dropdown-menu {
+    display: block;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar .dropdown-menu.always-animated {
+    display: block;
+  }
+}
+
+.navbar .dropdown-menu.show {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  -webkit-transform: translateY(0px);
+  transform: translateY(0px);
+  transition: .2s ease all;
+}
+
+.megamenu {
+  position: static;
+}
+
+.megamenu .dropdown-menu {
+  width: 100%;
+  z-index: 999;
+}
+
+
+.navbar {
+  padding: 0.5rem 1rem;
+}
+
+.navbar-brand {
+  display: inline-block;
+  padding-top: 0.3125rem;
+  padding-bottom: 0.3125rem;
+  margin-right: 1rem;
+  font-size: 1.25rem;
+}
+
+.navbar-toggler {
+  padding: 0.25rem 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: 0;
+}
+
+.navbar-light .navbar-brand {
+  color: #dcb14a;
+}
+
+.navbar-light .navbar-brand:hover, .navbar-light .navbar-brand:focus {
+  color: #dcb14a;
+}
+
+.navbar-light 
+
+
+
+
+
+
+{
+  color: rgba(17, 17, 17, 0.99);
+  font-weight: 800;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+/*
+ * Podswietlanie menu  menu
+ */
+.navbar-light .navbar-nav .nav-link:hover, .nav-icon:hover .navbar-light .navbar-nav .nav-link:focus {
+  color:  #dcb14a;
+}
+
+
+.navbar-light .navbar-nav .nav-link.disabled {
+  color: rgba(17, 17, 17, 0.3);
+}
+
+.navbar-light .navbar-nav .show > .nav-link,
+.navbar-light .navbar-nav .active > .nav-link,
+.navbar-light .navbar-nav .nav-link.show,
+.navbar-light .navbar-nav .nav-link.active {
+  color: #dcb14a;
+}
+
+.navbar-light .navbar-toggler {
+  color: rgba(17, 17, 17, 0.99);
+  border-color: rgba(17, 17, 17, 0.1);
+}
+
+.navbar-light .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(17, 17, 17, 0.99)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.navbar-light .navbar-text {
+  color: rgba(17, 17, 17, 0.99);
+}
+
+.navbar-dark .navbar-brand {
+  color: #fff;
+}
+
+.navbar-dark .navbar-brand:hover, .navbar-dark .navbar-brand:focus {
+  color: #fff;
+}
+
+.navbar-dark 
+
+
+
+
+
+
+{
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover, .navbar-dark .navbar-nav .nav-link:focus {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-dark .navbar-nav .nav-link.disabled {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.navbar-dark .navbar-nav .show > .nav-link,
+.navbar-dark .navbar-nav .active > .nav-link,
+.navbar-dark .navbar-nav .nav-link.show,
+.navbar-dark .navbar-nav .nav-link.active {
+  color: #fff;
+}
+
+.navbar-dark .navbar-toggler {
+  color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-dark .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.navbar-dark .navbar-text {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Styl dla glownych linkow w navbarze (DLA NIEGO, CONTACT, LOGIN, CREATE ACCOUNT, My Account) */
+.navbar-nav .nav-link {
+    font-family: 'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+    /* Mozesz tez dostosowac wage czcionki (font-weight), jesli zaladowales rozne wagi */
+    /* font-weight: 600; */
+    /* Mozesz tez dostosowac rozmiar (font-size) */
+    /* font-size: 1rem; */
+}
+
+/* Styl dla elementow rozwijanego menu (Bransoletki, Kolczyki, Naszyjniki, etc.) */
+.navbar .dropdown-menu .dropdown-item {
+    font-family: 'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+    /* font-weight: 400; */ /* Zazwyczaj elementy dropdown sa regularne */
+    /* font-size: 0.95rem; */
+}
+
+/* Styl dla tekstu w przyciskach w navbarze (jak 'Cart') */
+/* Uwaga: Bootstrap ma domyslne style dla przyciskow (.btn).
+   Mozesz nadpisac tylko dla przyciskow w navbarze
+   lub dla wszystkich przyciskow w projekcie, jesli chcesz.
+   Ten selektor '.navbar .btn' jest bardziej specyficzny niz tylko '.btn'. */
+.navbar .btn {
+    font-family:'Merriweather', sans-serif; /* Zmien 'Nazwa Wybranej Czcionki' */
+    /* font-weight: 600; */ /* Przyciski czesto sa pogrubione */
+}

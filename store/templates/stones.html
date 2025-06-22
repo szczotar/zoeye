@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %} {# Nadal potrzebne dla paginacji, ale możesz je usunąć, jeśli paginacja nie używa już filtra iterable #}
+
+{% block content %}
+
+<div class="container">
+  <!-- HERO SECTION-->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+        <div class="col-lg-6">
+          {# Zmień nagłówek na nazwę materiału #}
+          <h1 class="h2 text-uppercase mb-0">{{material.name}}</h1>
+          {# === WYŚWIETL OPIS MATERIAŁU === #}
+          {% if material.description %} {# Sprawdź, czy opis istnieje #}
+             <p class="mb-0 mt-2">{{ material.description|linebreaksbr }}</p> {# Wyświetl opis, użyj linebreaksbr do formatowania #}
+          {% endif %}
+          {# =============================== #}
+        </div>
+        <div class="col-lg-6 text-lg-right">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+              {# Link do strony głównej kamieni (jeśli istnieje) lub placeholder #}
+              <li class="breadcrumb-item"><a href="#">Stones</a></li> {# <-- Zmień na {% url 'stones_list' %} jeśli masz #}
+              {# Wyświetl nazwę materiału w breadcrumbs #}
+              <li class="breadcrumb-item active" aria-current="page">{{material.name}}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="py-5">
+    <div class="container p-0">
+
+      {# === PRZYCISK FILTRY - USUNIĘTY === #}
+      {# Usunięto: <button class="btn btn-outline-secondary mb-3" ...> #}
+
+      <div class="row">
+
+        {# SHOP LISTING - Ta kolumna zajmuje całą szerokość #}
+        {# Usunięto kolumnę sidebar (col-lg-3) i Offcanvas #}
+        <div class="col-12 order-1 mb-5 mb-lg-0"> {# <-- Zmieniono klasy gridowe #}
+          <div class="row mb-4 align-items-center"> {# Zmieniono mb-3 na mb-4 dla lepszego odstępu po przycisku Filters #}
+            <div class="col-lg-6 mb-2 mb-lg-0">
+              {# Dynamiczny tekst o liczbie wyników #}
+              <p class="text-small text-muted mb-0">Showing {{ products_page.start_index }}–{{ products_page.end_index }} of {{ products_page.paginator.count }} results</p>
+            </div>
+            <div class="col-lg-6">
+              <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
+                {# Przyciski zmiany widoku (grid/list) - jeśli są zaimplementowane #}
+                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th-large"></i></a></li>
+                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th"></i></a></li>
+                <li class="list-inline-item">
+                  {# Formularz sortowania #}
+                  {# Akcja formularza używa URL-a DLA MATERIAŁÓW #}
+                  <form method="get" action="{% url 'stones_detail' material.name %}" id="sortingForm"> {# <-- POPRAWIONE #}
+                    <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting" onchange="document.getElementById('sortingForm').submit();">
+                      <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Domyślnie</option>
+                      <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Ceny: Rosnąco</option>
+                      <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Ceny: Malejąco</option>
+                      {# Opcjonalnie: Popularność, jeśli zaimplementowana #}
+                      {# <option value="popularity" {% if current_sorting == 'popularity' %}selected{% endif %}>Popularność</option> #}
+                    </select>
+                    {# Dodajemy ukryte pola dla WSZYSTKICH AKTYWNYCH PARAMETRÓW GET oprócz 'sorting' i 'page' #}
+                    {# Iterujemy po elementach request.GET, aby zachować wszystkie parametry oprócz 'sorting' #}
+                    {% for key, value in request.GET.items %} {% if key != 'sorting' and key != 'page' %} {# <-- Zmieniono warunek #}
+                        {% if value|iterable %}
+                            {% for item in value %}
+                                <input type="hidden" name="{{ key }}" value="{{ item }}">
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endif %}{% endfor %}
+                    {# Dodaj ukryte pole dla 'page', aby resetować paginację przy zmianie sortowania #}
+                    <input type="hidden" name="page" value="1">
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row">
+            {# Iterujemy po produktach na BIEŻĄCEJ STRONIE #}
+            {% if products_page %}
+              {% for product in products_page %}
+
+                <div class="col-lg-4  col-sm-6 mb-4">
+                  <div class="product text-center">
+                    <div class="mb-3 position-relative">
+                      <div class="badge text-white badge-"></div> {# Jeśli używasz badge, pozostaw lub dostosuj #}
+                      {# Link do strony szczegółów produktu #}
+                      <a class="d-block" href="{% url 'product' product.id  %}">
+                        {% if product.images.all %} {# Sprawdź, czy produkt ma zdjęcia #}
+                          {# Mini karuzela dla zdjęć produktu #}
+                          <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel" data-bs-interval="5000">
+                            <div class="carousel-indicators">
+                              {% for image_obj in product.images.all %}
+                                <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
+                              {% endfor %}
+                            </div>
+                            <div class="carousel-inner">
+                              {% for image_obj in product.images.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:product.name }}">
+                                </div>
+                              {% endfor %}
+                            </div>
+                            {# Przyciski nawigacyjne karuzeli (poprzedni/następny) #}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
+                              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Poprzednie</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="next">
+                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                              <span class="visually-hidden">Następne</span>
+                            </button>
+                          </div>
+                        {% else %}
+                          {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
+                          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
+                        {% endif %}
+                      </a>
+                      {# Produkt Overlay (Wishlist/Add to Cart) - wyświetlane na hover #}
+                      {# Kod Add to Cart, jeśli ma być na liście produktów #}
+                       <div class="product-overlay">
+                           <ul class="mb-0 list-inline">
+                               <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
+                               <li class="list-inline-item m-0 p-0">
+                                   <form action="{% url 'cart_add' %}" method="post">
+                                      {% csrf_token %}
+                                      <input type="hidden" name="product_id" value="{{product.id}}">
+                                       <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
+                                   </form>
+                               </li>
+                           </ul>
+                       </div>
+                    </div>
+                    {# Informacje o produkcie (nazwa, cena) #}
+                    <div class="product-info">
+                       {# Nazwa produktu jako link do strony szczegółów #}
+                       <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
+                            <h6 class="product-name">{{ product.name }}</h6>
+                        </a>
+                       {# Wyświetlanie ceny (regularna lub wyprzedażowa) #}
+                       {% if product.is_sale %}
+
+                           <p class="small text-muted product-sale-price"> {{ product.sale_price }} zł</p>
+                           <br>
+                            <p class="small text-muted product-sale-price">Cena regularna: {{ product.price }} zł</p>
+                            {# Jeśli chcesz wyświetlać najniższą cenę z 30 dni (wymaga dodania logiki w widoku/modelu): #}
+                            {# <p class="small text-muted product-sale-price">Najniższa cena z 30 dni: {{ product.lowest_price_30_days }} zł</p> #}
+                       {% else %}
+                           <p class="small text-muted product-price">{{ product.price }} zł</p>
+                       {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              {# Komunikat jeśli brak produktów na tej stronie lub spełniających filtry #}
+              <div class="col-12">
+                  <p>Brak produktów spełniających kryteria.</p> {# Zmieniono komunikat #}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- PAGINATION-->
+          <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center justify-content-lg-end">
+
+              {# Przycisk "Previous" #}
+              <li class="page-item {% if not products_page.has_previous %}disabled{% endif %}">
+                  {# Generuj pełny URL: ścieżka do materiału, numer poprzedniej strony, aktualne sortowanie i WSZYSTKIE AKTYWNE PARAMETRY GET #}
+                  <a class="page-link" href="{% if products_page.has_previous %}?page={{ products_page.previous_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Previous">
+                      <span aria-hidden="true">«</span>
+                  </a>
+              </li>
+
+              {# Linki do poszczególnych stron #}
+              {# Ulepszona logika wyświetlania kilku stron w okolicy bieżącej + pierwsza/ostatnia + kropki #}
+              {% for num in products_page.paginator.page_range %}
+                  {% comment %} Display a few pages around the current page, plus the first and last. {% endcomment %}
+                  {% if products_page.number|add:"-2" <= num and num <= products_page.number|add:"2" or num == 1 or num == products_page.paginator.num_pages %}
+                       {% if num == products_page.number %} {# Aktywna strona #}
+                          <li class="page-item active" aria-current="page"><a class="page-link" href="#">{{ num }}</a></li>
+                       {% else %} {# Inne strony #}
+                          <li class="page-item">
+                              {# Generuj pełny URL: ścieżka do materiału, numer strony, aktualne sortowanie i WSZYSTKIE AKTYWNE PARAMETRY GET #}
+                              <a class="page-link" href="?page={{ num }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                          </li>
+                       {% endif %}
+                  {% elif products_page.number|add:"-3" == num or products_page.number|add:"3" == num %} {# Dodaje kropki ... między stronami #}
+                     <li class="page-item disabled"><span class="page-link">...</span></li>
+                  {% endif %}
+              {% endfor %}
+
+              {# Przycisk "Next" #}
+              <li class="page-item {% if not products_page.has_next %}disabled{% endif %}">
+                   {# Generuj pełny URL: ścieżka do materiału, numer następnej strony, aktualne sortowanie i WSZYSTKIE AKTYWNE PARAMETRY GET #}
+                   <a class="page-link" href="{% if products_page.has_next %}?page={{ products_page.next_page_number }}&sorting={{ current_sorting }}{% for key, value in request.GET.items %} {% if key != 'page' and key != 'sorting' %}&{{ key }}={{ value }}{% endif %}{% endfor %}{% else %}#{% endif %}" aria-label="Next">
+                      <span aria-hidden="true">»</span>
+                  </a>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+{# === OFFCANVAS STRUCTURE - USUNIĘTA Z TEGO SZABLONU === #}
+{# Usunięto cały blok <div class="offcanvas offcanvas-start" ...> #}
+
+{% endblock content %}

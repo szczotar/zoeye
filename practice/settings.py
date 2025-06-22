@@ -70,6 +70,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
+                'store.context_processors.site_data',
             ],
         },
     },
@@ -83,14 +84,14 @@ WSGI_APPLICATION = 'practice.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER':'postgres',
-        'PASSWORD': os.environ['DB_PASSWORD'],
-        'HOST': 'yamabiko.proxy.rlwy.net',
-        'PORT': '18978'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': 'railway',
+        # 'USER':'postgres',
+        # 'PASSWORD': os.environ['DB_PASSWORD'],
+        # 'HOST': 'yamabiko.proxy.rlwy.net',
+        # 'PORT': '18978'
     }
 }
 

@@ -4,8 +4,7 @@
       <header class="header">
         <div class="container no-margin px-0 px-lg-3">
           <nav class="navbar navbar-expand-lg navbar-light my-higher-navbar" style="background-color: #FFE4C6;">
-            <a class="navbar-brand" href="{% url 'home' %}">
-               <img src="{% static 'img\zoeye_logo.png' %}" alt="Zoeye"></a>
+            
             <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav mr-auto">
@@ -13,34 +12,33 @@
                   <!-- <a class="nav-link active" href="{% url 'home' %}">Home</a> -->
                 <!-- </li> -->
 
-                <li class="nav-item dropdown">
-  <a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    {# Usuwamy tekst "DLA NIEJ" #}
-    <img src="{% static 'img/venus.png' %}" alt="Dla Niej kategoria" class="nav-icon"> {# Wstawiamy tag <img> #}
-    {# Opcjonalnie możesz dodać tu trochę tekstu, jeśli chcesz obrazek + tekst #}
-    {# np. <img ...> Dla Niej #}
-  </a>
-
+  
+                 <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">BIŻUTERIA</a>
                   <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown">
-                      <a class="dropdown-item border-0 transition-link"  href="{% url 'category' 'Bransoletki' %}">Bransoletki</a>
-                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Kolczyki' %}">Kolczyki</a>
-                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Naszyjniki' %}">Naszyjniki</a>
-                      <a class="dropdown-item border-0 transition-link" href="{% url 'home' %}">Wszystkie kategorie</a>
-                     
-                    </li>   
-                 <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" id="pagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">DLA NIEGO</a>
-                  <div class="dropdown-menu mt-3" aria-labelledby="pagesDropdown">
-                      <a class="dropdown-item border-0 transition-link"  href="{% url 'category' 'Bransoletki' %}">Bransoletki</a>
-                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Naszyjniki' %}">Naszyjniki</a>
-                      <a class="dropdown-item border-0 transition-link" href="{% url 'home' %}">Wszystkie kategorie</a>
+                     <a class="dropdown-item border-0 transition-link"  href="{% url 'category' 'Bransoletki' %}">BRANSOLETKI</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Kolczyki' %}">KOLCZYKI</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'category' 'Naszyjniki' %}">NASZYJNKI</a>
+                      <a class="dropdown-item border-0 transition-link" href="{% url 'home' %}">WSZYSTKIE KATEGORIE</a>
                      
                     </li>  
 
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="stonesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">KAMIENIE</a>
+                    <div class="dropdown-menu mt-3" aria-labelledby="stonesDropdown"> {# <-- Użyj nowego ID #}
+                    
+                       {% for material in all_materials %}
+                         <a class="dropdown-item border-0 transition-link" href="{% url 'stones_detail' material.name %}">{{ material.name|upper }}</a>
+                       {% endfor %}
+
+                    </div>
+                  </li>
+
                 <li class="nav-item">
-                  <!-- Link--><a class="nav-link" href="{% url 'home' %}">CONTACT</a>
+                  <!-- Link--><a class="nav-link" href="{% url 'home' %}">O NAS</a>
                 </li>
 
-
+              <a class="navbar-brand" href="{% url 'home' %}">
+              <img src="{% static 'img\zoeye_logo.png' %}" alt="Zoeye"></a>
               </ul>
               
 
