@@ -224,7 +224,7 @@
     margin-right: 5px; /* Opcjonalnie: odstęp po prawej */
 
     /* Ustaw domyślny kolor ikonki - ten nadpisze fill="#000000" w path */
-    fill: rgba(104, 39, 39, 0.1);
+    fill: rgb(116, 111, 111);
 
     /* Dodaj przejście dla płynnej zmiany koloru */
     transition: fill 0.3s ease;
@@ -423,7 +423,7 @@
 /* Styl dla sekcji info (nazwa, cena) pod obrazkiem/karuzelą */
 .product-info {
     margin-top: 0.1rem; /* Mały odstęp od obrazka/karuzeli */
-    text-align: justify; /* Wyśrodkowanie nazwy i cen */
+    text-align: start; /* Wyśrodkowanie nazwy i cen */
 
 }
 

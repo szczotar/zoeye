@@ -3221,7 +3221,7 @@ textarea.form-control-lg {
   --bs-dropdown-padding-y: 0.5rem;
   --bs-dropdown-spacer: 0.125rem;
   --bs-dropdown-font-size: 1rem;
-  --bs-dropdown-color: #212529;
+  --bs-dropdown-color: #262129;
   --bs-dropdown-bg: #fff;
   --bs-dropdown-border-color: var(--bs-border-color-translucent);
   --bs-dropdown-border-radius: 0.375rem;
@@ -11063,7 +11063,7 @@ textarea.form-control-lg {
   /* Upewnij się, że zawartość wewnątrz slajdu nie jest za duża */
   display: flex;
   flex-direction: column; /* Zawartość slajdu układana w kolumnie */
-  justify-content: center; /* Wycentruj w pionie (jeśli content nie wypełnia całej wysokości) */
+  justify-content: flex-start;; /* Wycentruj w pionie (jeśli content nie wypełnia całej wysokości) */
   align-items: center; /* Wycentruj w poziomie */
   height: auto; /* Domyślnie wysokość dostosowuje się do zawartości */
   /* W przypadku swiper-items, element .product wewnątrz ma height: 100% */
@@ -11074,7 +11074,9 @@ textarea.form-control-lg {
     height: 100%; /* Sprawia, że element .product wewnątrz slajdu rozciąga się na całą jego wysokość */
     display: flex; /* Upewnij się, że jest flexbox */
     flex-direction: column; /* Upewnij się, że jest column */
-    justify-content: space-between; /* Rozdziela obrazek i info w pionie */
+    justify-content: flex-start;
+    align-items: center; /* Wycentruj w poziomie */
+    /* Dom; /* Rozdziela obrazek i info w pionie */
     /* Dodaj inne style .product z początku pliku jeśli potrzebne */
 }
 /* Styl dla obszaru obrazka W SWIPERZE przedmiotów (dostosowanie flex grow) */
@@ -11092,6 +11094,7 @@ textarea.form-control-lg {
      flex-shrink: 0; /* Zapobiega kurczeniu się bloku info */
      flex-grow: 0; /* Nie pozwala na rośnięcie */
      flex-basis: auto; /* Resetuj basis */
+      text-align: start;
      /* Dodaj inne style .product-info z początku pliku jeśli potrzebne */
 }
 
@@ -11462,6 +11465,7 @@ textarea.form-control-lg {
   color: rgba(17, 17, 17, 0.3);
 }
 
+
 .navbar-light .navbar-nav .show > .nav-link,
 .navbar-light .navbar-nav .active > .nav-link,
 .navbar-light .navbar-nav .nav-link.show,
@@ -11554,3 +11558,195 @@ textarea.form-control-lg {
       font-family: "Bodoni Moda", serif;/* Zmien 'Nazwa Wybranej Czcionki' */
     /* font-weight: 600; */ /* Przyciski czesto sa pogrubione */
 }
+
+/*
+*
+* ==========================================
+* PRODUCT
+* ==========================================
+*
+*/
+
+.product-thumbnails-list {
+    /* Ogranicz maksymalną szerokość całej listy miniatur */
+    max-width: 80px; /* Dostosuj tę wartość, aby uzyskać pożądany rozmiar miniatury */
+    margin: 0 auto; /* Wyśrodkuj listę miniatur w kolumnie col-md-2 */
+    padding-right: 0 !important; /* Usuń padding-right z klasy Bootstrapa, jeśli go dodałeś w HTML */
+}
+
+/* --- Stylizacja pojedynczej miniatury --- */
+.product-thumbnails-list .thumbnail-item {
+    cursor: pointer;
+    border: 1px solid #ccc; /* Domyślna ramka */
+    opacity: 0.7; /* Domyślna przezroczystość */
+    transition: all 0.3s ease;
+    overflow: hidden; /* Ważne, aby ukryć nadmiar obrazka */
+
+    /* === Tworzenie kwadratowego kontenera === */
+    position: relative; /* Potrzebne dla pozycjonowania absolutnego obrazka */
+    width: 100%; /* Kontener zajmuje 100% szerokości swojego rodzica (.product-thumbnails-list, który ma ograniczoną max-width) */
+    padding-bottom: 100%; /* Ustawia wysokość równą szerokości (tworząc kwadrat) */
+    /* ======================================== */
+}
+
+.product-thumbnails-list .thumbnail-item img {
+    /* === Ustawienie obrazka w kwadratowym kontenerze === */
+    position: absolute; /* Pozycjonowanie absolutne względem rodzica (.thumbnail-item) */
+    top: 0;
+    left: 0;
+    width: 100%; /* Rozciągnij obrazek do szerokości kontenera */
+    height: 100%; /* Rozciągnij obrazek do wysokości kontenera */
+    object-fit: cover; /* Dopasuj obrazek, aby pokrył cały kontener, przycinając nadmiar */
+    /* ================================================== */
+
+    display: block; /* Usuń ewentualne domyślne marginesy */
+}
+
+/* Stylizacja aktywnej miniatury */
+.product-thumbnails-list .thumbnail-item.active {
+    border-color: #007bff; /* Kolor ramki aktywnej miniatury (dostosuj) */
+    opacity: 1; /* Pełna przezroczystość */
+}
+
+/* Hover na miniaturze */
+.product-thumbnails-list .thumbnail-item:hover {
+    opacity: 1;
+}
+
+/* --- Stylizacja głównego zdjęcia --- */
+.product-main-image-container {
+    /* === Ustawienie stałego rozmiaru lub maksymalnego rozmiaru === */
+    /* Przykład: maksymalna szerokość i wysokość z zachowaniem responsywności */
+    /* (często lepsze w układach responsywnych) */
+    width: 100%; /* Kontener zajmuje całą szerokość kolumny (col-md-6) */
+    max-height: 600px; /* Dostosuj maksymalną wysokość głównego zdjęcia */
+    overflow: hidden; /* Ukryj ewentualny nadmiar */
+    /* ========================================================== */
+}
+
+.product-main-image-container .main-product-image,
+.product-main-image-container .main-product-image-fallback {
+    display: block;
+    /* === Dopasowanie obrazka do kontenera === */
+    width: 100%;
+    height: 100%; /* Obrazek zajmuje 100% wymiarów kontenera */
+    object-fit: contain; /* Dopasuj obrazek do kontenera, zachowując proporcje (może pojawić się puste miejsce) */
+    /* Jeśli chcesz, aby obrazek zawsze wypełniał kontener, przycinając nadmiar, użyj object-fit: cover; */
+    /* object-fit: cover; */
+    /* ====================================== */
+}
+
+/* --- Stylizacja prawej kolumny (informacje) --- */
+.product-info-box {
+    /* Dodatkowe style dla prawej kolumny - możesz dodać więcej paddingu, zmienić tło itp. */
+    padding: 1.5rem; /* Przykład paddingu */
+    /* background-color: #f8f9fa; */
+}
+
+/* Dostosowanie odstępów i stylów dla elementów w prawej kolumnie */
+/* Te klasy już były w poprzedniej odpowiedzi, dostosuj wartości */
+.product-header-detail { margin-bottom: 1rem; }
+.product-name-detail { font-size: 1.5rem; margin-bottom: 0.5rem; } /* Przykładowe rozmiary czcionek */
+.price-box-detail { margin-bottom: 1rem; }
+.old-price-detail { font-size: 1rem; }
+.special-price-detail { font-size: 1.3rem; }
+.add-to-cart-section-detail { margin-top: 1.5rem; margin-bottom: 1.5rem; }
+/* Dostosowanie układu ilości i przycisku w add-to-cart-section-detail (już jest flexbox) */
+.add-to-cart-section-detail .form-label { margin-bottom: 0; } /* Usuń dolny margines z labelki */
+.add-to-cart-section-detail input[type="number"] { text-align: center; } /* Wyśrodkuj tekst w polu ilości */
+
+
+.product-description-section-detail { margin-top: 2rem; }
+.description-heading-detail { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.description-separator-detail { margin-bottom: 1rem; }
+.product-description-detail { font-size: 1rem; }
+
+/* --- Stylizacja na małych ekranach --- */
+/* Na małych ekranach (poniżej md) miniatury są ukryte przez d-none d-md-block */
+/* Główne zdjęcie i informacje zajmują całą szerokość (col-12) */
+/* Możesz dodać specyficzne reguły dla małych ekranów, jeśli potrzebujesz */
+@media (max-width: 767.98px) { /* breakpoint md */
+    .product-main-image-container {
+        max-height: 400px; /* Mniejsza maksymalna wysokość na małych ekranach */
+        margin-bottom: 1rem; /* Dodaj margines pod zdjęciem na małych ekranach */
+    }
+    .product-info-box {
+        padding: 1rem; /* Mniejszy padding na małych ekranach */
+    }
+}
+
+/* --- Stylizacja sekcji Podobne produkty --- */
+.similar-products-section {
+    /* Dodatkowe style dla sekcji */
+}
+
+.similar-products-heading {
+    /* Stylizacja nagłówka sekcji */
+}
+
+/* Stylizacja kontenera karty produktu - Flexbox w kolumnach */
+.similar-product-card {
+    /* d-flex flex-column h-100 już w HTML */
+    /* Ustaw wysokość karty, jeśli nie polegasz na h-100 i zawartości */
+    height: 300px; /* Przykład */
+    border: 1px solid #eee; /* Domyślna ramka karty */
+    border-radius: 0.25rem; /* Zaokrąglone rogi */
+    overflow: hidden; /* Ważne, aby zawartość nie wychodziła poza ramkę */
+}
+
+/* Stylizacja kontenera obrazka w karcie podobnego produktu */
+.product-image-container-similar {
+    /* === Ustawienie proporcji 80% wysokości karty === */
+    /* Flexbox: flex-grow-1 sprawia, że zajmuje dostępną przestrzeń */
+    /* Możesz ustawić stałą wysokość, jeśli chcesz sztywny rozmiar obrazka niezależnie od karty */
+    height: 240px; /* Przykład stałej wysokości obrazka */
+    /* =============================================== */
+    width: 100%; /* Obrazek zajmuje całą szerokość kontenera */
+    overflow: hidden; /* Ukryj nadmiar obrazka */
+}
+
+/* Stylizacja obrazka w karcie podobnego produktu */
+.product-image-similar,
+.product-fallback-img-similar {
+    display: block;
+    width: 100%; /* Rozciągnij obrazek do szerokości kontenera */
+    height: 100%; /* Rozciągnij obrazek do wysokości kontenera */
+    /* === Dopasowanie obrazka do kontenera === */
+    object-fit: cover; /* Dopasuj obrazek, aby pokrył cały kontener, przycinając nadmiar */
+    /* ====================================== */
+}
+
+/* Stylizacja kontenera informacji w karcie podobnego produktu */
+.similar-product-info-box {
+    /* === Ustawienie proporcji 20% wysokości karty === */
+    /* Flexbox: nie ustawiamy flex-grow, wysokość będzie zależeć od zawartości */
+    /* Jeśli chcesz sztywną proporcję 80:20, musisz ustawić sztywną wysokość karty (.similar-product-card) */
+    /* i pozwolić flexboxowi podzielić przestrzeń. */
+    /* Przykład: jeśli karta ma height: 300px, obrazek (flex-grow-1) zajmie ok. 240px, a info ok. 60px. */
+    /* Możesz użyć flex-basis lub po prostu polegać na zawartości i paddingu. */
+    /* flex-basis: 20%; */ /* Przykład użycia flex-basis (wymaga flex-shrink: 0) */
+    /* flex-shrink: 0; */
+
+    width: 100%; /* Zajmuje całą szerokość rodzica */
+    /* padding: 0.5rem; */ /* Przykład paddingu (już jest p-2 w HTML) */
+    background-color: #f8f9fa; /* Opcjonalne tło */
+}
+
+/* Stylizacja nazwy produktu w kartach podobnych produktów */
+.similar-products-section .product-name {
+     font-size: 0.9rem; /* Przykład mniejszej czcionki */
+     margin-bottom: 0.25rem !important; /* Dostosuj margines */
+     white-space: nowrap; /* Zapobiega zawijaniu tekstu */
+     overflow: hidden; /* Ukrywa nadmiar tekstu */
+     text-overflow: ellipsis; /* Dodaje kropki na końcu */
+}
+
+/* Stylizacja ceny w kartach podobnych produktów */
+.similar-products-section .product-price,
+.similar-products-section .product-price-sale {
+    font-size: 1rem; /* Przykład rozmiaru czcionki ceny */
+    font-weight: bold; /* Pogrubienie ceny */
+    margin-bottom: 0 !important; /* Usuń dolny margines */
+}
+
+

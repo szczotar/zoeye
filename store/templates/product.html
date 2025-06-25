@@ -2,125 +2,307 @@
 {% block content %}
 {% load static %}
 
-<div class="container mt-4"> {# Dodajemy górny margines dla odstępu od nagłówka/nawigacji #}
+<div class="container mt-4"> {# Dodajemy górny margines #}
 
-  <div class="card mb-3 product-card-detail"> {# Dodajemy klasę do łatwiejszego stylowania karty, jeśli potrzebne #}
-    <div class="row g-0">
+  {# Główny kontener produktu - owijamy go w form, jeśli przycisk dodaj do koszyka jest wewnątrz #}
+  {# Formularz dla przycisku Dodaj do koszyka - obejmuje tylko prawą kolumnę z przyciskiem #}
+  {# Zmieniamy miejsce tagu <form> na prawą kolumnę #}
 
-      {# Lewa kolumna - Karuzela Zdjęć #}
-      <div class="col-md-7"> {# Zmieniamy na col-md-5, żeby zdjęcia były trochę szersze #}
-        {% if product.images.all %}
-          {# Dodajemy klasę product-carousel dla własnego CSS #}
-          <div id="productCarousel{{ product.id }}" class="carousel slide carousel-fade product-carousel" >
-            {# Optional: Indicators #}
-            <div class="carousel-indicators">
-              {% for image_obj in product.images.all %}
-                <button type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
-              {% endfor %}
-            </div>
 
-            {# Slides #}
-            <div class="carousel-inner">
-              {% for image_obj in product.images.all %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                  {# Klasy d-block w-100 są potrzebne dla karuzeli, ale rozmiar ustawimy w CSS #}
-                  {# Usunięto rounded-start stąd, przeniesiemy na kontener, jeśli chcemy #}
-                  <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:'Zdjęcie produktu' }}">
+       <div class="row g-0 product-layout-row"> {# Używamy row g-0 dla braku odstępów między kolumnami #}
+
+         {# === Lewa kolumna - Miniatury Zdjęć === #}
+         {# col-md-2 na średnich i większych ekranach, zajmuje 2/12 szerokości #}
+         <div class="col-md-2 d-none d-md-block"> {# Ukrywamy na małych ekranach, pokazujemy na średnich wzwyż #}
+             <div class="product-thumbnails-list pe-3"> {# Dodajemy padding po prawej #}
+                 {% if product.images.all %}
+                     {% for image_obj in product.images.all %}
+                         <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}"> {# Dodano klasę active dla pierwszego #}
+                             <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}"> {# Dodano klasę #}
+                         </div>
+                     {% endfor %}
+                 {% endif %}
+             </div>
+         </div> {# Koniec lewej kolumny #}
+
+         {# === Środkowa kolumna - Duże Zdjęcie Główne === #}
+         {# col-md-6 na średnich i większych ekranach, zajmuje 6/12 szerokości #}
+         {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
+         <div class="col-md-6">
+             <div class="product-main-image-container">
+                 {% if product.images.all %}
+                     {# Duże zdjęcie główne - src będzie zmieniane przez JS #}
+                     {# Użyj pierwszego zdjęcia jako domyślnego #}
+                     <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}"> {# Dodano ID i klasę #}
+                 {% else %}
+                     {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
+                     <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu"> {# Dodano ID i klasę #}
+                 {% endif %}
+             </div>
+             {# Opcjonalnie: Karuzela na małych ekranach zamiast miniatur i dużego zdjęcia #}
+             {% comment %}
+             <div class="d-md-none"> {# Ukrywamy na średnich wzwyż, pokazujemy na małych #}
+                 {# Tutaj wstaw kod Twojej karuzeli z category.html lub inny komponent carousel dla mobile #}
+                 {# Pamiętaj o dostosowaniu ID i klas #}
+             </div>
+             {% endcomment %}
+         </div> {# Koniec środkowej kolumny #}
+
+
+         {# === Prawa kolumna - Informacje o produkcie i przycisk "Dodaj do koszyka" === #}
+         {# col-md-4 na średnich i większych ekranach, zajmuje 4/12 szerokości #}
+         {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
+         <div class="col-md-4">
+           {# Formularz dla przycisku Dodaj do koszyka - obejmuje tylko prawą kolumnę #}
+           <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form"> {# Formularz Dodaj do koszyka #}
+              {% csrf_token %}
+              {# Ukryte pole z ID produktu - potrzebne dla Twojej logiczki AJAX #}
+              <input type="hidden" name="product_id" value="{{ product.id }}">
+              {# Ukryte pole z ilością (zawsze 1) - potrzebne dla Twojej logiczki AJAX #}
+              <input type="hidden" name="qty" value="1" id="qty"> {# <-- DODANO UKRYTE POLE ILOŚCI #}
+
+
+              <div class="product-info-box p-4"> {# Dodajemy padding do kontenera informacji #}
+
+                {# Nagłówek produktu (Model, Nazwa) #}
+                <div class="product-header-detail mb-3">
+                    {# Opcjonalnie: Model produktu, jeśli masz takie pole #}
+                    {# <p class="product-model-detail text-muted small">Model: {{ product.model_number }}</p> #}
+                    <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1> {# Zmieniono na h3 i dodano margines #}
                 </div>
-              {% endfor %}
-            </div>
 
-            {# Navigation controls #}
-            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Poprzednie</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel{{ product.id }}" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Następne</span>
-            </button>
-          </div>
+                {# Sekcja ceny #}
+                <div class="price-box-detail mb-3">
+                    {% if product.is_sale %}
+                        {# Cena regularna przekreślona #}
+                        <p class="old-price-detail text-muted mb-0">
+                            <span class="price-label">Normalna cena:</span>
+                            <span class="price"><strike>{{ product.price }} zł</strike></span>
+                        </p>
+                        {# Cena wyprzedażowa #}
+                        <p class="special-price-detail h4 text-danger mb-0"> {# Użyj h4 i klasy text-danger dla wyróżnienia #}
+                            <span class="price-label">Cena specjalna:</span>
+                            <span class="price">{{ product.sale_price }} zł</span>
+                        </p>
+                        {# Opcjonalnie: Najniższa cena z 30 dni (jeśli masz takie dane i logikę) #}
+                        {# <div class="omnibus-price-container-detail text-muted small mt-1"> #}
+                        {#     Najniższa cena z 30 dni przed obniżką: <span class="omnibus-price">{{ product.lowest_price_30_days }} zł</span> #}
+                        {# </div> #}
+                    {% else %}
+                        {# Normalna cena #}
+                        <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p> {# Użyj h4 dla normalnej ceny #}
+                    {% endif %}
+                </div>
 
-        {% else %}
-          {# Fallback: Co wyświetlić, jeśli produkt nie ma żadnych zdjęć #}
-          {# Dodajemy klasę dla stylowania #}
-          <img src="{% static 'img/kolczyki.png' %}" class="img-fluid rounded-start product-fallback-img" alt="Brak zdjęcia dla produktu">
-        {% endif %}
-      </div>
+                {# Sekcja "Dodaj do koszyka" (bez wyboru ilości) #}
+                <div class="add-to-cart-section-detail my-4"> {# Dodajemy margines góra/dół #}
 
-      {# Prawa kolumna - Informacje o produkcie i przycisk "Dodaj do koszyka" #}
-      <div class="col-md-4"> {# Zmieniamy na col-md-7 #}
-        <div class="card-body">
-          {# Usunięto tag <center> - lepiej wyśrodkować za pomocą CSS #}
-          <h5 class="card-title mb-3">{{ product.name }}</h5> {# Dodajemy margines dolny #}
+                    {# Przycisk Dodaj do koszyka - ID 'add-cart' jest ważne dla Twojego JS #}
+                    <button type="button" id="add-cart" class="btn btn-dark w-100"> {# Użyj standardowej klasy btn-dark i w-100 dla pełnej szerokości #}
+                        Dodaj do koszyka
+                    </button>
 
-          {# TUTAJ DODAJ PRZYCISK DODAJ DO KOSZYKA I SELEKTOR ILOŚCI #}
-          {# Zakładamy, że masz pole price w modelu Product #}
-          <p class="product-price display-6">{{ product.price }} zł</p> {# Dodajemy cenę #}
+                    {# === DODATKOWE LINIE POD PRZYCISKIEM === #}
+                    <div class="small text-muted mt-2"> {# Kontener na małe linie tekstu #}
+                        <p class="mb-0">Wysyłka: 1 dzień roboczy</p> {# Pierwsza linia #}
+                        <p class="mb-0">Darmowa dostawa od 300zł</p> {# Druga linia #}
+                    </div>
+                    {# ====================================== #}
 
-          <div class="add-to-cart-section my-3"> {# Kontener na selektor i przycisk #}
-              <label for="qty-cart" class="form-label">Ilość:</label>
-              <select id="qty-cart" class="form-select d-inline-block w-auto me-2"> {# d-inline-block w-auto dla szerokości #}
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  {# Dodaj więcej opcji ilości jeśli potrzebujesz #}
-              </select>
+                </div>
 
-              {# Przycisk Dodaj do koszyka - ID 'add-cart' jest ważne dla JS #}
-              <button type="button" id="add-cart" value="{{ product.id }}" class="btn btn-custom-add-to-cart">
-                  Dodaj do koszyka
-              </button>
-          </div>
+                {# Sekcja dostępności (opcjonalnie) #}
+                {% comment %}
+                <div class="availability-box-detail mb-3">
+                    <p class="text-muted small">
+                        <i class="fas fa-map-marker-alt me-1"></i> Sprawdź dostępność w Salonie
+                    </p>
+                </div>
+                {% endcomment %}
 
-          {# Opis produktu został przeniesiony niżej, usunięty stąd #}
+                {# Sekcja dostawy/zwrotów (opcjonalnie, jeśli chcesz więcej szczegółów niż pod przyciskiem) #}
+                 {% comment %}
+                 <div class="delivery-box-detail mb-3">
+                     <p class="text-muted small">
+                         <i class="fas fa-truck me-1"></i> Wysyłka: <b>8 dni roboczych</b>
+                     </p>
+                      <p class="text-muted small">
+                         <i class="fas fa-undo me-1"></i> Bezpłatna dostawa od 300 zł i bezpłatny zwrot do 100 dni!
+                     </p>
+                 </div>
+                 {% endcomment %}
 
-        </div>
-      </div>
+                {# Sekcja linków płatności/usług (PayPo, Raty, Prezent, Kontakt - opcjonalnie) #}
+                {% comment %}
+                <div class="add-to-box-bottom-detail mb-3">
+                    <ul class="list-unstyled small text-muted">
+                        <li><i class="fas fa-credit-card me-1"></i> Kup teraz, zapłać później z PayPo do 6 000zł!</li>
+                        <li><i class="fas fa-credit-card me-1"></i> Z P24NOW zapłać w ratach lub do 54 dni później.</li>
+                        <li><i class="fas fa-credit-card me-1"></i> Zamów biżuterię i zapłać za nią w Ratach 0%</li>
+                        <li><i class="fas fa-gift me-1"></i> Skorzystaj z opcji opakowania na prezent</li>
+                        <li><i class="fas fa-phone-alt me-1"></i> W razie pytań <a href="#">skontaktuj się z nami</a></li>
+                    </ul>
+                </div>
+                {% endcomment %}
 
-    </div> {# Koniec row #}
-  </div> {# Koniec card #}
 
-  {# Sekcja z opisem produktu pod kartą #}
-  <div class="product-description-section mt-4"> {# Dodajemy margines górny #}
-    <h3 class="description-heading">Opis produktu</h3>
-    <hr class="description-separator"/> {# Separator w formie linii #}
-    <p class="product-description">{{ product.description }}</p> {# Akapit z opisem #}
+              </div> {# Koniec product-info-box #}
+           </form> {# Koniec formularza Dodaj do koszyka #}
+         </div> {# Koniec prawej kolumny #}
+
+       </div> {# Koniec row #}
+
+
+  {# Sekcja z opisem produktu pod głównym blokiem #}
+  <div class="product-description-section-detail mt-4"> {# Dodajemy margines górny #}
+    <h3 class="description-heading-detail">Opis produktu</h3> {# Dodano klasę #}
+    <hr class="description-separator-detail"/> {# Separator w formie linii #}
+    <p class="product-description-detail">{{ product.description|linebreaksbr }}</p> {# Akapit z opisem i filtrem linebreaksbr #}
   </div>
+
+
+ {# === NOWA SEKCJA PODOBNE PRODUKTY === #}
+  {# Wyświetlamy tylko jeśli są podobne produkty #}
+  {% if similar_products %}
+  <div class="similar-products-section mt-5"> {# Dodajemy duży margines górny #}
+      <h3 class="similar-products-heading text-center mb-4">Podobne produkty</h3> {# Nagłówek sekcji #}
+      <div class="row">
+          {# Iterujemy po podobnych produktach #}
+          {% for similar_product in similar_products %}
+              {# Używamy struktury karty produktu podobnej do tej z category.html, ale dostosowanej #}
+              <div class="col-lg-3 col-md-4 col-sm-6 mb-4"> {# Dostosuj klasy kolumn do liczby produktów w rzędzie #}
+                  {# Kontener karty produktu - dodajemy klasę flexbox i kierunek kolumn #}
+                  <div class="product similar-product-card d-flex flex-column h-100"> {# Dodano klasy #}
+
+                      {# === Kontener Obrazka (80%) === #}
+                      {# Używamy div dla kontenera obrazka z klasą flexbox #}
+                      <div class="product-image-container-similar flex-grow-1"> {# flex-grow-1 aby zajęło dostępną przestrzeń #}
+                          {# Link do strony podobnego produktu #}
+                          <a class="d-block h-100" href="{% url 'product' similar_product.id  %}"> {# h-100 aby link wypełnił kontener #}
+                            {# Obrazek produktu - użyj pierwszego zdjęcia lub fallback #}
+                            {% if similar_product.images.all %}
+                                {# img-fluid d-block w-100 są standardowe, ale rozmiar i dopasowanie ustawimy w CSS #}
+                                <img src="{{ similar_product.images.first.image.url }}" class="img-fluid d-block w-100 product-image-similar" alt="{{ similar_product.name }}"> {# Dodano klasę #}
+                            {% else %}
+                                <img src="{% static 'img/kolczyki.png' %}" class="img-fluid d-block w-100 product-fallback-img-similar" alt="Brak zdjęcia dla produktu"> {# Dodano klasę #}
+                            {% endif %}
+                          </a>
+                          {# Produkt Overlay (Wishlist/Add to Cart na hover) - opcjonalnie, jeśli ma być na obrazku #}
+                          {% comment %}
+                           <div class="product-overlay">
+                             <ul class="mb-0 list-inline">
+                               <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
+                               <li class="list-inline-item m-0 p-0">
+                                 <form action="{% url 'cart_add' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{similar_product.id}}">
+                                     <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
+                                 </form>
+                               </li>
+                             </ul>
+                           </div>
+                           {% endcomment %}
+                      </div> {# Koniec kontenera obrazka #}
+
+                      {# === Kontener Informacji (20%) === #}
+                      {# Używamy div dla informacji o produkcie z klasą flexbox #}
+                      {# text-center wyrównuje tekst, p-2 dodaje padding #}
+                      <div class="product-info similar-product-info-box text-center p-2"> {# Dodano klasy #}
+                         {# Nazwa produktu jako link #}
+                         <a href="{% url 'product' similar_product.id %}" style="text-decoration: none; color: inherit;">
+                              <h6 class="product-name small mb-1">{{ similar_product.name }}</h6> {# Zmniejszono rozmiar czcionki i margines #}
+                          </a>
+                         {# Status wyprzedaży i ceny #}
+                         {% if similar_product.is_sale %}
+                             {# Opcjonalnie: ikona Sale #}
+                             {% comment %}
+                             <div class="d-flex justify-content-center small text-warning mb-1">
+                                  <i class="bi-star-fill me-1"></i>   Sale!   <i class="bi-star-fill ms-1"></i>
+                             </div>
+                             {% endcomment %}
+                             <p class="small text-muted product-price-sale mb-0">{{ similar_product.sale_price }} zł</p> {# Wyświetl tylko cenę wyprzedażową #}
+                             {# Opcjonalnie: cena regularna przekreślona #}
+                             {# <p class="small text-muted product-sale-price"><strike>{{ similar_product.price }} zł</strike></p> #}
+
+                         {% else %}
+                             {# Jeśli produkt nie jest na wyprzedaży, wyświetl normalną cenę #}
+                             <p class="small text-muted product-price mb-0">{{ similar_product.price }} zł</p> {# Usunięto mb-0 #}
+                         {% endif %}
+                      </div> {# Koniec kontenera informacji #}
+
+                  </div> {# Koniec product similar-product-card #}
+              </div> {# Koniec kolumny produktu #}
+          {% endfor %}
+      </div> {# Koniec row podobnych produktów #}
+  </div> {# Koniec similar-products-section #}
+  {% endif %}
 
 
 </div> {# Koniec container #}
 
-{# Twój skrypt JS do dodawania do koszyka - powinien być na dole body lub przed zamknięciem bloku content #}
+{# Twój skrypt JS do dodawania do koszyka - upewnij się, że jQuery jest załadowane #}
 <script>
   // Check if button pressed
   $(document).on('click', '#add-cart', function(e){
       e.preventDefault();
+      // Pobieramy product_id z ukrytego inputa w formularzu
+      var productId = $('#product_addtocart_form input[name="product_id"]').val();
+      // Pobieramy quantity z ukrytego inputa (zawsze 1)
+      var productQty = $('#qty').val(); // Używamy val() dla inputa
+
       $.ajax({
           type: 'POST',
-          url: '{% url 'cart_add' %}',
+          url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
           data: {
-            product_id: $('#add-cart').val(),
-            product_qty: $('#qty-cart option:selected').text(), // Używamy text() lub val() - zależy co przekazujesz
+            product_id: productId,
+            product_qty: productQty,
             csrfmiddlewaretoken: '{{ csrf_token }}',
             action: 'post'
           },
 
           success: function(json){
-              // console.log(json)
-              document.getElementById('cart_quantity').
-              textContent = json.qty
-              location.reload(); // Przeładowanie strony po dodaniu do koszyka (możesz zmienić zachowanie)
+              console.log("Sukces dodania do koszyka:", json);
+              // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
+              $('#cart_quantity').text(json.qty);
+
+              // Opcjonalnie: Pokaż komunikat sukcesu zamiast przeładowania
+              // alert("Produkt dodany do koszyka!");
+              // location.reload(); // Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
           },
 
           error: function(xhr, errmsg, err){
               console.error("Błąd podczas dodawania do koszyka:", errmsg, err);
               // Tutaj możesz wyświetlić komunikat błędu użytkownikowi
+              alert("Wystąpił błąd podczas dodawania do koszyka.");
           }
       });
   });
+
+  // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
+  $(document).ready(function() {
+      $('.thumbnail-item').on('click', function() {
+          // Usuń klasę 'active' ze wszystkich miniatur
+          $('.thumbnail-item').removeClass('active');
+          // Dodaj klasę 'active' do klikniętej miniatury
+          $(this).addClass('active');
+
+          // Pobierz URL dużego zdjęcia z atrybutu data-src
+          var mainImageUrl = $(this).data('src');
+
+          // Ustaw URL dużego zdjęcia w tagu img głównego zdjęcia
+          $('#mainProductImage').attr('src', mainImageUrl);
+
+          // Opcjonalnie: Zaktualizuj alt text dużego zdjęcia
+          var altText = $(this).find('img').attr('alt');
+          $('#mainProductImage').attr('alt', altText);
+
+          // Opcjonalnie: Jeśli używasz MagicZoomPlus lub podobnego, wywołaj jego metodę aktualizacji
+          // if (typeof MagicZoomPlus !== 'undefined' && MagicZoomPlus.update) {
+          //     MagicZoomPlus.update('mainProductImage', mainImageUrl);
+          // }
+      });
+  });
+  // ========================================================================
 </script>
 
 {% endblock %}

@@ -470,8 +470,56 @@ def stones_detail(request, material_name):
     return render(request, 'stones.html', context)
 
 def product(request, pk):
-    product = Product.objects.get(id=pk)
-    return render(request, 'product.html', {'product': product})
+    """
+    Widok wyświetlający szczegóły produktu i produkty z tym samym materiałem.
+    Argument 'pk' przyjmuje ID produktu z URL.
+    """
+    print(f"--- Debugging product view ---")
+    print(f"Requested product ID (pk): {pk}")
+
+    # --- Pobierz Produkt Główny ---
+    try:
+        product = get_object_or_404(Product, pk=pk)
+        print(f"Product found: {product.name}")
+    except Exception as e:
+        print(f"Error getting product with pk '{pk}': {e}")
+        raise # Zgłoś błąd 404
+
+    # --- Pobierz Produkty z Tym Samym Materiałem (Podobne Produkty) ---
+    # Znajdź materiały przypisane do głównego produktu
+    product_materials = product.materials.all()
+    similar_products = Product.objects.none() # Zacznij od pustego QuerySetu
+
+    if product_materials.exists():
+        # Utwórz Q objects dla każdego materiału
+        material_q_objects = Q()
+        for material in product_materials:
+            # Znajdź produkty, które mają ten materiał
+            material_q_objects |= Q(materials=material)
+
+        # Znajdź wszystkie produkty pasujące do któregokolwiek z materiałów
+        similar_products = Product.objects.filter(material_q_objects).distinct()
+
+        # Wyklucz główny produkt z listy podobnych produktów
+        similar_products = similar_products.exclude(pk=product.pk)
+
+        # Opcjonalnie: Ogranicz liczbę podobnych produktów
+        similar_products = similar_products[:6] # Pokaż np. 6 podobnych produktów
+
+    print(f"Found {similar_products.count()} similar products based on materials.")
+
+
+    # Przygotuj kontekst
+    context = {
+        'product': product,
+        'similar_products': similar_products, # <-- DODAJ PODOBNE PRODUKTY DO KONTEKSTU
+        # Możesz dodać inne dane do kontekstu, jeśli są potrzebne w szablonie
+    }
+
+    print(f"Context keys: {context.keys()}")
+    print(f"--- End product view ---")
+
+    return render(request, 'product.html', context)
 
 def home(request):
 	products = Product.objects.all()
