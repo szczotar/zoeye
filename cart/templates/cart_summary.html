@@ -1,315 +1,333 @@
 {% extends 'base.html' %}
-{% load cart_filters %}
-{% load static%}
+{% load cart_filters %} {# Upewnij się, że ten filtr jest poprawny i potrzebny #}
+{% load static %}
+{% load custom_filters %} {# Jeśli masz filtr 'mul' lub 'floatformat' w custom_filters #}
+
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/custom.css' %}"> 
+{# Upewnij się, że ścieżka do custom.css jest poprawna #}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
 
-      <div class="container">
-        <!-- HERO SECTION-->
-        <section class="py-5 bg-light">
-          <div class="container">
+<div class="container">
+    <!-- HERO SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
             <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
-              <div class="col-lg-6">
-                <h1 class="h2 text-uppercase mb-0">Cart</h1>
-              </div>
-              <div class="col-lg-6 text-lg-right">
-                <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Back to shopping</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Cart</li>
-                  </ol>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-
-        <!--tabela-->
-          {% if cart_products %}
-            <div class="table-responsive"> {# Bootstrap class for responsive tables #}
-                <table class="table table-bordered table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th> {# Numer wiersza #}
-                            <th scope="col"></th> {# Na obrazek #}
-                            <th scope="col">Produkt</th>
-                            <th scope="col">Opis</th>
-                            <th scope="col">Ilość</th>
-                            <th scope="col">Cena jednostkowa</th>
-                            <th scope="col">Subtotal</th>
-                            <th scope="col">Akcje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in cart_products %} {# Iterujemy po itemach koszyka #}
-                            <tr>
-                                <th scope="row">{{ forloop.counter }}</th> {# Numeracja wierszy zaczynająca się od 1 #}
-                                <td>
-                                    {% if product.images %}
-                                        <img src="{{ product.get_main_image}}" class="img-fluid rounded-start" style="max-width: 75px; height: auto;" alt="{{ item.product.name }}">
-                                    {% else %}
-                                        
-                                    {% endif %}
-                                </td>
-                                <td>{{ product.name }}</td>
-                                <td>{{ product.description|truncatechars:100 }}</td> {# Skracamy opis, żeby nie zajmował za dużo miejsca #}
-                      <td>
-    {# Kontener dla przycisków +/- i pola ilości #}
-    {% with current_quantity=quantities|get_item:product.id|slugify %} {# product.id|slugify konwertuje ID na klucz używany w quantities #}
-            {# Użyj default:1 na wypadek, gdyby z jakiegoś powodu produkt był w cart_products, ale nie w quantities (nie powinno się zdarzyć przy poprawnej logice koszyka) #}
-            {% with quantity_value=current_quantity|default:1 %}
-
-    <div class="input-group input-group-xs quantity-selector" style="width: 80px;"> {# input-group z Bootstrapa dla lepszego wyglądu #}
-
-        <button type="button" class="btn btn-outline-secondary btm btn-minus" style="height: 20px;" data-product-id="{{ product.id }}" {% if value <= 1 %}disabled{% endif %}>-</button> {# Wyłącz przycisk jeśli ilość <= 1 #}
-        <input type="number"
-               class="form-control form-control-sm text-center product-quantity"
-               value=  "{{ quantity_value }}"
-               min="1"
-               data-product-id="{{ product.id }}"
-               readonly> {# Opcjonalnie: usuń readonly jeśli chcesz pozwolić na ręczne wpisanie #}
-   
-        
-            {% endwith %} {# Koniec bloku with dla quantity_value #}
-        {% endwith %} {# Koniec bloku with dla current_quantity #}
-        {# Przycisk Plus #}
-        <button type="button" class="btn btn-outline-secondary btm btn-plus" style="height: 20px;"data-product-id="{{ product.id }}">+</button>
-    </div>
-</td>
-
-                                <td>
-                                    {% if product.is_sale %}
-                                        <strike>${{ product.price|floatformat:2 }}</strike><br/>${{ product.sale_price|floatformat:2 }}
-                                        <div class="text-warning small">Sale!</div>
-                                    {% else %}
-                                        ${{ product.price|floatformat:2 }}
-                                    {% endif %}
-                                </td>
-                                <td>$</td> {# Subtotal dla tego itemu #}
-                                <td>
-                                    {# Usuń #}
-                                    <button type="button" data-index="{{ product.id }}" class="btn btn-sm btn-danger delete-product">Usuń</button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <!--Order total -->
-            <div class="col-lg-4">
-              <div class="card border-0 rounded-0 p-lg-4 bg-light">
-                <div class="card-body">
-                  <h5 class="text-uppercase mb-4">Cart total</h5>
-                  <ul class="list-unstyled mb-0">
-                    <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Subtotal</strong><span class="text-muted small">${{ totals|floatformat:2 }}</span></li>
-                    <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Shipping Charge</strong><span class="text-muted small">+ ${{ totals|floatformat:2 }}</span></li>
-                    <li class="border-bottom my-2"></li>
-                    <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Total</strong><span>${10}</span></li>
-                    <li>
-
-                      {% comment %} <form action="#">
-                        <div class="form-group mb-0">
-                          <input class="form-control" type="text" placeholder="Enter your coupon">
-                          <button class="btn btn-dark btn-sm btn-block" type="submit"> <i class="fas fa-gift mr-2"></i>Apply coupon</button>
-                        </div>
-                      </form> {% endcomment %}
-
-                    </li>
-                  </ul>
-            <div class="row mt-3">
-                <div class="col-md-6 offset-md-6 text-end"> {# Wyrównanie do prawej #}
-                    <h3>Łącznie: ${{ totals|floatformat:2 }}</h3> {# Wyświetlenie łącznej sumy #}
-                    <br>
-                    <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Przejdź do kasy</a>
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Cart</h1>
+                </div>
+                <div class="col-lg-6 text-lg-right">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Back to shopping</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Cart</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
-
-        {% else %}
-            <div class="alert alert-info" role="alert">
-                Twój koszyk jest pusty.
-            </div>
-            <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-        {% endif %}
-
-        {# Przycisk powrotu na stronę główną, jeśli chcesz go zachować #}
-        {# Możesz umieścić go np. pod tabelą lub w innym miejscu #}
-        <div class="mt-3">
-            <a href="{% url 'home'%}" class="btn btn-primary">Kontynuuj zakupy</a>
-            
         </div>
+    </section>
+
+
+    <!--tabela koszyka-->
+    {# Teraz sprawdzamy, czy lista cart_items nie jest pusta #}
+    {% if cart_items %}
+    <div class="table-responsive"> {# Bootstrap class for responsive tables #}
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th> {# Numer wiersza #}
+                    <th scope="col"></th> {# Na obrazek #}
+                    <th scope="col">Produkt</th>
+                    <th scope="col">Rozmiar</th> {# Dodano kolumnę na rozmiar #}
+                    <th scope="col">Opis</th>
+                    <th scope="col">Ilość</th>
+                    <th scope="col">Cena jednostkowa</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col">Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %} {# Iterujemy po itemach koszyka (każdy item to słownik/obiekt z variation, quantity, subtotal) #}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th> {# Numeracja wierszy zaczynająca się od 1 #}
+                    <td>
+                        {# Pobierz obrazek z powiązanego produktu #}
+                        {% with main_image_url=item.variation.product.get_main_image %}
+                        {% if main_image_url %}
+                        <img src="{{ main_image_url }}" class="img-fluid rounded-start" style="max-width: 75px; height: auto;" alt="{{ item.variation.product.name }}">
+                        {% else %}
+                        {# Fallback image #}
+                        <img src="{% static 'img/kolczyki.png' %}" class="img-fluid rounded-start" style="max-width: 75px; height: auto;" alt="{{ item.variation.product.name }}">
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    {# Nazwa produktu (z wariacji -> produktu) #}
+                    <td>{{ item.variation.product.name }}</td>
+                    {# Wyświetl rozmiar wariacji #}
+                    <td>{{ item.variation.size }}</td>
+                    {# Opis produktu (z wariacji -> produktu) #}
+                    <td>{{ item.variation.product.description|truncatechars:100 }}</td> {# Skracamy opis #}
+
+                    {# Kontener dla przycisków +/- i pola ilości #}
+                    <td>
+                        <div class="input-group input-group-sm quantity-selector" style="width: 110px;"> {# input-group z Bootstrapa, zwiększono szerokość #}
+                            {# Przycisk Minus #}
+                            {# data-variation-id="{{ item.variation.id }}" - WAŻNE: wysyłamy ID wariacji #}
+                            {# disabled jeśli ilość <= 1 #}
+                            <button type="button" class="btn btn-outline-secondary btn-sm btn-minus" data-variation-id="{{ item.variation.id }}" {% if item.quantity <= 1 %}disabled{% endif %}>-</button>
+                            {# Pole input ilości #}
+                            {# data-variation-id="{{ item.variation.id }}" - WAŻNE #}
+                            <input type="number"
+                                   class="form-control form-control-sm text-center item-quantity-input" {# Zmieniono klasę na item-quantity-input #}
+                                   value="{{ item.quantity }}" {# Wyświetl bieżącą ilość z itemu #}
+                                   min="1"
+                                   {# Opcjonalnie: ustaw max na podstawie stocku wariacji, jeśli go masz w itemie #}
+                                   {# max="{{ item.variation.stock }}" #}
+                                   data-variation-id="{{ item.variation.id }}"
+                                   readonly> {# Opcjonalnie: usuń readonly jeśli chcesz pozwolić na ręczne wpisanie #}
+
+                            {# Przycisk Plus #}
+                            {# data-variation-id="{{ item.variation.id }}" - WAŻNE #}
+                            {# Opcjonalnie: disabled jeśli ilość osiągnęła stock wariacji #}
+                            {# {% if item.quantity >= item.variation.stock %}disabled{% endif %} #}
+                            <button type="button" class="btn btn-outline-secondary btn-sm btn-plus" data-variation-id="{{ item.variation.id }}">+</button>
+                        </div>
+                    </td>
+
+                    {# Cena jednostkowa (efektywna cena wariacji) #}
+                    <td>
+                        {{ item.variation.get_effective_price|floatformat:2 }} zł {# Używamy ceny wariacji #}
+                        {% if item.variation.is_sale %}
+                        <div class="text-warning small">Sale!</div>
+                        {% endif %}
+                    </td>
+
+                    {# Subtotal dla tego itemu (obliczony i przekazany z widoku) #}
+                    <td>{{ item.subtotal|floatformat:2 }} zł</td>
+
+                    {# Akcje (Usuń) #}
+                    <td>
+                        {# data-variation-id="{{ item.variation.id }}" - WAŻNE: wysyłamy ID wariacji #}
+                        <button type="button" data-variation-id="{{ item.variation.id }}" class="btn btn-sm btn-danger delete-item">Usuń</button> {# Zmieniono klasę na delete-item #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!--Order total -->
+    <div class="row justify-content-end"> {# Użyj justify-content-end aby przesunąć blok sumy na prawo #}
+        <div class="col-lg-4"> {# Kolumna zajmująca 4/12 szerokości na dużych ekranach #}
+            <div class="card border-0 rounded-0 p-lg-4 bg-light">
+                <div class="card-body">
+                    <h5 class="text-uppercase mb-4">Cart total</h5>
+                    <ul class="list-unstyled mb-0">
+                        {# Możesz tutaj rozbić sumę na subtotal, shipping, total jeśli masz te dane #}
+                        {# Zakładając, że 'totals' to już suma z wliczonymi kosztami (lub bez, w zależności od Twojej logiki) #}
+                        <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Total</strong><span>{{ totals|floatformat:2 }} zł</span></li>
+                        {# Opcjonalnie: sekcja kuponu/rabatu #}
+                        {# ... (pozostała część sekcji podsumowania) ... #}
+                    </ul>
+                    <div class="mt-3">
+                         {# Link do checkout #}
+                        <a href="{% url 'checkout' %}" class="btn btn-success btn-lg w-100">Przejdź do kasy</a> {# w-100 dla pełnej szerokości #}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    </div> {# Koniec kontenera #}
 
 
+    {% else %}
+    {# Komunikat gdy koszyk jest pusty #}
+    <div class="alert alert-info mt-4" role="alert"> {# Dodano margines górny #}
+        Twój koszyk jest pusty.
+    </div>
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+    {% endif %}
+
+    {# Przycisk powrotu na stronę główną #}
+    <div class="mt-3">
+        <a href="{% url 'home'%}" class="btn btn-primary">Kontynuuj zakupy</a>
+    </div>
+
+</div> {# Koniec container #}
+
+
+{# Skrypty JS #}
 <script>
-$(document).ready(function() { // Upewnij się, że kod działa po załadowaniu DOM
+    $(document).ready(function() { // Upewnij się, że kod działa po załadowaniu DOM
 
-    // Funkcja pomocnicza do wysyłania żądania AJAX do aktualizacji koszyka
-    function updateCartItemQuantity(productId, newQuantity) {
-        // Opcjonalnie: Zablokuj przyciski +/- na czas żądania, aby uniknąć wielokrotnych kliknięć
-        var $row = $('.quantity-selector[data-product-id="' + productId + '"]').closest('tr'); // Znajdź rząd tabeli dla tego produktu
-        var $minusButton = $row.find('.btn-minus');
-        var $plusButton = $row.find('.btn-plus');
+        // Funkcja pomocnicza do wysyłania żądania AJAX do aktualizacji ilości itemu w koszyku
+        // Teraz przyjmuje variationId
+        function updateCartItemQuantity(variationId, newQuantity) {
+            // Opcjonalnie: Zablokuj przyciski +/- na czas żądania
+            var $row = $('.quantity-selector [data-variation-id="' + variationId + '"]').closest('tr'); // Znajdź rząd tabeli dla tej wariacji
+            var $minusButton = $row.find('.btn-minus');
+            var $plusButton = $row.find('.btn-plus');
+            var $deleteButton = $row.find('.delete-item'); // Zmieniono selektor na delete-item
 
-        $minusButton.prop('disabled', true);
-        $plusButton.prop('disabled', true);
-        // Możesz też tymczasowo zablokować przycisk usuń w tym rzędzie
-        $row.find('.delete-product').prop('disabled', true);
+            $minusButton.prop('disabled', true);
+            $plusButton.prop('disabled', true);
+            $deleteButton.prop('disabled', true);
 
 
-        $.ajax({
-            type: 'POST',
-            url: '{% url 'cart_update' %}', // Upewnij się, że ten URL jest poprawny i renderuje /cart/update/
-            data: {
-                product_id: productId,
-                product_qty: newQuantity,
-                csrfmiddlewaretoken: '{{ csrf_token }}', // Token CSRF
-                action: 'post' // Zachowaj 'action' jeśli Twój widok go używa (Twój używa)
-            },
-            dataType: 'json', // Oczekujemy odpowiedzi JSON
-            success: function(json) {
-                console.log("Sukces aktualizacji koszyka:", json);
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'cart_update' %}', // Upewnij się, że ten URL jest poprawny (np. /cart/update/)
+                data: {
+                    variation_id: variationId, // WAŻNE: Wysyłamy ID wariacji
+                    quantity: newQuantity, // Zmieniono nazwę na quantity, jak w modelu/logice
+                    csrfmiddlewaretoken: '{{ csrf_token }}', // Token CSRF
+                    action: 'post' // Zachowaj 'action' jeśli Twój widok go używa
+                },
+                dataType: 'json', // Oczekujemy odpowiedzi JSON
+                success: function(json) {
+                    console.log("Sukces aktualizacji koszyka:", json);
 
-                // Twoje widoki używają messages.success i zależą od pełnego odświeżenia
-                // aby wyświetlić wiadomości i zaktualizować sumy/ilości na stronie.
-                // Dlatego najprostsze rozwiązanie zgodne z Twoimi widokami to przeładowanie strony.
-                location.reload();
+                    // Twoje widoki używają messages.success i zależą od pełnego odświeżenia
+                    // aby wyświetlić wiadomości i zaktualizować sumy/ilości na stronie.
+                    // Dlatego najprostsze rozwiązanie zgodne z Twoimi widokami to przeładowanie strony.
+                    location.reload();
 
-                // --- Alternatywna, bardziej zaawansowana obsługa sukcesu (jeśli Twój widok zwracałby więcej danych) ---
-                // Jeśli Twój widok cart_update zwracałby np.:
-                // {
-                //   'qty': nowa_globalna_ilosc_produktow_w_koszyku,
-                //   'item_subtotal': nowa_suma_dla_tego_produktu,
-                //   'cart_total': nowa_suma_calkowita_koszyka,
-                //   'message': 'Product quantity updated successfully' // Można też zwrócić wiadomość
-                // }
-                // Wtedy mógłbyś zrobić:
-                // if (json.qty !== undefined) { $('#cart_quantity').text(json.qty); } // Update globalnego licznika
-                // if (json.item_subtotal !== undefined) { $row.find('.item-subtotal-element').text(json.item_subtotal); } // Update sumy dla wiersza
-                // if (json.cart_total !== undefined) { $('#cart-total-element').text(json.cart_total); } // Update sumy koszyka
-                // if (json.message) { displayMessage(json.message); } // Wyświetl wiadomość (wymaga funkcji displayMessage)
-                // Odblokuj przyciski po udanej aktualizacji
-                // $minusButton.prop('disabled', newQuantity <= 1);
-                // $plusButton.prop('disabled', false);
-                // $row.find('.delete-product').prop('disabled', false);
-                // --- Koniec alternatywy ---
-            },
-            error: function(xhr, status, error) {
-                console.error("Błąd AJAX podczas aktualizacji koszyka:", status, error, xhr.responseText);
-                alert("Wystąpił błąd podczas aktualizacji koszyka. Spróbuj ponownie."); // Prosty komunikat błędu dla użytkownika
+                    // --- Alternatywna, bardziej zaawansowana obsługa sukcesu (jeśli Twój widok zwracałby więcej danych) ---
+                    // Jeśli Twój widok cart_update zwracałby np.:
+                    // {
+                    //   'cart_quantity': nowa_globalna_ilosc_produktow_w_koszyku,
+                    //   'item_subtotal': nowa_suma_dla_tego_produktu,
+                    //   'cart_total': nowa_suma_calkowita_koszyka,
+                    //   'message': 'Product quantity updated successfully'
+                    // }
+                    // Wtedy mógłbyś zrobić:
+                    // if (json.cart_quantity !== undefined) { $('#cart_quantity').text(json.cart_quantity); } // Update globalnego licznika
+                    // if (json.item_subtotal !== undefined) { $row.find('td:eq(7)').text(json.item_subtotal + ' zł'); } // Update sumy dla wiersza (dostosuj index td)
+                    // if (json.cart_total !== undefined) { $('#cart-total-element').text(json.cart_total + ' zł'); } // Update sumy koszyka (dostosuj ID elementu)
+                    // if (json.message) { displayMessage(json.message); } // Wyświetl wiadomość (wymaga funkcji displayMessage)
+                    // Odblokuj przyciski po udanej aktualizacji
+                    // $minusButton.prop('disabled', newQuantity <= 1);
+                    // $plusButton.prop('disabled', false); // Możesz dodać logikę blokowania plusa na podstawie stocku
+                    // $deleteButton.prop('disabled', false);
+                    // --- Koniec alternatywy ---
+                },
+                error: function(xhr, status, error) {
+                    console.error("Błąd AJAX podczas aktualizacji koszyka:", status, error, xhr.responseText);
+                    // Parsuj odpowiedź JSON, jeśli serwer zwraca błąd w formacie JSON
+                    try {
+                        const errorJson = JSON.parse(xhr.responseText);
+                        alert("Wystąpił błąd podczas aktualizacji koszyka: " + (errorJson.error || "Nieznany błąd"));
+                    } catch (e) {
+                        alert("Wystąpił błąd podczas aktualizacji koszyka.");
+                    }
 
-                // Na wypadek błędu, najlepiej przeładować stronę,
-                // aby przywrócić stan zgodny z serwerem.
-                location.reload();
+                    // Na wypadek błędu, najlepiej przeładować stronę,
+                    // aby przywrócić stan zgodny z serwerem.
+                    location.reload();
 
-                 // --- Alternatywna obsługa błędu bez przeładowania ---
-                 // Jeśli nie chcesz przeładowywać, musiałbyś:
-                 // 1. Przywrócić starą wartość w polu input ilości.
-                 // 2. Odblokować przyciski.
-                 // 3. Poinformować użytkownika o błędzie.
-                 // (Wymagałoby zapisania starej ilości przed wysłaniem AJAXa)
-                 // $minusButton.prop('disabled', currentQtyBeforeAjax <= 1); // currentQtyBeforeAjax musiałaby być zapisana
-                 // $plusButton.prop('disabled', false);
-                 // $row.find('.delete-product').prop('disabled', false);
-                 // --- Koniec alternatywy ---
-            }
-        });
-    }
-
-    // Handler dla przycisku Minus
-    $(document).on('click', '.btn-minus', function(e) {
-        e.preventDefault();
-        var productId = $(this).data('product-id'); // Pobierz ID z klikniętego przycisku
-        var $quantityInput = $('.product-quantity[data-product-id="' + productId + '"]'); // Znajdź powiązane pole input
-        var currentQty = parseInt($quantityInput.val(), 10); // Pobierz bieżącą ilość
-
-        
-
-        if (currentQty > 1) { // Zmniejsz tylko jeśli ilość > 1
-            var newQty = currentQty - 1;
-            $quantityInput.val(newQty); // Zaktualizuj pole input *wizualnie* od razu dla lepszego UX
-            // Opcjonalnie: Zablokuj/odblokuj przycisk minus od razu, jeśli nowa ilość to 1
-            if (newQty <= 1) { $(this).prop('disabled', true); }
-            $('.btn-plus[data-product-id="' + productId + '"]').prop('disabled', false); // Upewnij się, że plus jest włączony
-
-            updateCartItemQuantity(productId, newQty); // Wyślij aktualizację do serwera
+                    // --- Alternatywna obsługa błędu bez przeładowania ---
+                    // Jeśli nie chcesz przeładowywać, musiałbyś:
+                    // 1. Przywrócić starą wartość w polu input ilości.
+                    // 2. Odblokować przyciski.
+                    // 3. Poinformować użytkownika o błędzie.
+                    // (Wymagałoby zapisania starej ilości przed wysłaniem AJAXa)
+                    // --- Koniec alternatywy ---
+                }
+            });
         }
-        // Jeśli currentQty == 1, przycisk jest disabled, więc ta część się nie wykona.
-    });
 
-    // Handler dla przycisku Plus
-    $(document).on('click', '.btn-plus', function(e) {
-        e.preventDefault();
-        var productId = $(this).data('product-id'); // Pobierz ID z klikniętego przycisku
-        var $quantityInput = $('.product-quantity[data-product-id="' + productId + '"]'); // Znajdź powiązane pole input
-        var currentQty = parseInt($quantityInput.val().trim(), 10); // Pobierz bieżącą ilość
+        // Handler dla przycisku Minus
+        $(document).on('click', '.btn-minus', function(e) {
+            e.preventDefault();
+            var variationId = $(this).data('variation-id'); // Pobierz ID wariacji
+            var $quantityInput = $('.item-quantity-input[data-variation-id="' + variationId + '"]'); // Znajdź powiązane pole input
+            var currentQty = parseInt($quantityInput.val(), 10); // Pobierz bieżącą ilość
 
-        // Zwiększ ilość
-        var newQty = currentQty + 1;
-        $quantityInput.val(newQty); // Zaktualizuj pole input *wizualnie* od razu
+            if (currentQty > 1) { // Zmniejsz tylko jeśli ilość > 1
+                var newQty = currentQty - 1;
+                // $quantityInput.val(newQty); // Opcjonalnie: zaktualizuj wizualnie od razu
+                updateCartItemQuantity(variationId, newQty); // Wyślij aktualizację do serwera
+            }
+            // Jeśli currentQty == 1, przycisk jest disabled, więc ta część się nie wykona.
+        });
 
-        // Opcjonalnie: Odblokuj przycisk minus od razu
-        $('.btn-minus[data-product-id="' + productId + '"]').prop('disabled', false);
-        // Jeśli masz maksymalną ilość, możesz tutaj ją sprawdzić i wyłączyć przycisk plus
+        // Handler dla przycisku Plus
+        $(document).on('click', '.btn-plus', function(e) {
+            e.preventDefault();
+            var variationId = $(this).data('variation-id'); // Pobierz ID wariacji
+            var $quantityInput = $('.item-quantity-input[data-variation-id="' + variationId + '"]'); // Znajdź powiązane pole input
+            var currentQty = parseInt($quantityInput.val().trim(), 10); // Pobierz bieżącą ilość
 
-        updateCartItemQuantity(productId, newQty); // Wyślij aktualizację do serwera
-    });
+            // Opcjonalnie: Sprawdź maksymalną ilość (stock)
+            // var maxQty = parseInt($quantityInput.attr('max'), 10);
+            // if (isNaN(maxQty) || currentQty < maxQty) {
+            var newQty = currentQty + 1;
+            // $quantityInput.val(newQty); // Opcjonalnie: zaktualizuj wizualnie od razu
+            updateCartItemQuantity(variationId, newQty); // Wyślij aktualizację do serwera
+            // } else {
+            //     alert("Osiągnięto maksymalną dostępną ilość tego produktu.");
+            // }
+        });
 
-    // Handler dla przycisku Usuń
-    // Zmieniono data-index na data-product-id w HTML, upewnij się, że tak jest w szablonie
+        // Handler dla przycisku Usuń
+        // Teraz używa data-variation-id
+        $(document).on('click', '.delete-item', function(e) { // Zmieniono klasę na delete-item
+            e.preventDefault();
+            var variationId = $(this).data('variation-id'); // Pobierz ID wariacji
 
-// Delete Item From Cart
-$(document).on('click', '.delete-product', function(e){
-    e.preventDefault();
-    // grab the product id
-    //var productid = $(this).data('index');
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'cart_delete' %}', // Upewnij się, że ten URL jest poprawny (np. /cart/delete/)
+                data: {
+                    variation_id: variationId, // WAŻNE: Wysyłamy ID wariacji
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                },
+                dataType: 'json', // Oczekujemy odpowiedzi JSON
+                success: function(json) {
+                    console.log("Sukces usunięcia z koszyka:", json);
+                    // Aktualizujemy globalną ilość w koszyku w navbarze (jeśli masz element z id="cart_quantity")
+                    if (json.qty !== undefined) {
+                        $('#cart_quantity').text(json.qty);
+                    }
+                    // Przeładowanie strony po usunięciu, aby odświeżyć tabelę i sumy
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Błąd AJAX podczas usuwania z koszyka:", status, error, xhr.responseText);
+                    try {
+                        const errorJson = JSON.parse(xhr.responseText);
+                        alert("Wystąpił błąd podczas usuwania z koszyka: " + (errorJson.error || "Nieznany błąd"));
+                    } catch (e) {
+                        alert("Wystąpił błąd podczas usuwania z koszyka.");
+                    }
+                }
+            });
+        });
 
-    $.ajax({
-    type: 'POST',
-    url: '{% url 'cart_delete' %}',
-    data: {
-      product_id: $(this).data('index'),
-      csrfmiddlewaretoken: '{{ csrf_token }}',
-      action: 'post'
-    },
-    success: function(json){
-        //console.log(json)
-        //document.getElementById("cart_quantity").textContent = json.qty
-        location.reload();
-    },
-
-    error: function(xhr, errmsg, err){
-
-    }
-
-
-    });
-    });
-
-    // Opcjonalnie: Jeśli pole input ilości nie jest readonly, dodaj handler na zmianę wartości
-    // $(document).on('change', '.product-quantity', function() {
-    //     var productId = $(this).data('product-id');
-    //     var newQuantity = parseInt($(this).val(), 10);
-    //     // Dodaj walidację newQuantity (np. min="1", czy jest liczbą)
-    //     if (!isNaN(newQuantity) && newQuantity >= 1) {
-    //          // Aktualizuj wizualnie stan przycisków +/-
-    //          $('.btn-minus[data-product-id="' + productId + '"]').prop('disabled', newQuantity <= 1);
-    //          // Jeśli masz limit max ilości, dodaj logikę dla btn-plus
-    //          updateCartItemQuantity(productId, newQuantity); // Wyślij aktualizację do serwera
-    //     } else {
-    //         // Jeśli wprowadzono nieprawidłową wartość, możesz przywrócić starą lub ustawić na 1
-    //         // Wymagałoby to zapisania starej wartości przed zmianą lub pobrania jej po błędzie/walidacji serwera
-    //         alert("Podana ilość jest nieprawidłowa.");
-    //         location.reload(); // Proste rozwiązanie - przywróć stan z serwera
-    //     }
-    // });
+        // Opcjonalnie: Jeśli pole input ilości nie jest readonly, dodaj handler na zmianę wartości
+        // $(document).on('change', '.item-quantity-input', function() {
+        //     var variationId = $(this).data('variation-id');
+        //     var newQuantity = parseInt($(this).val(), 10);
+        //     // Dodaj walidację newQuantity (np. min="1", czy jest liczbą, czy nie przekracza stocku)
+        //     if (!isNaN(newQuantity) && newQuantity >= 1) {
+        //         // Opcjonalnie: Sprawdź stock
+        //         // var maxQty = parseInt($(this).attr('max'), 10);
+        //         // if (isNaN(maxQty) || newQuantity <= maxQty) {
+        //         updateCartItemQuantity(variationId, newQuantity); // Wyślij aktualizację do serwera
+        //         // } else {
+        //         //     alert("Podana ilość przekracza dostępny stan magazynowy.");
+        //         //     location.reload(); // Przywróć stan z serwera
+        //         // }
+        //     } else {
+        //         alert("Podana ilość jest nieprawidłowa.");
+        //         location.reload(); // Proste rozwiązanie - przywróć stan z serwera
+        //     }
+        // });
 
 
-}); // Koniec $(document).ready
+    }); // Koniec $(document).ready
 </script>
 
 {% endblock %}

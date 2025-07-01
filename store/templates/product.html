@@ -2,78 +2,89 @@
 {% block content %}
 {% load static %}
 
+{# Upewnij się, że te linki są poprawne i Swiper jest zainstalowany/dostępny #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+{# Upewnij się, że masz załadowane jQuery, jeśli używasz $.ajax #}
+{# <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> #}
+
+
 <div class="container mt-4"> {# Dodajemy górny margines #}
 
-  {# Główny kontener produktu - owijamy go w form, jeśli przycisk dodaj do koszyka jest wewnątrz #}
-  {# Formularz dla przycisku Dodaj do koszyka - obejmuje tylko prawą kolumnę z przyciskiem #}
-  {# Zmieniamy miejsce tagu <form> na prawą kolumnę #}
+    {# Główny kontener produktu #}
+    <div class="row g-0 product-layout-row"> {# Używamy row g-0 dla braku odstępów między kolumnami #}
+
+        {# === Lewa kolumna - Miniatury Zdjęć === #}
+        {# col-md-2 na średnich i większych ekranach, zajmuje 2/12 szerokości #}
+        <div class="col-md-2 d-none d-md-block"> {# Ukrywamy na małych ekranach, pokazujemy na średnich wzwyż #}
+            <div class="product-thumbnails-list pe-3"> {# Dodajemy padding po prawej #}
+                {% if product.images.all %}
+                {% for image_obj in product.images.all %}
+                <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}"> {# Dodano klasę active dla pierwszego #}
+                    <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}"> {# Dodano klasę #}
+                </div>
+                {% endfor %}
+                {% else %}
+                {# Fallback: domyślna miniatura, jeśli brak zdjęć #}
+                <div class="thumbnail-item mb-2 active" data-src="{% static 'img/kolczyki.png' %}">
+                    <img src="{% static 'img/kolczyki.png' %}" class="img-fluid thumbnail-image" alt="Domyślna miniatura">
+                </div>
+                {% endif %}
+            </div>
+        </div> {# Koniec lewej kolumny #}
+
+        {# === Środkowa kolumna - Duże Zdjęcie Główne === #}
+        {# col-md-6 na średnich i większych ekranach, zajmuje 6/12 szerokości #}
+        {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
+        <div class="col-md-6">
+            <div class="product-main-image-container">
+                {% if product.images.all %}
+                {# Duże zdjęcie główne - src będzie zmieniane przez JS #}
+                {# Użyj pierwszego zdjęcia jako domyślnego #}
+                <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}"> {# Dodano ID i klasę #}
+                {% else %}
+                {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
+                <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu"> {# Dodano ID i klasę #}
+                {% endif %}
+            </div>
+            {# Opcjonalnie: Karuzela na małych ekranach zamiast miniatur i dużego zdjęcia #}
+            {# Możesz tutaj wstawić Swipera lub Karuzelę Bootstrapa dla ekranów < md #}
+        </div> {# Koniec środkowej kolumny #}
 
 
-       <div class="row g-0 product-layout-row"> {# Używamy row g-0 dla braku odstępów między kolumnami #}
-
-         {# === Lewa kolumna - Miniatury Zdjęć === #}
-         {# col-md-2 na średnich i większych ekranach, zajmuje 2/12 szerokości #}
-         <div class="col-md-2 d-none d-md-block"> {# Ukrywamy na małych ekranach, pokazujemy na średnich wzwyż #}
-             <div class="product-thumbnails-list pe-3"> {# Dodajemy padding po prawej #}
-                 {% if product.images.all %}
-                     {% for image_obj in product.images.all %}
-                         <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}"> {# Dodano klasę active dla pierwszego #}
-                             <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}"> {# Dodano klasę #}
-                         </div>
-                     {% endfor %}
-                 {% endif %}
-             </div>
-         </div> {# Koniec lewej kolumny #}
-
-         {# === Środkowa kolumna - Duże Zdjęcie Główne === #}
-         {# col-md-6 na średnich i większych ekranach, zajmuje 6/12 szerokości #}
-         {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
-         <div class="col-md-6">
-             <div class="product-main-image-container">
-                 {% if product.images.all %}
-                     {# Duże zdjęcie główne - src będzie zmieniane przez JS #}
-                     {# Użyj pierwszego zdjęcia jako domyślnego #}
-                     <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}"> {# Dodano ID i klasę #}
-                 {% else %}
-                     {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
-                     <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu"> {# Dodano ID i klasę #}
-                 {% endif %}
-             </div>
-             {# Opcjonalnie: Karuzela na małych ekranach zamiast miniatur i dużego zdjęcia #}
-             {% comment %}
-             <div class="d-md-none"> {# Ukrywamy na średnich wzwyż, pokazujemy na małych #}
-                 {# Tutaj wstaw kod Twojej karuzeli z category.html lub inny komponent carousel dla mobile #}
-                 {# Pamiętaj o dostosowaniu ID i klas #}
-             </div>
-             {% endcomment %}
-         </div> {# Koniec środkowej kolumny #}
-
-
-         {# === Prawa kolumna - Informacje o produkcie i przycisk "Dodaj do koszyka" === #}
-         {# col-md-4 na średnich i większych ekranach, zajmuje 4/12 szerokości #}
-         {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
-         <div class="col-md-4">
-           {# Formularz dla przycisku Dodaj do koszyka - obejmuje tylko prawą kolumnę #}
-           <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form"> {# Formularz Dodaj do koszyka #}
-              {% csrf_token %}
-              {# Ukryte pole z ID produktu - potrzebne dla Twojej logiczki AJAX #}
-              <input type="hidden" name="product_id" value="{{ product.id }}">
-              {# Ukryte pole z ilością (zawsze 1) - potrzebne dla Twojej logiczki AJAX #}
-              <input type="hidden" name="qty" value="1" id="qty"> {# <-- DODANO UKRYTE POLE ILOŚCI #}
-
-
-              <div class="product-info-box p-4"> {# Dodajemy padding do kontenera informacji #}
-
-                {# Nagłówek produktu (Model, Nazwa) #}
-                <div class="product-header-detail mb-3">
-                    {# Opcjonalnie: Model produktu, jeśli masz takie pole #}
-                    {# <p class="product-model-detail text-muted small">Model: {{ product.model_number }}</p> #}
-                    <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1> {# Zmieniono na h3 i dodano margines #}
+        {# === Prawa kolumna - Informacje o produkcie, wybór wariacji i przycisk "Dodaj do koszyka" === #}
+        {# col-md-4 na średnich i większych ekranach, zajmuje 4/12 szerokości #}
+        {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
+        <div class="col-md-4">
+            {# Formularz Dodaj do koszyka - obejmuje tylko prawą kolumnę #}
+            {# Ten formularz będzie wysyłał ID WARIacji, a nie produktu #}
+            <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
+                {% csrf_token %}
+                {# Ukryte pole, które będzie przechowywać ID wybranej wariacji #}
+                <input type="hidden" name="variation_id" id="selected-variation-id" value="">
+                {# Pole na ilość (można pozwolić użytkownikowi wybrać, domyślnie 1) #}
+                <div class="form-group mb-3">
+                    <label for="qty">Ilość:</label>
+                    <input type="number" name="quantity" value="1" min="1" class="form-control" id="qty" style="width: 80px;">
                 </div>
 
-                {# Sekcja ceny #}
-                <div class="price-box-detail mb-3">
-                    {% if product.is_sale %}
+
+                <div class="product-info-box p-4"> {# Dodajemy padding do kontenera informacji #}
+
+                    {# Nagłówek produktu (Nazwa) #}
+                    <div class="product-header-detail mb-3">
+                        <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1> {# Zmieniono na h3 i dodano margines #}
+                    </div>
+
+                    {# Sekcja ceny - Teraz wyświetla "Od X zł" jeśli są wariacje #}
+                    <div class="price-box-detail mb-3">
+                        {% if product.has_variations %}
+                        {# Jeśli produkt ma wariacje, wyświetl cenę "Od" #}
+                        <p class="product-price-detail h4 text-danger mb-0">Cena: Od {{ product.get_min_variation_price }} zł</p>
+                        {% else %}
+                        {# Jeśli brak wariacji, wyświetl cenę bazową z uwzględnieniem wyprzedaży #}
+                        {% if product.is_sale %}
                         {# Cena regularna przekreślona #}
                         <p class="old-price-detail text-muted mb-0">
                             <span class="price-label">Normalna cena:</span>
@@ -84,225 +95,458 @@
                             <span class="price-label">Cena specjalna:</span>
                             <span class="price">{{ product.sale_price }} zł</span>
                         </p>
-                        {# Opcjonalnie: Najniższa cena z 30 dni (jeśli masz takie dane i logikę) #}
-                        {# <div class="omnibus-price-container-detail text-muted small mt-1"> #}
-                        {#     Najniższa cena z 30 dni przed obniżką: <span class="omnibus-price">{{ product.lowest_price_30_days }} zł</span> #}
-                        {# </div> #}
-                    {% else %}
+                        {% else %}
                         {# Normalna cena #}
                         <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p> {# Użyj h4 dla normalnej ceny #}
-                    {% endif %}
-                </div>
-
-                {# Sekcja "Dodaj do koszyka" (bez wyboru ilości) #}
-                <div class="add-to-cart-section-detail my-4"> {# Dodajemy margines góra/dół #}
-
-                    {# Przycisk Dodaj do koszyka - ID 'add-cart' jest ważne dla Twojego JS #}
-                    <button type="button" id="add-cart" class="btn btn-dark w-100"> {# Użyj standardowej klasy btn-dark i w-100 dla pełnej szerokości #}
-                        Dodaj do koszyka
-                    </button>
-
-                    {# === DODATKOWE LINIE POD PRZYCISKIEM === #}
-                    <div class="small text-muted mt-2"> {# Kontener na małe linie tekstu #}
-                        <p class="mb-0">Wysyłka: 1 dzień roboczy</p> {# Pierwsza linia #}
-                        <p class="mb-0">Darmowa dostawa od 300zł</p> {# Druga linia #}
+                        {% endif %}
+                        {% endif %}
                     </div>
-                    {# ====================================== #}
 
-                </div>
+                    {# ---------------------------------------------------------- #}
+                    {# SEKCJA WYBORU WARIAcji (ROZMIARU) #}
+                    {# ---------------------------------------------------------- #}
 
-                {# Sekcja dostępności (opcjonalnie) #}
-                {% comment %}
-                <div class="availability-box-detail mb-3">
-                    <p class="text-muted small">
-                        <i class="fas fa-map-marker-alt me-1"></i> Sprawdź dostępność w Salonie
-                    </p>
-                </div>
-                {% endcomment %}
+                    {% if variations %} {# Wyświetl wybór rozmiaru tylko jeśli istnieją wariacje #}
+                    <div class="variation-select-section my-4"> {# Dodajemy margines góra/dół #}
+                        <div class="form-group">
+                            <label for="size-select">Wybierz rozmiar:</label>
+                            <select class="form-control" id="size-select">
+                                <option value="">-- Wybierz rozmiar --</option>
+                                {% for variation in variations %}
+                                {# value w option to ID wariacji #}
+                                <option value="{{ variation.id }}"
+                                        data-price="{{ variation.get_effective_price }}" {# Przekazujemy efektywną cenę wariacji #}
+                                        data-stock="{{ variation.stock }}" {# Przekazujemy stan magazynowy wariacji #}
+                                        {% if variation.stock <= 0 %}disabled{% endif %}> {# Wyłącz opcję jeśli brak na stanie #}
+                                    {{ variation.size }}
+                                    {# Opcjonalnie: pokaż cenę w nawiasie jeśli różni się od ceny bazowej produktu #}
+                                    {% if variation.get_effective_price != product.get_effective_price %}
+                                    ({{ variation.get_effective_price }} zł)
+                                    {% endif %}
+                                    {# Opcjonalnie: pokaż informację o niskim stanie lub braku #}
+                                    {% if variation.stock <= 5 and variation.stock > 0 %} (Pozostało: {{ variation.stock }}) {% endif %}
+                                    {% if variation.stock <= 0 %} (Brak w magazynie) {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {# Div do dynamicznego wyświetlania informacji o wybranej wariacji (cena, stan) #}
+                        <div id="variation-info" class="mt-2 small text-muted">
+                            {# Informacja o cenie i stanie pojawi się tutaj po wybraniu rozmiaru #}
+                        </div>
+                    </div>
+                    {% else %} {# Jeśli produkt nie ma wariacji #}
+                    <div class="no-variation-info my-4">
+                        {# Możesz tutaj wyświetlić informację o stanie magazynowym produktu bazowego, jeśli go masz #}
+                        {# Zakładam, że produkt bez wariacji ma pole 'stock' #}
+                        {% if product.stock > 0 %}
+                        <p class="text-success">Dostępny w magazynie (Pozostało: {{ product.stock }})</p>
+                        {# Upewnij się, że formularz i przycisk są widoczne i aktywne #}
+                        {% else %}
+                        <p class="text-danger">Brak w magazynie</p>
+                        {# Upewnij się, że przycisk "Dodaj do koszyka" jest wyłączony #}
+                        {% endif %}
+                 
+                    </div>
+                    {% endif %}
 
-                {# Sekcja dostawy/zwrotów (opcjonalnie, jeśli chcesz więcej szczegółów niż pod przyciskiem) #}
-                 {% comment %}
-                 <div class="delivery-box-detail mb-3">
-                     <p class="text-muted small">
-                         <i class="fas fa-truck me-1"></i> Wysyłka: <b>8 dni roboczych</b>
-                     </p>
-                      <p class="text-muted small">
-                         <i class="fas fa-undo me-1"></i> Bezpłatna dostawa od 300 zł i bezpłatny zwrot do 100 dni!
-                     </p>
-                 </div>
-                 {% endcomment %}
+                    {# ---------------------------------------------------------- #}
 
-                {# Sekcja linków płatności/usług (PayPo, Raty, Prezent, Kontakt - opcjonalnie) #}
-                {% comment %}
-                <div class="add-to-box-bottom-detail mb-3">
-                    <ul class="list-unstyled small text-muted">
-                        <li><i class="fas fa-credit-card me-1"></i> Kup teraz, zapłać później z PayPo do 6 000zł!</li>
-                        <li><i class="fas fa-credit-card me-1"></i> Z P24NOW zapłać w ratach lub do 54 dni później.</li>
-                        <li><i class="fas fa-credit-card me-1"></i> Zamów biżuterię i zapłać za nią w Ratach 0%</li>
-                        <li><i class="fas fa-gift me-1"></i> Skorzystaj z opcji opakowania na prezent</li>
-                        <li><i class="fas fa-phone-alt me-1"></i> W razie pytań <a href="#">skontaktuj się z nami</a></li>
-                    </ul>
-                </div>
-                {% endcomment %}
+                    {# Sekcja "Dodaj do koszyka" (przycisk) #}
+                    <div class="add-to-cart-section-detail my-4"> {# Dodajemy margines góra/dół #}
+
+                        {# Przycisk Dodaj do koszyka - ID 'add-cart' jest używane przez Twoje JS #}
+                        {# Przycisk będzie domyślnie wyłączony, jeśli są wariacje, a żaden rozmiar nie został wybrany lub jest brak na stanie #}
+                        <button type="submit" id="add-cart" class="btn btn-dark w-100" {% if variations %}disabled{% endif %}> {# Ustawiamy type="submit" i domyślnie disabled jeśli są wariacje #}
+                            Dodaj do koszyka
+                        </button>
+
+                        {# === DODATKOWE LINIE POD PRZYCISKIEM === #}
+                        <div class="small text-muted mt-2"> {# Kontener na małe linie tekstu #}
+                            <p class="mb-0">Wysyłka: 1 dzień roboczy</p> {# Pierwsza linia #}
+                            <p class="mb-0">Darmowa dostawa od 300zl</p> {# Druga linia #}
+                        </div>
+                        {# ====================================== #}
+
+                    </div>
+
+                    {# Sekcja dostępności (opcjonalnie) #}
+                    {# ... (pozostałe opcjonalne sekcje) ... #}
 
 
-              </div> {# Koniec product-info-box #}
-           </form> {# Koniec formularza Dodaj do koszyka #}
-         </div> {# Koniec prawej kolumny #}
+                </div> {# Koniec product-info-box #}
+            </form> {# Koniec formularza Dodaj do koszyka #}
+        </div> {# Koniec prawej kolumny #}
 
-       </div> {# Koniec row #}
-
-
-  {# Sekcja z opisem produktu pod głównym blokiem #}
-  <div class="product-description-section-detail mt-4"> {# Dodajemy margines górny #}
-    <h3 class="description-heading-detail">Opis produktu</h3> {# Dodano klasę #}
-    <hr class="description-separator-detail"/> {# Separator w formie linii #}
-    <p class="product-description-detail">{{ product.description|linebreaksbr }}</p> {# Akapit z opisem i filtrem linebreaksbr #}
-  </div>
+    </div> {# Koniec row #}
 
 
- {# === NOWA SEKCJA PODOBNE PRODUKTY === #}
-  {# Wyświetlamy tylko jeśli są podobne produkty #}
-  {% if similar_products %}
-  <div class="similar-products-section mt-5"> {# Dodajemy duży margines górny #}
-      <h3 class="similar-products-heading text-center mb-4">Podobne produkty</h3> {# Nagłówek sekcji #}
-      <div class="row">
-          {# Iterujemy po podobnych produktach #}
-          {% for similar_product in similar_products %}
-              {# Używamy struktury karty produktu podobnej do tej z category.html, ale dostosowanej #}
-              <div class="col-lg-3 col-md-4 col-sm-6 mb-4"> {# Dostosuj klasy kolumn do liczby produktów w rzędzie #}
-                  {# Kontener karty produktu - dodajemy klasę flexbox i kierunek kolumn #}
-                  <div class="product similar-product-card d-flex flex-column h-100"> {# Dodano klasy #}
+    {# Sekcja z opisem produktu pod głównym blokiem #}
+    <div class="product-description-section-detail mt-4"> {# Dodajemy margines górny #}
+        <h3 class="description-heading-detail">Opis produktu</h3> {# Dodano klasę #}
+        <hr class="description-separator-detail" /> {# Separator w formie linii #}
+        <p class="product-description-detail">{{ product.description|linebreaksbr }}</p> {# Akapit z opisem i filtrem linebreaksbr #}
+    </div>
 
-                      {# === Kontener Obrazka (80%) === #}
-                      {# Używamy div dla kontenera obrazka z klasą flexbox #}
-                      <div class="product-image-container-similar flex-grow-1"> {# flex-grow-1 aby zajęło dostępną przestrzeń #}
-                          {# Link do strony podobnego produktu #}
-                          <a class="d-block h-100" href="{% url 'product' similar_product.id  %}"> {# h-100 aby link wypełnił kontener #}
-                            {# Obrazek produktu - użyj pierwszego zdjęcia lub fallback #}
-                            {% if similar_product.images.all %}
-                                {# img-fluid d-block w-100 są standardowe, ale rozmiar i dopasowanie ustawimy w CSS #}
-                                <img src="{{ similar_product.images.first.image.url }}" class="img-fluid d-block w-100 product-image-similar" alt="{{ similar_product.name }}"> {# Dodano klasę #}
-                            {% else %}
-                                <img src="{% static 'img/kolczyki.png' %}" class="img-fluid d-block w-100 product-fallback-img-similar" alt="Brak zdjęcia dla produktu"> {# Dodano klasę #}
-                            {% endif %}
-                          </a>
-                          {# Produkt Overlay (Wishlist/Add to Cart na hover) - opcjonalnie, jeśli ma być na obrazku #}
-                          {% comment %}
-                           <div class="product-overlay">
-                             <ul class="mb-0 list-inline">
-                               <li class="list-inline-item m-0 p-0"><a class="btn btn-sm btn-outline-dark" href="#"><i class="far fa-heart"></i></a></li>
-                               <li class="list-inline-item m-0 p-0">
-                                 <form action="{% url 'cart_add' %}" method="post">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="product_id" value="{{similar_product.id}}">
-                                     <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
-                                 </form>
-                               </li>
-                             </ul>
-                           </div>
-                           {% endcomment %}
-                      </div> {# Koniec kontenera obrazka #}
 
-                      {# === Kontener Informacji (20%) === #}
-                      {# Używamy div dla informacji o produkcie z klasą flexbox #}
-                      {# text-center wyrównuje tekst, p-2 dodaje padding #}
-                      <div class="product-info similar-product-info-box text-center p-2"> {# Dodano klasy #}
-                         {# Nazwa produktu jako link #}
-                         <a href="{% url 'product' similar_product.id %}" style="text-decoration: none; color: inherit;">
-                              <h6 class="product-name small mb-1">{{ similar_product.name }}</h6> {# Zmniejszono rozmiar czcionki i margines #}
-                          </a>
-                         {# Status wyprzedaży i ceny #}
-                         {% if similar_product.is_sale %}
-                             {# Opcjonalnie: ikona Sale #}
-                             {% comment %}
-                             <div class="d-flex justify-content-center small text-warning mb-1">
-                                  <i class="bi-star-fill me-1"></i>   Sale!   <i class="bi-star-fill ms-1"></i>
-                             </div>
-                             {% endcomment %}
-                             <p class="small text-muted product-price-sale mb-0">{{ similar_product.sale_price }} zł</p> {# Wyświetl tylko cenę wyprzedażową #}
-                             {# Opcjonalnie: cena regularna przekreślona #}
-                             {# <p class="small text-muted product-sale-price"><strike>{{ similar_product.price }} zł</strike></p> #}
+    {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
+    {# Wyświetlamy tylko jeśli są podobne produkty #}
+    {% if similar_products %}
+    <div class="similar-products-section mt-5"> {# Dodajemy duży margines górny #}
+        <header class="text-center"> {# Używamy headera jak w home.html #}
+            <p class="small text-muted small text-uppercase mb-1">Podobne produkty</p> {# Tytuł sekcji #}
+            <h3 class="similar-products-heading mb-4">Produkty z tym samym materiałem</h3> {# Podtytuł sekcji #}
+        </header>
 
-                         {% else %}
-                             {# Jeśli produkt nie jest na wyprzedaży, wyświetl normalną cenę #}
-                             <p class="small text-muted product-price mb-0">{{ similar_product.price }} zł</p> {# Usunięto mb-0 #}
-                         {% endif %}
-                      </div> {# Koniec kontenera informacji #}
+        {# Nowy wrapper dla slidera i strzałek/paginacji (jeśli są na zewnątrz) #}
+        {# Używamy klas z home.html #}
+        <div class="swiper-container-wrapper swiper-items-wrapper">
+            {# Główny kontener Swipera #}
+            <div class="swiper swiper-items similar-products-swiper"> {# Dodano unikalną klasę dla tego slidera #}
+                <div class="swiper-wrapper">
 
-                  </div> {# Koniec product similar-product-card #}
-              </div> {# Koniec kolumny produktu #}
-          {% endfor %}
-      </div> {# Koniec row podobnych produktów #}
-  </div> {# Koniec similar-products-section #}
-  {% endif %}
+                    {# Iterujemy po podobnych produktach #}
+                    {% for similar_product in similar_products %}
+                    {# === ELEMENT SLIDERA (SLIDE) === #}
+                    {# Używamy klasy swiper-slide wymaganej przez Swiper #}
+                    <div class="swiper-slide">
+
+                        {# === STRUKTURA KARTY PRODUKTU Z HOME.HTML === #}
+                        <div class="product text-center"> {# Klasy z home.html #}
+                            <div class="mb-3 position-relative"> {# Kontener obrazka/karuzeli #}
+
+                                {# Badge - jeśli używasz #}
+                                <div class="badge text-white badge-"></div>
+
+                                {# Obrazek/Karuzela owinięta w link do strony produktu #}
+                                <a class="d-block" href="{% url 'product' similar_product.id %}">
+                                    {% if similar_product.images.all %}
+                                    {# Mini karuzela Bootstrapa wewnątrz slajdu Swipera #}
+                                    {# Użyj unikalnego ID dla każdej karuzeli #}
+                                    <div id="similarProductCardCarousel{{ similar_product.id }}" class="carousel slide card-product-carousel">
+
+                                        {# Optional: Indicators (małe kropki na dole karuzeli) #}
+                                        <div class="carousel-indicators">
+                                            {% for image_obj in similar_product.images.all %}
+                                            <button type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
+                                            {% endfor %}
+                                        </div>
+
+                                        {# Slides #}
+                                        <div class="carousel-inner">
+                                            {% for image_obj in similar_product.images.all %}
+                                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                                {# img-fluid d-block w-100 są standardem, rozmiar w CSS #}
+                                                <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:similar_product.name }}">
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+
+                                        {# Ukrywamy nawigację Bootstrapa w karcie (jeśli nie chcesz jej widzieć) #}
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Poprzednie</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Następne</span>
+                                        </button>
+                                    </div>
+
+                                    {% else %}
+                                    {# Fallback obrazek jeśli brak zdjęć #}
+                                    <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
+                                    {% endif %}
+                                </a>
+
+                                {# Produkt Overlay (Wishlist/Add to Cart na hover) - opcjonalnie #}
+                                {# ... (pozostawione zakomentowane) ... #}
+                            </div> {# Koniec kontenera obrazka/karuzeli #}
+
+                            {# Informacje o produkcie POD KARUZELĄ #}
+                            <div class="product-info"> {# Klasy z home.html #}
+                                {# Nazwa produktu jako link #}
+                                <a href="{% url 'product' similar_product.id %}" style="text-decoration: none; color: inherit;">
+                                    <h6 class="product-name">{{ similar_product.name }}</h6> {# Zmieniamy na h6 i dodajemy klasę #}
+                                </a>
+
+                                {# Status wyprzedaży i ceny - Zmienione, aby uwzględnić wariacje #}
+                                <p class="small text-muted product-price-display">
+                                    {% if similar_product.has_variations %}
+                                    {# Pokaż cenę "Od" korzystając z metody dodanej w modelu #}
+                                    Od {{ similar_product.get_min_variation_price }} zł
+                                    {% else %}
+                                    {# Dla produktów bez wariacji, pokaż cenę bazową z uwzględnieniem wyprzedaży #}
+                                    {% if similar_product.is_sale %}
+                                    <span class="text-danger">{{ similar_product.sale_price }} zł</span> <span class="text-muted"><del>{{ similar_product.price }} zł</del></span>
+                                    {% else %}
+                                    {{ similar_product.price }} zł
+                                    {% endif %}
+                                    {% endif %}
+                                </p>
+
+                            </div> {# Koniec product-info #}
+
+                        </div> {# Koniec product text-center #}
+                        {# === KONIEC STRUKTURY KARTY PRODUKTU Z HOME.HTML === #}
+
+                    </div> {# Koniec swiper-slide #}
+
+                    {% endfor %}
+
+                </div> {# Koniec swiper-wrapper #}
+
+                {# Paginacja (kropki na dole) - umieszczona poza swiper-wrapper, wewnątrz swiper-container-wrapper #}
+                {# Używamy klasy z home.html #}
+                <div class="swiper-pagination similar-products-pagination"></div> {# Dodano unikalną klasę #}
+
+            </div> {# Koniec swiper swiper-items similar-products-swiper #}
+
+            {# Opcjonalnie: Strzałki nawigacyjne Swipera (jeśli są na zewnątrz slidera) #}
+            {# Jeśli home.html ma strzałki na zewnątrz, dodaj je tutaj #}
+            {% comment %}
+            <div class="swiper-button-prev similar-products-prev"></div>
+            <div class="swiper-button-next similar-products-next"></div>
+            {% endcomment %}
+
+        </div> {# === KONIEC KONTENERA SLIDERA === #}
+
+    </div> {# Koniec similar-products-section #}
+    {% endif %}
+    {# ======================================== #}
 
 
 </div> {# Koniec container #}
 
-{# Twój skrypt JS do dodawania do koszyka - upewnij się, że jQuery jest załadowane #}
+{# Skrypty JS #}
 <script>
-  // Check if button pressed
-  $(document).on('click', '#add-cart', function(e){
-      e.preventDefault();
-      // Pobieramy product_id z ukrytego inputa w formularzu
-      var productId = $('#product_addtocart_form input[name="product_id"]').val();
-      // Pobieramy quantity z ukrytego inputa (zawsze 1)
-      var productQty = $('#qty').val(); // Używamy val() dla inputa
+    // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
+    $(document).ready(function() {
+        $('.thumbnail-item').on('click', function() {
+            // Usuń klasę 'active' ze wszystkich miniatur
+            $('.thumbnail-item').removeClass('active');
+            // Dodaj klasę 'active' do klikniętej miniatury
+            $(this).addClass('active');
 
-      $.ajax({
-          type: 'POST',
-          url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
-          data: {
-            product_id: productId,
-            product_qty: productQty,
-            csrfmiddlewaretoken: '{{ csrf_token }}',
-            action: 'post'
-          },
+            // Pobierz URL dużego zdjęcia z atrybutu data-src
+            var mainImageUrl = $(this).data('src');
 
-          success: function(json){
-              console.log("Sukces dodania do koszyka:", json);
-              // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
-              $('#cart_quantity').text(json.qty);
+            // Ustaw URL dużego zdjęcia w tagu img głównego zdjęcia
+            $('#mainProductImage').attr('src', mainImageUrl);
 
-              // Opcjonalnie: Pokaż komunikat sukcesu zamiast przeładowania
-              // alert("Produkt dodany do koszyka!");
-              // location.reload(); // Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
-          },
+            // Opcjonalnie: Zaktualizuj alt text dużego zdjęcia
+            var altText = $(this).find('img').attr('alt');
+            $('#mainProductImage').attr('alt', altText);
 
-          error: function(xhr, errmsg, err){
-              console.error("Błąd podczas dodawania do koszyka:", errmsg, err);
-              // Tutaj możesz wyświetlić komunikat błędu użytkownikowi
-              alert("Wystąpił błąd podczas dodawania do koszyka.");
-          }
-      });
-  });
+            // Opcjonalnie: Jeśli używasz MagicZoomPlus lub podobnego, wywołaj jego metodę aktualizacji
+            // if (typeof MagicZoomPlus !== 'undefined' && MagicZoomPlus.update) {
+            // MagicZoomPlus.update('mainProductImage', mainImageUrl);
+            // }
+        });
 
-  // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
-  $(document).ready(function() {
-      $('.thumbnail-item').on('click', function() {
-          // Usuń klasę 'active' ze wszystkich miniatur
-          $('.thumbnail-item').removeClass('active');
-          // Dodaj klasę 'active' do klikniętej miniatury
-          $(this).addClass('active');
+        // === SKRYPT JS DO OBSŁUGI WYBORU WARIAcji (ROZMIARU) ===
+        const sizeSelect = document.getElementById('size-select');
+        const selectedVariationIdInput = document.getElementById('selected-variation-id');
+        const addToCartButton = document.getElementById('add-cart'); // Upewnij się, że ID przycisku jest poprawne
+        const variationInfoDiv = document.getElementById('variation-info');
+        const quantityInput = document.getElementById('qty'); // Pobierz referencję do pola ilości
 
-          // Pobierz URL dużego zdjęcia z atrybutu data-src
-          var mainImageUrl = $(this).data('src');
+        if (sizeSelect && addToCartButton) { // Sprawdź, czy elementy istnieją (produkt może nie mieć wariacji)
+            sizeSelect.addEventListener('change', function() {
+                const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
+                const variationId = selectedOption.value; // To jest ID wariacji
+                const stock = parseInt(selectedOption.getAttribute('data-stock')); // Pobierz stock jako liczbę
+                const price = selectedOption.getAttribute('data-price'); // Pobierz cenę
 
-          // Ustaw URL dużego zdjęcia w tagu img głównego zdjęcia
-          $('#mainProductImage').attr('src', mainImageUrl);
+                // Ustaw ID wybranej wariacji w ukrytym polu
+                selectedVariationIdInput.value = variationId;
 
-          // Opcjonalnie: Zaktualizuj alt text dużego zdjęcia
-          var altText = $(this).find('img').attr('alt');
-          $('#mainProductImage').attr('alt', altText);
+                // Dynamiczne wyświetlanie informacji o wariacji (opcjonalne)
+                if (variationId) {
+                    let infoHtml = `<p>Cena: ${price} zł</p>`;
+                    if (stock > 0) {
+                        infoHtml += `<p class="text-success">Dostępność: ${stock} szt.</p>`;
+                        // Ustaw maksymalną ilość, jaką można dodać do koszyka
+                        quantityInput.max = stock;
+                         // Jeśli obecna ilość w polu przekracza nowy max, zresetuj ją do max lub 1
+                        if (parseInt(quantityInput.value) > stock) {
+                            quantityInput.value = stock > 0 ? stock : 1; // Zresetuj do max lub 1
+                        }
+                    } else {
+                        infoHtml += `<p class="text-danger">Brak w magazynie</p>`;
+                         quantityInput.max = 1; // Nie można dodać więcej niż 1 (lub 0, jeśli chcesz)
+                         quantityInput.value = 1; // Zresetuj do 1 (przycisk będzie wyłączony)
+                    }
+                    variationInfoDiv.innerHTML = infoHtml;
+                } else {
+                    // Jeśli wybrano opcję "-- Wybierz rozmiar --"
+                    variationInfoDiv.innerHTML = '';
+                     quantityInput.max = 9999; // Resetuj max ilość, jeśli nie wybrano wariacji
+                     quantityInput.value = 1; // Zresetuj ilość do 1
+                }
 
-          // Opcjonalnie: Jeśli używasz MagicZoomPlus lub podobnego, wywołaj jego metodę aktualizacji
-          // if (typeof MagicZoomPlus !== 'undefined' && MagicZoomPlus.update) {
-          //     MagicZoomPlus.update('mainProductImage', mainImageUrl);
-          // }
-      });
-  });
-  // ========================================================================
+                // Włącz/Wyłącz przycisk "Dodaj do koszyka"
+                // Przycisk jest aktywny tylko gdy wybrano WARIację (value nie jest puste) I stock > 0
+                if (variationId && stock > 0) {
+                    addToCartButton.disabled = false;
+                } else {
+                    addToCartButton.disabled = true;
+                }
+            });
+
+            // Opcjonalnie: Ustaw domyślny stan przycisku i info przy ładowaniu strony,
+            // jeśli pierwsza opcja (np. "Wybierz rozmiar") nie jest wybrana domyślnie
+            // lub jeśli chcesz wyświetlić info dla pierwszej dostępnej wariacji.
+            // sizeSelect.dispatchEvent(new Event('change')); // Symuluj zdarzenie zmiany przy ładowaniu
+        } else if (addToCartButton) {
+             // Jeśli produkt nie ma wariacji, upewnij się, że przycisk jest aktywny
+             // (zakładając, że produkty bez wariacji są zawsze dostępne lub mają oddzielny stock)
+             // LUB jeśli masz pole 'stock' w modelu Product:
+             // if (product.stock > 0) { addToCartButton.disabled = false; } else { addToCartButton.disabled = true; }
+             // Bez pola 'stock' w Product, zakładamy dostępność lub pozostawiamy domyślny stan
+             // Jeśli produkt bez wariacji ma być zawsze dostępny, usuń disabled z przycisku w HTML
+             // Jeśli ma mieć stock, dodaj go do modelu Product i sprawdź tutaj
+              // Jeśli nie ma wariacji i nie masz pola stock w Product, przycisk jest zawsze aktywny
+              addToCartButton.disabled = false; // Zakładamy, że bez wariacji produkt jest dostępny
+        }
+
+
+        // === SKRYPT JS DO OBSŁUGI PRZYCISKU DODAJ DO KOSZYKA (AJAX) ===
+        // Ten skrypt musi teraz wysyłać variation_id zamiast product_id
+        $(document).on('click', '#add-cart', function(e) {
+            e.preventDefault();
+
+            // Sprawdź, czy przycisk jest aktywny (jeśli są wariacje, to znaczy, że wybrano dostępny rozmiar)
+            if ($(this).is(':disabled')) {
+                console.log("Przycisk 'Dodaj do koszyka' jest wyłączony.");
+                return; // Nie rób nic, jeśli przycisk jest wyłączony
+            }
+
+
+            // Pobieramy ID wybranej wariacji z ukrytego inputa
+            var variationId = $('#selected-variation-id').val();
+
+            // Pobieramy ilość z pola ilości
+            var quantity = $('#qty').val();
+
+            // Sprawdź, czy wybrano wariację, jeśli produkt ma wariacje
+            if (sizeSelect && !variationId) {
+                alert("Proszę wybrać rozmiar."); // Komunikat dla użytkownika
+                return; // Przerwij, jeśli nie wybrano wariacji
+            }
+
+            // Sprawdź, czy ilość jest większa niż 0
+            if (parseInt(quantity) <= 0) {
+                 alert("Ilość musi być większa niż 0.");
+                 return;
+            }
+
+            // Dane do wysłania - teraz wysyłamy variation_id
+            var postData = {
+                quantity: quantity, // Zmieniono nazwę na quantity, jak w modelu Order
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                action: 'post'
+            };
+
+            // Dodaj variation_id do danych, jeśli produkt ma wariacje i wybrano rozmiar
+            // LUB dodaj product_id, jeśli produkt nie ma wariacji (wymaga zmian w widoku cart_add)
+            if (variationId) {
+                 postData['variation_id'] = variationId; // Wysyłamy variation_id
+            } else {
+                 // Jeśli produkt nie ma wariacji, możesz wysłać product_id
+                 // WIDOK cart_add MUSI OBSŁUGIWAĆ OBA PRZYPADKI!
+                 // Najlepiej, jeśli produkty bez wariacji mają domyślną wariację 'One Size'
+                 // LUB widok cart_add potrafi utworzyć tymczasową wariację dla produktu bazowego
+                 // lub po prostu dodać produkt bazowy z quantity (jeśli Twoja klasa Cart to obsługuje)
+                 // Na razie zakładamy, że wysyłasz variation_id. Jeśli produkt nie ma wariacji,
+                 // ten blok else się nie wykona, a variationId będzie puste.
+                 // Trzeba dostosować widok cart_add.
+                 console.warn("Produkt bez wariacji. Wysyłanie product_id nie jest zaimplementowane w tym JS.");
+                 // Alternatywnie, jeśli Twoja klasa Cart obsługuje dodawanie produktu_id bezpośrednio:
+                 // postData['product_id'] = '{{ product.id }}';
+                 // console.log("Wysyłanie product_id zamiast variation_id.");
+                 // Ale to wymaga, aby widok cart_add wiedział, co zrobić z product_id vs variation_id
+                 alert("Dodawanie produktów bez wariacji wymaga dostosowania logiki koszyka.");
+                 return; // Przerwij, jeśli nie wiesz co wysłać
+            }
+
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
+                data: postData, // Wysyłamy postData
+
+                success: function(json) {
+                    console.log("Sukces dodania do koszyka:", json);
+                    // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
+                    if (json.qty !== undefined) { // Sprawdź, czy odpowiedź zawiera qty
+                        $('#cart_quantity').text(json.qty);
+                    } else {
+                         // Jeśli odpowiedź nie zwraca qty, możesz założyć, że dodano 1 i zaktualizować
+                         // LUB odświeżyć całą stronę, aby koszyk się odświeżył
+                         console.warn("Odpowiedź AJAX nie zawiera qty koszyka.");
+                         // location.reload(); // Opcjonalnie: odśwież stronę
+                    }
+
+
+                    // Pokaż komunikat sukcesu
+                    alert("Produkt dodany do koszyka!");
+
+                    // Opcjonalnie: Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
+                    // location.reload();
+                },
+
+                error: function(xhr, errmsg, err) {
+                    console.error("Błąd podczas dodawania do koszyka:", errmsg, err, xhr.responseText);
+                    // Tutaj możesz wyświetlić komunikat błędu użytkownikowi
+                    // Parsuj odpowiedź JSON, jeśli serwer zwraca błąd w formacie JSON
+                    try {
+                        const errorJson = JSON.parse(xhr.responseText);
+                        alert("Wystąpił błąd: " + (errorJson.error || "Nieznany błąd"));
+                    } catch (e) {
+                        alert("Wystąpił błąd podczas dodawania do koszyka.");
+                    }
+                }
+            });
+        });
+
+
+        // === INICJALIZACJA SLIDERA PODOBNYCH PRODUKTÓW (SWIPER) ===
+        // Upewnij się, że biblioteka Swiper jest załadowana (CSS i JS)
+        // Targetujemy unikalną klasę dla tego slidera
+        const similarProductsSwiper = new Swiper('.similar-products-swiper', {
+            // Konfiguracja Swipera (dostosuj do potrzeb i konfiguracji slidera z home.html)
+            slidesPerView: 1, // Domyślnie 1 slajd na ekranie
+            spaceBetween: 10, // Odstęp między slajdami
+            loop: false, // Czy slider ma zapętlać
+            pagination: { // Konfiguracja paginacji (kropki)
+                el: '.similar-products-pagination', // Element paginacji
+                clickable: true, // Czy kropki są klikalne
+            },
+            navigation: { // Konfiguracja nawigacji (strzałki)
+                // Jeśli masz strzałki na zewnątrz slidera, podaj ich selektory
+                // nextEl: '.similar-products-next',
+                // prevEl: '.similar-products-prev',
+            },
+            breakpoints: { // Ustawienia responsywności (dostosuj do potrzeb)
+                576: { // >= 576px (sm)
+                    slidesPerView: 2,
+                    spaceBetween: 10,
+                },
+                768: { // >= 768px (md)
+                    slidesPerView: 3,
+                    spaceBetween: 15,
+                },
+                992: { // >= 992px (lg)
+                    slidesPerView: 4,
+                    spaceBetween: 20,
+                },
+                // Dodaj więcej breakpointów jeśli potrzebujesz
+            },
+        });
+        // ========================================================
+    });
+    // ========================================================================
 </script>
 
 {% endblock %}
