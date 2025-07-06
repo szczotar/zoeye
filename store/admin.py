@@ -1,12 +1,14 @@
 from django.contrib import admin
-from .models import Category, Customer, Product, Order, Profile, ProductImage, Material, ProductVariation # Importuj ProductVariation
+from .models import Category, Customer, Product, Order, Profile, ProductImage, Material, ProductVariation
 from django.contrib.auth.models import User
+from django.db.models.aggregates import Sum
+
 
 # Register your models here.
 admin.site.register(Category)
 admin.site.register(Customer)
-# admin.site.register(Product) - odkomentujemy poniżej z CustomAdmin
-# admin.site.register(Order) - odkomentujemy poniżej z CustomAdmin
+# admin.site.register(Product) 
+# admin.site.register(Order) 
 
 admin.site.register(Profile)
 admin.site.register(Material)
@@ -18,33 +20,33 @@ class ProfileInline(admin.StackedInline):
 # Extend User Model
 class UserAdmin(admin.ModelAdmin):
     model = User
-    # field = ["username", "first_name", "last_name", "email"] # 'field' should be 'fields'
     fields = ["username", "first_name", "last_name", "email"]
     inlines = [ProfileInline]
 
 # --- INLINE DLA ZDJĘĆ PRODUKTU ---
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1 # Zmniejszone do 1, aby nie było za dużo pustych formularzy
+    extra = 1
     fields = ['image', 'alt_text', 'order']
 
 # --- NOWY INLINE DLA WARIAcji PRODUKTU ---
-class ProductVariationInline(admin.TabularInline): # Użyj TabularInline, jest bardziej kompaktowy
+# Zmieniono pola, usunięto pola cen
+class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
-    extra = 1 # Ile pustych formularzy wariacji ma być domyślnie
+    extra = 1
     # Pola do wyświetlenia w formularzu inline wariacji
-    fields = ['size', 'price', 'is_sale', 'sale_price', 'stock'] # Dodaj 'stock'
+    fields = ['size', 'stock'] # Usunięto price, is_sale, sale_price
 
 # ------------------------------------------
 
 # Zarejestruj model Product z Inline dla zdjęć i wariacji
 class ProductAdmin(admin.ModelAdmin):
-    # Dodaj inline dla zdjęć i wariacji
-    inlines = [ProductImageInline, ProductVariationInline] # Dodaj ProductVariationInline
+    inlines = [ProductImageInline, ProductVariationInline]
 
     # Pola do wyświetlenia w formularzu edycji produktu
     fields = [
         'name', 'category', 'price', 'is_sale', 'sale_price',
+        'stock', # DODANO pole stock dla produktu bazowego
         'description', 'gender', 'materials',
     ]
 
@@ -57,22 +59,24 @@ class ProductAdmin(admin.ModelAdmin):
         'category',
         'display_price_info', # Zmieniamy wyświetlanie ceny
         'is_sale',
+        'display_stock_info', # DODANO kolumnę z informacją o stocku
         'gender',
         'display_materials',
         'display_image_count',
-        'display_variation_count', # Nowa kolumna dla wariacji
+        'display_variation_count',
     )
 
     # Pola, po których można filtrować na liście produktów
-    list_filter = ('category', 'is_sale', 'gender', 'materials', 'variations__size') # Można filtrować po rozmiarze wariacji
+    # Można filtrować po stocku produktu bazowego i stocku wariacji
+    list_filter = ('category', 'is_sale', 'gender', 'materials', 'stock', 'variations__stock')
 
     # Pola, po których można wyszukiwać na liście produktów
-    search_fields = ('name', 'description', 'materials__name', 'variations__size') # Można wyszukiwać po rozmiarze wariacji
+    search_fields = ('name', 'description', 'materials__name', 'variations__size')
 
     # Metoda dla list_display do pokazania liczby zdjęć
     def display_image_count(self, obj):
         return obj.images.count()
-    display_image_count.short_description = 'Zdjęcia' # Skrócona nazwa kolumny
+    display_image_count.short_description = 'Zdjęcia'
 
     # Metoda dla list_display do pokazania materiałów
     def display_materials(self, obj):
@@ -82,31 +86,52 @@ class ProductAdmin(admin.ModelAdmin):
     # --- NOWA METODA DLA LIST_DISPLAY DO POKAZANIA WARIAcji ---
     def display_variation_count(self, obj):
         return obj.variations.count()
-    display_variation_count.short_description = 'Wariacje (Rozmiary)' # Skrócona nazwa kolumny
+    display_variation_count.short_description = 'Liczba Wariacji'
 
-    # --- NOWA METODA DLA LIST_DISPLAY DO POKAZANIA CENY Z UWZGLĘDNIENIEM WARIAcji ---
-    def display_price_info(self, obj):
+    # --- NOWA METODA DLA LIST_DISPLAY DO POKAZANIA INFORMACJI O STOCKU ---
+    def display_stock_info(self, obj):
         if obj.has_variations():
-            # Jeśli produkt ma wariacje, pokaż najniższą cenę wariacji
-            min_price = obj.get_min_variation_price()
-            return f"Od {min_price}" if min_price is not None else "Wariacje"
+            # Jeśli ma wariacje, pokaż sumę stocku wariacji
+            total_stock = obj.variations.aggregate(Sum('stock'))['stock__sum'] or 0
+            return f"Wariacje: {total_stock}"
         else:
-            # Jeśli nie ma wariacji, pokaż cenę bazową (uwzględniając wyprzedaż)
-            price = obj.get_effective_price()
-            if obj.is_sale:
-                 return f"{price} (Wyprzedaż)"
+            # Jeśli nie ma wariacji, pokaż stock produktu bazowego
+            return f"Produkt: {obj.stock}"
+    display_stock_info.short_description = 'Stock'
+    # Umożliwia sortowanie po stocku produktu bazowego
+    # Sortowanie po sumie stocku wariacji jest bardziej złożone i wymaga adnotacji w admin queryset
+    display_stock_info.admin_order_field = 'stock'
+
+
+    # --- NOWA METODA DLA LIST_DISPLAY DO POKAZANIA CENY ---
+    # Zmieniono logikę, bo wszystkie wariacje mają tę samą cenę bazową
+    def display_price_info(self, obj):
+        price = obj.get_effective_price() # Zawsze używamy efektywnej ceny produktu bazowego
+        if obj.has_variations():
+            # Jeśli produkt ma wariacje, pokazujemy "Od X" z ceną bazową
+            return f"Od {price}"
+        else:
+            # Jeśli nie ma wariacji, pokazujemy po prostu cenę bazową
             return str(price) # Konwertuj Decimal na string dla wyświetlenia
 
-    display_price_info.short_description = 'Cena' # Skrócona nazwa kolumny
+    display_price_info.short_description = 'Cena'
     display_price_info.admin_order_field = 'price' # Umożliwia sortowanie po bazowej cenie
 
 admin.site.register(Product, ProductAdmin)
 
-# --- OPCJONALNIE: Zmień OrderAdmin aby wyświetlał wariację ---
-# Jeśli chcesz zobaczyć wariację na liście zamówień
+# --- OPCJONALNIE: Zmień OrderAdmin aby wyświetlał wariację lub produkt ---
+# Jeśli chcesz zobaczyć wariację/produkt na liście zamówień
 # class OrderAdmin(admin.ModelAdmin):
-#     list_display = ('variation', 'customer', 'quantity', 'date', 'status') # Zmieniono 'product' na 'variation'
-#     list_filter = ('status', 'date', 'variation__product__category') # Możesz filtrować po kategorii produktu wariacji
+#     list_display = ('display_item', 'customer', 'quantity', 'date', 'status') # Zmieniono na display_item
+#     list_filter = ('status', 'date') # Możesz dodać filtry po produkcie/wariacji jeśli potrzebujesz
+
+#     def display_item(self, obj):
+#         if obj.variation:
+#             return f"Wariacja: {obj.variation.__str__()}"
+#         elif obj.product:
+#             return f"Produkt: {obj.product.name}"
+#         return "Nieznany przedmiot"
+#     display_item.short_description = 'Przedmiot'
 
 # admin.site.unregister(Order) # Odrejestruj stary OrderAdmin
 # admin.site.register(Order, OrderAdmin) # Zarejestruj nowy OrderAdmin

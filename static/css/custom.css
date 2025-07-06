@@ -233,7 +233,7 @@
 
 /* Styl po najechaniu myszką na link zawierający ikonkę SVG */
 .nav-item a:hover .nav-icon-svg {
-    fill: #dcb14a; /* Zmień kolor na złoty po najechaniu */
+    fill: #ffd700; /* Zmień kolor na złoty po najechaniu */
     /* Możesz użyć kodu hex, np. */
     /* fill: #FFD700; */
 }
@@ -442,8 +442,9 @@
 }
 .product-info .product-sale-price,
 .product-info .product-price-sale {
-    color :#0d6efd;
+    color: #ffd700;
     margin-bottom: 0.25rem;
+    /* font-weight: bold; */
     line-height: 1; /* Poprawia odstęp między liniami cen */
 }
 

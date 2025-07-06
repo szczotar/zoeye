@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load custom_filters %} {# Nadal potrzebne dla paginacji, ale możesz je usunąć, jeśli paginacja nie używa już filtra iterable #}
+{% load custom_filters %}
 
 {% block content %}
 
@@ -152,7 +152,7 @@
                            <br>
                             <p class="small text-muted product-sale-price">Cena regularna: {{ product.price }} zł</p>
                             {# Jeśli chcesz wyświetlać najniższą cenę z 30 dni (wymaga dodania logiki w widoku/modelu): #}
-                            {# <p class="small text-muted product-sale-price">Najniższa cena z 30 dni: {{ product.lowest_price_30_days }} zł</p> #}
+                           <p class="small text-muted product-sale-price">Najniższa cena z 30 dni: {{ product.price }} zł</p> 
                        {% else %}
                            <p class="small text-muted product-price">{{ product.price }} zł</p>
                        {% endif %}

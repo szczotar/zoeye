@@ -30,26 +30,18 @@
             {# === PRZYCISK FILTRY - ZAWSZE WIDOCZNY, URUCHAMIA OFFcanvas === #}
             {# Użyj data-bs-toggle="offcanvas" i data-bs-target="#sidebarOffcanvas" #}
             {# Klasa mb-3 dodaje margines pod przyciskiem #}
-            <button class="btn btn-outline-secondary mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
-                <i class="fas fa-filter"></i> Filters {# Możesz dodać ikonę #}
+            <button class="btn btn-outline-secondary mb-3" style="background-color: #FFE4C6;" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+                <i class="fa fa-sliders fa-lg" ></i>   Filtry {# Możesz dodać ikonę #}
             </button>
 
             <div class="row">
 
                 {# =============================================== #}
                 {# SHOP SIDEBAR - TERAZ JAKO BOOTSTRAP OFFCANVAS #}
-                {# Ten DIV będzie wysuwany z lewej strony #}
-                {# class="offcanvas offcanvas-start" - podstawowe klasy Offcanvas #}
-                {# tabindex="-1" id="sidebarOffcanvas" - wymagane atrybuty #}
-                {# aria-labelledby="sidebarOffcanvasLabel" - dla dostępności #}
-                {# Ten Offcanvas musi być umieszczony POZA głównym kontenerem .row, ale przed zamknięciem body lub na końcu pliku #}
-                {# Został przeniesiony na koniec bloku content #}
-                {# Usunąłem go stąd, bo był zduplikowany #}
-
-
                 {# === SHOP LISTING === #}
                 {# Ta kolumna teraz zajmuje całą szerokość na wszystkich ekranach #}
                 {# Usunięto col-lg-9 i order-lg-2, zmieniono na col-12 #}
+
                 <div class="col-12 order-1 mb-5 mb-lg-0"> {# <-- Zmieniono klasy gridowe #}
                     <div class="row mb-4 align-items-center">
                         <div class="col-lg-6 mb-2 mb-lg-0">
@@ -65,6 +57,7 @@
                                     {# Formularz sortowania #}
                                     {# Akcja formularza używa nazwy kategorii (category.name) #}
                                     <form method="get" action="{% url 'category' category.name %}" id="sortingForm">
+                                        sortuj: 
                                         <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting" onchange="document.getElementById('sortingForm').submit();">
                                             <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Domyślnie</option>
                                             <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Ceny: Rosnąco</option>
@@ -157,19 +150,19 @@
                                             <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
                                                 <h6 class="product-name">{{ product.name }}</h6>
                                             </a>
-                                            {# Wyświetlanie ceny - Zmienione, aby uwzględnić wariacje #}
-                                            <p class="small text-muted product-price-display">
-                                                {% if product.has_variations %}
-                                                <!-- Pokaż cenę "Od" korzystając z metody dodanej w modelu Product -->
-                                                Od {{ product.get_min_variation_price }} zł
-                                                {% else %}
+                                
+                            
                                                 <!-- Dla produktów bez wariacji, pokaż cenę bazową z uwzględnieniem wyprzedaży -->
                                                 {% if product.is_sale %}
-                                                <span class="text-danger">{{ product.sale_price }} zł</span> <span class="text-muted"><del>{{ product.price }} zł</del></span>
+                                                <p class="product-sale-price"> {{ product.sale_price }} zł</p>
+                                                 <br>
+                                                <p class="small text-muted product-sale-price">Cena regularna: {{ product.price }} zł</p>
+                                                <p class="small text-muted product-sale-price lowest-price-line">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p>
+                                         
                                                 {% else %}
-                                                {{ product.price }} zł
+                                                <p class="small text-muted product-price">{{ product.price }} zł</p>
                                                 {% endif %}
-                                                {% endif %}
+                                              
                                             </p>
 
                                         </div>
@@ -231,32 +224,24 @@
 </div>
 
 {# === OFFCANVAS STRUCTURE (OUTSIDE THE MAIN CONTAINER) === #}
-{# Ten div będzie wysuwany z lewej strony #}
-{# class="offcanvas offcanvas-start" - podstawowe klasy Offcanvas #}
-{# tabindex="-1" id="sidebarOffcanvas" - wymagane atrybuty #}
-{# aria-labelledby="sidebarOffcanvasLabel" - dla dostępności #}
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
 
-    {# Nagłówek Offcanvas (opcjonalny, ale zalecany) #}
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Filters</h5>
-        {# Przycisk zamykający Offcanvas #}
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
-    {# Ciało Offcanvas - TUTAJ PRZENOSIMY CAŁĄ ZAWARTOŚĆ SIDEBAR #}
     <div class="offcanvas-body">
 
         {# === JEDEN FORMULARZ DLA WSZYSTKICH FILTRÓW SIDEBAR === #}
-        {# Metoda GET, akcja na URL kategorii #}
-        {# ID 'sidebarFilterForm' jest używane do odwołania w JS, jeśli chcesz np. wysłać formularz po zmianie filtra płci #}
         <form method="get" action="{% url 'category' category.name %}" id="sidebarFilterForm">
 
-            {# Zachowaj parametry 'sorting' i 'page' #}
+            {# Zachowaj parametry 'sorting' i 'page' oraz inne nieobsługiwane bezpośrednio w tym formularzu #}
             {% for key, value in request.GET.items %}
                 {% comment %} Wyklucz parametry obsługiwane przez ten formularz, aby uniknąć duplikatów {% endcomment %}
-                {% if key != 'gender' and key != 'material' and key != 'min_price' and key != 'max_price' and key != 'sale_only' %}
-                    {% if value|iterable %} {# Obsługa wielokrotnych wartości dla tego samego klucza (np. dla checkboxów) #}
+                {# DODAJ 'available_only' do listy wykluczeń #}
+                {% if key != 'gender' and key != 'material' and key != 'min_price' and key != 'max_price' and key != 'sale_only' and key != 'available_only' %}
+                    {% if value|iterable %}
                         {% for item in value %}
                             <input type="hidden" name="{{ key }}" value="{{ item }}">
                         {% endfor %}
@@ -271,9 +256,8 @@
 
             <!-- Filtr dla płci (gender) -->
             <h5 class="text-uppercase mb-4">For Whom</h5>
-            {# Radio buttony dla płci - name="gender" #}
+            {# ... (radio buttony płci - bez zmian) ... #}
             <div class="form-check mb-1">
-                {# value="" dla opcji "Wszystkie" - odpowiada selected_gender=None lub 'all' w widoku #}
                 <input class="form-check-input" type="radio" name="gender" value="" id="genderAll" {% if not selected_gender or selected_gender == 'all' %}checked{% endif %}>
                 <label class="form-check-label" for="genderAll">All</label>
             </div>
@@ -286,19 +270,18 @@
                 <label class="form-check-label" for="genderWomen">Women</label>
             </div>
             <div class="form-check mb-1">
-                <input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}> {# <-- DODANO UNISEX #}
+                <input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}>
                 <label class="form-check-label" for="genderUnisex">Unisex</label>
             </div>
 
 
             <!-- Filtr rodzaju materiału -->
             <h5 class="text-uppercase mb-4 mt-4">Material</h5>
-            {# Checkboxy dla opcji materiału - name="material" #}
+            {# ... (checkboxy materiałów - bez zmian) ... #}
             <ul class="list-unstyled small text-muted pl-lg-4 font-weight-normal">
                 {% for material in all_materials %}
                     <li class="mb-1">
                         <div class="form-check">
-                            {# name="material" - ważne, aby pasowało do request.GET.getlist('material') w widoku #}
                             <input class="form-check-input" type="checkbox" name="material" value="{{ material.name }}" id="material{{ material.id }}" {% if material.name in selected_materials %}checked{% endif %}>
                             <label class="form-check-label" for="material{{ material.id }}">{{ material.name }}</label>
                         </div>
@@ -308,27 +291,29 @@
 
             <!-- Filtr ceny -->
             <h5 class="text-uppercase mb-4 mt-4">Price Filter</h5>
+            {# ... (pola min/max ceny - bez zmian) ... #}
             <div class="d-flex align-items-center mb-3">
-                {# Pola input dla filtra ceny - name="min_price", name="max_price" #}
                 <input type="number" name="min_price" placeholder="Min" value="{{ selected_min_price|default:'' }}" class="form-control form-control-sm w-50 me-2">
                 <input type="number" name="max_price" placeholder="Max" value="{{ selected_max_price|default:'' }}" class="form-control form-control-sm w-50">
             </div>
 
             {# --- FILTR PROMOCJI (IS_SALE) - TOGGLE SWITCH --- #}
-            <h5 class="text-uppercase mb-4 mt-4">Promotions</h5>
-            {# Zastosuj klasy form-check i form-switch do kontenera #}
+            {# ... (przełącznik promocji - bez zmian) ... #}
             <div class="form-check form-switch mb-1">
-                {# Checkbox dla promocji - name="sale_only", value="true" #}
-                {# Dodaj klasę form-check-input do inputa #}
-                {# value="true" jest ważne, aby widok wiedział, że checkbox jest zaznaczony #}
                 <input class="form-check-input" type="checkbox" name="sale_only" value="true" id="filterSaleOnly" {% if selected_sale_only %}checked{% endif %} role="switch">
-                {# Dodaj klasę form-check-label do labelki #}
                 <label class="form-check-label" for="filterSaleOnly">Show only Sale items</label>
+            </div>
+
+            {# --- DODAJEMY FILTR DOSTĘPNOŚCI (AVAILABLE_ONLY) - TOGGLE SWITCH --- #}
+            <div class="form-check form-switch mb-1">
+                {# Checkbox dla dostępności - name="available_only", value="true" #}
+                {# Ustawiamy stan 'checked' na podstawie zmiennej z kontekstu #}
+                <input class="form-check-input" type="checkbox" name="available_only" value="true" id="filterAvailableOnly" {% if selected_available_only %}checked{% endif %} role="switch">
+                <label class="form-check-label" for="filterAvailableOnly">Show only available items</label>
             </div>
 
 
             {# === JEDEN PRZYCISK ZASTOSUJ FILTRY === #}
-            {# Przycisk submit dla całego formularza sidebar #}
             <button type="submit" class="btn btn-outline-dark btn-sm w-100 mt-3">Apply Filters</button>
 
         </form> {# === KONIEC JEDNEGO FORMULARZA FILTRÓW === #}
@@ -346,3 +331,5 @@
 {# =============================================== #}
 
 {% endblock content %}
+
+

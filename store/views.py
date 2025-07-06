@@ -1,20 +1,24 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Category, Profile, Material, ProductVariation # Upewnij się, że ProductVariation jest zaimportowane
+# Upewnij się, że importujesz ProductVariation i inne potrzebne modele
+from .models import Product, Category, Profile, Material, ProductVariation
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
-from django.db.models import Q
 import json
 from cart.cart import Cart
 from payment.forms import ShippingForm
 from payment.models import ShippingAddress
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Case, When, DecimalField, Subquery, OuterRef # Upewnij się, że Subquery i OuterRef też są zaimportowane
-from django.db import models # <-- DODAJ TĘ LINIĘ
+# Upewnij się, że wszystkie potrzebne importy z django.db.models są tutaj
+from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef
+from django.db import models
+# Dodaj importy dla agregacji - Nadal potrzebne do obliczenia ogólnego zakresu cen dla suwaka
+from django.db.models.aggregates import Min, Max
 
+# ... (pozostałe widoki przed category - bez zmian) ...
 def search(request):
 	# Determine if they filled out the form
 	if request.method == "POST":
@@ -54,8 +58,6 @@ def update_info(request):
 	else:
 		messages.success(request, "You Must Be Logged In To Access That Page!!")
 		return redirect('home')
-
-
 
 
 def update_password(request):
@@ -112,188 +114,201 @@ def update_user(request):
 # 		messages.success(request, ("That Category Doesn't Exist..."))
 # 		return redirect('home')
 
-
-# W Twoim pliku views.py
-from django.shortcuts import render, get_object_or_404
-from .models import Category, Product, Material # Upewnij się, że importujesz Material
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Case, When, DecimalField, Q # Upewnij się, że importujesz Q i DecimalField
-
 def category(request, foo):
-    """
-    Widok wyświetlający szczegóły kategorii i listę produktów z paginacją, sortowaniem i filtrami.
-    Argument 'foo' przyjmuje nazwę kategorii z URL.
-    """
-    print(f"--- Debugging category view ---")
-    print(f"Requested category name: {foo}")
+    # ... (początek funkcji) ...
 
     category = get_object_or_404(Category, name=foo)
     all_materials = Material.objects.all().order_by('name')
 
     # Zaczynamy od produktów w danej kategorii
-    product_list = Product.objects.filter(category=category)
+    all_products_in_category = Product.objects.filter(category=category)
+    print(f"DEBUG: Initial products in category '{foo}': {all_products_in_category.count()}") # Debug
 
-    # --- ADNOTACJA DLA EFEKTYWNEJ CENY ---
-    # Tworzymy tymczasowe pole 'effective_price' do sortowania.
-    # Dla produktów z wariacjami użyjemy ceny minimalnej wariacji.
-    # Dla produktów bez wariacji użyjemy ich własnej efektywnej ceny.
-    product_list = product_list.annotate(
-        has_variations_flag=models.Case(
-            models.When(variations__isnull=False, then=True),
-            default=False,
-            output_field=models.BooleanField()
-        )
-    ).annotate(
-         min_variation_price=models.Subquery(
-             ProductVariation.objects.filter(product=models.OuterRef('pk'))
-             .annotate(
-                 effective_var_price=Case(
-                     When(is_sale=True, then='sale_price'),
-                     When(price__isnull=False, then='price'),
-                     default=models.OuterRef('price'), # fallback to parent product's base price
-                     output_field=DecimalField()
-                 )
-             )
-             .order_by('effective_var_price')
-             .values('effective_var_price')[:1]
-         )
-    ).annotate(
+    # --- OBLICZ OGÓLNY ZAKRES CEN DLA SUWAKA (TERAZ ZAWSZE Z CENY BAZOWEJ PRODUKTU) ---
+    # Obliczamy zakres na podstawie ceny bazowej 'price'
+    price_aggregation = all_products_in_category.aggregate(
+        min_price=Min('price'), # Zmieniono na 'price'
+        max_price=Max('price')  # Zmieniono na 'price'
+    )
+    overall_min_price = price_aggregation['min_price'] if price_aggregation['min_price'] is not None else 0
+    overall_max_price = price_aggregation['max_price'] if price_aggregation['max_price'] is not None else 1000
+    print(f"DEBUG: Overall price range: {overall_min_price} - {overall_max_price}") # Debug
+
+    product_list_base = all_products_in_category.annotate(
         effective_price=Case(
-            When(has_variations_flag=True, then='min_variation_price'),
-            When(is_sale=True, then='sale_price'), # Produkty bez wariacji, ale na wyprzedaży
-            default='price', # Produkty bez wariacji i bez wyprzedaży
+            When(is_sale=True, then='sale_price'),
+            default='price',
             output_field=DecimalField()
         )
     )
 
+    print(f"DEBUG: Products after price annotation: {product_list_base.count()}") # Debug
+
 
     # --- Logika Filtrowania ---
     selected_gender = request.GET.get('gender')
-    selected_min_price = request.GET.get('min_price')
-    selected_max_price = request.GET.get('max_price')
+    selected_min_price_str = request.GET.get('min_price')
+    selected_max_price_str = request.GET.get('max_price')
     selected_materials = request.GET.getlist('material')
     selected_sale_only = request.GET.get('sale_only') == 'true'
+    selected_available_only = request.GET.get('available_only') == 'true'
 
-    print(f"Product list count before filtering: {product_list.count()}")
+    # Konwertujemy wybrane ceny na float
+    try:
+        # Użyj overall_min/max_price jako domyślnych, jeśli parametry GET są puste
+        selected_min_price = float(selected_min_price_str) if selected_min_price_str else overall_min_price
+    except ValueError:
+        selected_min_price = overall_min_price # Fallback w przypadku niepoprawnej wartości
+    try:
+        selected_max_price = float(selected_max_price_str) if selected_max_price_str else overall_max_price
+    except ValueError:
+        selected_max_price = overall_max_price # Fallback w przypadku niepoprawnej wartości
+
+    print(f"DEBUG: Selected filters: gender={selected_gender}, min_price={selected_min_price}, max_price={selected_max_price}, materials={selected_materials}, sale_only={selected_sale_only}, available_only={selected_available_only}") # Debug
+
+    # Zaczynamy filtrowanie od product_list_base
+    product_list = product_list_base
 
     try:
         # Filtr płci (gender)
         if selected_gender and selected_gender != 'all':
             product_list = product_list.filter(gender=selected_gender)
-            print(f"Applied Gender filter: {selected_gender}. Count: {product_list.count()}")
-
-        # Filtr ceny (min_price, max_price) - TERAZ FILTRUJEMY PO 'effective_price'
-        if selected_min_price:
-            try:
-                min_price_float = float(selected_min_price)
-                product_list = product_list.filter(effective_price__gte=min_price_float)
-                print(f"Applied Min Price filter: {min_price_float}. Count: {product_list.count()}")
-            except ValueError:
-                print(f"Invalid min_price value: {selected_min_price}")
-        if selected_max_price:
-            try:
-                max_price_float = float(selected_max_price)
-                product_list = product_list.filter(effective_price__lte=max_price_float)
-                print(f"Applied Max Price filter: {max_price_float}. Count: {product_list.count()}")
-            except ValueError:
-                 print(f"Invalid max_price value: {selected_max_price}")
+            print(f"DEBUG: After Gender filter ({selected_gender}): {product_list.count()}") # Debug
 
         # Filtr materiału (material)
         if selected_materials:
             material_q_objects = Q()
             for material_name in selected_materials:
                 material_q_objects |= Q(materials__name=material_name)
-            product_list = product_list.filter(material_q_objects).distinct()
-            print(f"Applied Material filter: {selected_materials}. Count: {product_list.count()}")
+            product_list = product_list.filter(material_q_objects) # Filter on M2M
+            print(f"DEBUG: After Material filter (before final distinct): {product_list.count()}") # Debug
 
-        # Filtr promocji - TERAZ FILTRUJEMY PRODUKTY, KTÓRE SĄ NA WYPRZEDAŻY (LUB MAJĄ WAR. NA WYPRZEDAŻY)
-        # To może być bardziej złożone w przypadku wariacji. Czy chcemy pokazać produkt,
-        # jeśli *którakolwiek* jego wariacja jest na wyprzedaży? Czy tylko jeśli produkt bazowy jest?
-        # Najprościej: filtruj po is_sale produktu bazowego. Jeśli chcesz uwzględnić wariacje,
-        # musisz dodać anotację sprawdzającą, czy którakolwiek wariacja jest na wyprzedaży.
-        # Poniższy kod filtruje tylko po is_sale produktu bazowego.
-        # ALTERNATYWNIE: Możesz dodać anotację sprawdzającą czy `(is_sale=True) OR (variations__is_sale=True)`
+        # Filtr promocji
         if selected_sale_only:
-            # Filtr na produkty bazowe LUB produkty z wariacją na wyprzedaży
-            product_list = product_list.filter(Q(is_sale=True) | Q(variations__is_sale=True)).distinct()
-            print(f"Applied Sale Only filter. Count: {product_list.count()}")
+            product_list = product_list.filter(is_sale=True) # Sale filter is on Product now
+            print(f"DEBUG: After Sale Only filter: {product_list.count()}") # Debug
+
+        # --- ZASTOSUJ NOWY FILTR DOSTĘPNOŚCI ---
+        if selected_available_only:
+             product_list = product_list.filter(
+                Q(variations__isnull=True, stock__gt=0) | # Produkty bez wariacji ORAZ stock > 0
+                Q(variations__isnull=False, variations__stock__gt=0) # Produkty Z wariacjami ORAZ przynajmniej jedna wariacja ma stock > 0
+             ) # Filter on Reverse FK
+             print(f"DEBUG: After Available Only filter (before final distinct): {product_list.count()}") # Debug
+        # ---------------------------------------
+
+        # --- APPLY DISTINCT after all filters that might cause duplication ---
+        # Stosujemy distinct po wszystkich filtrach, które mogą powielać wyniki
+        product_list = product_list.distinct()
+        print(f"DEBUG: After applying DISTINCT: {product_list.count()}")
+        # --------------------------------------------------------------------
+
+        # --- Apply Price Range filter (uses effective_price annotation) ---
+        # Ten filtr jest ZAWSZE stosowany, używając selected_min/max_price
+        # które domyślnie przyjmują wartości overall_min/max_price
+        print(f"DEBUG: Applying Price Range filter: {selected_min_price} - {selected_max_price}") # Debug
+        product_list = product_list.filter(
+            effective_price__gte=selected_min_price,
+            effective_price__lte=selected_max_price
+        )
+        print(f"DEBUG: Count after Price Range filter: {product_list.count()}") # Debug
+        # -------------------------------------------------------------------
 
 
     except Exception as e:
-        print(f"Error during filtering: {e}")
+        print(f"DEBUG: Error during filtering: {e}")
+        product_list = Product.objects.none() # Ustaw listę na pustą po błędzie
 
+
+    print(f"DEBUG: Final count before pagination: {product_list.count()}") # Debug
 
     # --- Logika Sortowania ---
+    # Sortowanie powinno być stosowane po wszystkich filtrach i adnotacjach
     sort_by = request.GET.get('sorting', 'default')
-    print(f"Sorting requested: {sort_by}")
+    print(f"DEBUG: Sorting requested: {sort_by}")
 
     try:
         if sort_by == 'low-high':
-            # Sortowanie po efektywnej cenie (uwzględniając minimalną cenę wariacji)
+            # Sortowanie po efektywnej cenie
             product_list = product_list.order_by('effective_price', 'pk')
-            print("Sorted by effective_price low-high.")
+            print("DEBUG: Sorted by effective_price low-high.")
         elif sort_by == 'high-low':
-            # Sortowanie po efektywnej cenie (uwzględniając minimalną cenę wariacji)
+            # Sortowanie po efektywnej cenie
             product_list = product_list.order_by('-effective_price', 'pk')
-            print("Sorted by effective_price high-low.")
+            print("DEBUG: Sorted by effective_price high-low.")
         elif sort_by == 'popularity':
-             # Trzeba dodać logikę popularności, na razie sortowanie domyślne
-             product_list = product_list.order_by('name', 'pk')
-             print("Popularity sort selected, falling back to default (name, pk).")
+             product_list = product_list.order_by('name', 'pk') # Fallback
+             print("DEBUG: Popularity sort selected, falling back to default (name, pk).")
         else: # 'default'
              product_list = product_list.order_by('name', 'pk')
-             print("Sorted by default (name, pk).")
+             print("DEBUG: Sorted by default (name, pk).")
 
     except Exception as e:
-        product_list = product_list.order_by('name', 'pk')
-        print(f"Error during sorting, applying default sort (name, pk). Error: {e}")
+        print(f"DEBUG: Error during sorting, applying default sort (name, pk). Error: {e}")
+        product_list = product_list.order_by('name', 'pk') # Fallback sort
 
 
     # --- Logika Paginacji ---
     products_per_page = 9
 
+    # Przekazujemy 'product_list' do paginatora.
+    # Jeśli błąd OuterRef nadal występuje, może być konieczne
+    # dalsze uproszczenie querysetu przed paginacją, np. poprzez
+    # pobranie tylko ID, a następnie wykonanie nowego zapytania.
+    # Ale spróbujmy najpierw tego:
     paginator = Paginator(product_list, products_per_page)
 
     page_number = request.GET.get('page')
 
     try:
         products_page = paginator.get_page(page_number)
-        print(f"Total items for pagination: {paginator.count}")
-        print(f"Total pages: {paginator.num_pages}")
-        print(f"Products on current page ({products_page.number}): {len(products_page.object_list) if hasattr(products_page, 'object_list') else 'N/A'}")
-    except PageNotInteger: # Zmieniono na PageNotInteger
+        print(f"DEBUG: Total items for pagination: {paginator.count}")
+        print(f"DEBUG: Total pages: {paginator.num_pages}")
+        print(f"DEBUG: Products on current page ({products_page.number}): {len(products_page.object_list) if hasattr(products_page, 'object_list') else 'N/A'}")
+
+
+    except PageNotInteger:
         products_page = paginator.get_page(1)
-        print("Invalid page number, getting page 1.")
+        print("DEBUG: Invalid page number, getting page 1.")
     except EmptyPage:
         products_page = paginator.get_page(paginator.num_pages)
-        print("Empty page requested, getting last page.")
+        print("DEBUG: Empty page requested, getting last page.")
     except Exception as e:
-         print(f"Unexpected error during pagination: {e}")
+         print(f"DEBUG: Unexpected error during pagination: {e}")
          # Fallback na pustą stronę, jeśli paginacja zawiedzie
          from django.core.paginator import Page
-         products_page = Page([], 1, paginator)
-         print("Unexpected pagination error, providing empty page.")
+         # Tworzymy pustą listę produktów dla pustej strony
+         products_page = paginator.get_page(1) # Spróbuj pobrać pierwszą stronę, jeśli błąd nie jest związany z numerem strony
+         products_page.object_list = [] # Ustawiamy listę obiektów na pustą
+         products_page.paginator._count = 0 # Resetujemy licznik paginatora dla tej pustej strony
+         # products_page = Page([], 1, paginator) # Alternatywnie, jeśli chcesz całkowicie pusty obiekt Page
+
+         print("DEBUG: Unexpected pagination error, providing empty page object with empty list.")
+         print(f"DEBUG: Error details: {e}") # Wydrukuj szczegóły błędu
 
 
     context = {
         'category': category,
         'products_page': products_page,
         'current_sorting': sort_by,
-        'request': request, # Potrzebne do generowania URL z filtrami/sortowaniem
+        'request': request,
 
         'all_materials': all_materials,
         'selected_gender': selected_gender,
-        'selected_min_price': selected_min_price,
-        'selected_max_price': selected_max_price,
+        'selected_min_price': selected_min_price_str,
+        'selected_max_price': selected_max_price_str,
         'selected_materials': selected_materials,
         'selected_sale_only': selected_sale_only,
+        'selected_available_only': selected_available_only,
+
+        'overall_min_price': float(overall_min_price),
+        'overall_max_price': float(overall_max_price),
     }
 
-    print(f"Context keys: {context.keys()}")
+    print(f"DEBUG: Context keys: {context.keys()}")
     print(f"--- End category view ---")
 
     return render(request, 'category.html', context)
-
 
 # --- Widok szczegółów produktu ---
 def product(request, pk):
@@ -312,12 +327,9 @@ def product(request, pk):
         print(f"Error getting product with pk '{pk}': {e}")
         raise # Zgłoś błąd 404
 
-    # --- Pobierz Wariacje Produktu (rozmiary) ---
-    # Posortuj je np. po polu 'size' (jeśli jest to możliwe, np. jako liczby)
-    # Jeśli rozmiary są typu '17cm', '18cm', sortowanie alfabetyczne może być OK.
-    # Jeśli chcesz sortować numerycznie '17' przed '18', pole size musiałoby być int/decimal
-    # lub wymagać niestandardowego sortowania. Dla prostoty, sortujmy alfabetycznie.
-    variations = product.variations.all().order_by('size') # Sortuj wariacje
+    # --- Pobierz Wariacje Produktu (posortowane) ---
+    # Jeśli produkt ma wariacje, pobierz je. Jeśli nie, variations będzie pustym querysetem.
+    variations = product.variations.all().order_by('size')
 
     print(f"Found {variations.count()} variations for product '{product.name}'.")
 
@@ -331,8 +343,16 @@ def product(request, pk):
         for material in product_materials:
             material_q_objects |= Q(materials=material)
 
-        similar_products = Product.objects.filter(material_q_objects).distinct()
-        similar_products = similar_products.exclude(pk=product.pk)
+        # Pobierz podobne produkty, wykluczając bieżący
+        similar_products = Product.objects.filter(material_q_objects).distinct().exclude(pk=product.pk)
+
+        # Opcjonalnie: Dodaj filtrowanie dostępności dla podobnych produktów
+        # similar_products = similar_products.filter(
+        #     Q(variations__isnull=True, stock__gt=0) |
+        #     Q(variations__isnull=False, variations__stock__gt=0)
+        # ).distinct()
+
+
         similar_products = similar_products[:6] # Pokaż np. 6 podobnych produktów
 
     print(f"Found {similar_products.count()} similar products based on materials.")
@@ -340,7 +360,7 @@ def product(request, pk):
 
     context = {
         'product': product,
-        'variations': variations,        # <-- DODAJ WARIAcje DO KONTEKSTU
+        'variations': variations, # Nadal przekazujemy wszystkie wariacje, nawet jeśli jest 1 lub 0
         'similar_products': similar_products,
     }
 
@@ -350,116 +370,119 @@ def product(request, pk):
     return render(request, 'product.html', context)
 
 # --- Widok szczegółów materiału ---
+# Będzie bardzo podobny do widoku category po zmianach
 def stones_detail(request, material_name):
-    """
-    Widok wyświetlający szczegóły materiału (kamienia) i listę produktów z tym materiałem,
-    z paginacją, sortowaniem i filtrami.
-    Argument 'material_name' przyjmuje nazwę materiału z URL.
-    """
-    print(f"--- Debugging stones_detail view ---")
-    print(f"Requested material name: {material_name}")
+    # ... (początek funkcji) ...
 
     material = get_object_or_404(Material, name=material_name)
     all_materials = Material.objects.all().order_by('name')
 
-    product_list = Product.objects.filter(materials=material)
-    print(f"Initial product list count for material '{material.name}': {product_list.count()}")
+    # Zaczynamy od produktów z danym materiałem
+    all_products_with_material = Product.objects.filter(materials=material)
+    print(f"DEBUG: Initial count for material '{material.name}': {all_products_with_material.count()}") # Debug
 
-    # --- ADNOTACJA DLA EFEKTYWNEJ CENY ---
-    # Tak samo jak w widoku category, użyj effective_price z uwzględnieniem wariacji
-    product_list = product_list.annotate(
-        has_variations_flag=models.Case(
-            models.When(variations__isnull=False, then=True),
-            default=False,
-            output_field=models.BooleanField()
-        )
-    ).annotate(
-         min_variation_price=models.Subquery(
-             ProductVariation.objects.filter(product=models.OuterRef('pk'))
-             .annotate(
-                 effective_var_price=Case(
-                     When(is_sale=True, then='sale_price'),
-                     When(price__isnull=False, then='price'),
-                     default=models.OuterRef('price'),
-                     output_field=DecimalField()
-                 )
-             )
-             .order_by('effective_var_price')
-             .values('effective_var_price')[:1]
-         )
-    ).annotate(
+    # --- OBLICZ OGÓLNY ZAKRES CEN DLA SUWAKA (TERAZ ZAWSZE Z CENY BAZOWEJ PRODUKTU) ---
+    price_aggregation = all_products_with_material.aggregate(
+        min_price=Min('price'), # Zmieniono na 'price'
+        max_price=Max('price')  # Zmieniono na 'price'
+    )
+    overall_min_price = price_aggregation['min_price'] if price_aggregation['min_price'] is not None else 0
+    overall_max_price = price_aggregation['max_price'] if price_aggregation['max_price'] is not None else 1000
+    print(f"DEBUG: Overall Price Range calculated: {overall_min_price} - {overall_max_price}") # Debug
+
+
+    # --- Zaczynamy filtrowanie od pełnej listy produktów z tym materiałem ---
+    # Uproszczona adnotacja dla effective_price - BEZ Subquery/OuterRef dla ceny
+    product_list = all_products_with_material.annotate(
         effective_price=Case(
-            When(has_variations_flag=True, then='min_variation_price'),
             When(is_sale=True, then='sale_price'),
             default='price',
             output_field=DecimalField()
         )
     )
+    # USUNIĘTO adnotację min_variation_price
+
+
+    print(f"DEBUG: Count after annotation: {product_list.count()}") # Debug
 
 
     # --- Logika Filtrowania ---
     selected_gender = request.GET.get('gender')
-    selected_min_price = request.GET.get('min_price')
-    selected_max_price = request.GET.get('max_price')
-    # selected_materials = request.GET.getlist('material') # Niepotrzebne tutaj
+    selected_min_price_str = request.GET.get('min_price')
+    selected_max_price_str = request.GET.get('max_price')
     selected_sale_only = request.GET.get('sale_only') == 'true'
+    selected_available_only = request.GET.get('available_only') == 'true'
 
-    print(f"Product list count before filtering: {product_list.count()}")
+    # Konwertujemy wybrane ceny na float
+    try:
+        selected_min_price = float(selected_min_price_str) if selected_min_price_str else overall_min_price
+    except ValueError:
+        selected_min_price = overall_min_price
+    try:
+        selected_max_price = float(selected_max_price_str) if selected_max_price_str else overall_max_price
+    except ValueError:
+        selected_max_price = overall_max_price
+
+    print(f"DEBUG: Selected filters: gender={selected_gender}, min_price={selected_min_price}, max_price={selected_max_price}, sale_only={selected_sale_only}, available_only={selected_available_only}") # Debug
+
 
     try:
         # Filtr płci (gender)
         if selected_gender and selected_gender != 'all':
             product_list = product_list.filter(gender=selected_gender)
-            print(f"Applied Gender filter: {selected_gender}. Count: {product_list.count()}")
-
-        # Filtr ceny (min_price, max_price) - TERAZ FILTRUJEMY PO 'effective_price'
-        if selected_min_price:
-            try:
-                min_price_float = float(selected_min_price)
-                product_list = product_list.filter(effective_price__gte=min_price_float)
-                print(f"Applied Min Price filter: {min_price_float}. Count: {product_list.count()}")
-            except ValueError:
-                print(f"Invalid min_price value: {selected_min_price}")
-        if selected_max_price:
-            try:
-                max_price_float = float(selected_max_price)
-                product_list = product_list.filter(effective_price__lte=max_price_float)
-                print(f"Applied Max Price filter: {max_price_float}. Count: {product_list.count()}")
-            except ValueError:
-                 print(f"Invalid max_price value: {selected_max_price}")
+            print(f"DEBUG: Count after Gender filter ('{selected_gender}'): {product_list.count()}") # Debug
 
         # Filtr promocji
         if selected_sale_only:
-             product_list = product_list.filter(Q(is_sale=True) | Q(variations__is_sale=True)).distinct()
-             print(f"Applied Sale Only filter. Count: {product_list.count()}")
+             product_list = product_list.filter(is_sale=True)
+             print(f"DEBUG: Count after Sale Only filter: {product_list.count()}") # Debug
+
+        # Filtr dostępności
+        if selected_available_only:
+             product_list = product_list.filter(
+                Q(variations__isnull=True, stock__gt=0) |
+                Q(variations__isnull=False, variations__stock__gt=0)
+             ).distinct()
+             print(f"DEBUG: Count after Available Only filter: {product_list.count()}") # Debug
+
+        # --- FILTR CENY (MIN/MAX) ---
+        print(f"DEBUG: Applying Price Range filter: {selected_min_price} - {selected_max_price}") # Debug
+        product_list = product_list.filter(
+            effective_price__gte=selected_min_price,
+            effective_price__lte=selected_max_price
+        )
+        print(f"DEBUG: Count after Price Range filter: {product_list.count()}") # Debug
+
 
     except Exception as e:
-        print(f"Error during filtering: {e}")
+        print(f"DEBUG: Error during filtering: {e}")
+        product_list = Product.objects.none()
 
-    print(f"Product list count after ALL filtering: {product_list.count()}")
+
+    print(f"DEBUG: Final count before pagination: {product_list.count()}") # Debug
 
 
     # --- Logika Sortowania ---
     sort_by = request.GET.get('sorting', 'default')
-    print(f"Sorting requested: {sort_by}")
+    print(f"DEBUG: Sorting requested: {sort_by}")
 
     try:
         if sort_by == 'low-high':
             product_list = product_list.order_by('effective_price', 'pk')
-            print("Sorted by effective_price low-high.")
+            print("DEBUG: Sorted by effective_price low-high.")
         elif sort_by == 'high-low':
             product_list = product_list.order_by('-effective_price', 'pk')
-            print("Sorted by effective_price high-low.")
+            print("DEBUG: Sorted by effective_price high-low.")
         elif sort_by == 'popularity':
              product_list = product_list.order_by('name', 'pk')
-             print("Popularity sort selected, falling back to default (name, pk).")
+             print("DEBUG: Popularity sort selected, falling back to default (name, pk).")
         else: # 'default'
              product_list = product_list.order_by('name', 'pk')
-             print("Sorted by default (name, pk).")
+             print("DEBUG: Sorted by default (name, pk).")
 
     except Exception as e:
+        print(f"DEBUG: Error during sorting, applying default sort (name, pk). Error: {e}")
         product_list = product_list.order_by('name', 'pk')
-        print(f"Error during sorting, applying default sort (name, pk). Error: {e}")
 
 
     # --- Logika Paginacji ---
@@ -471,20 +494,20 @@ def stones_detail(request, material_name):
 
     try:
         products_page = paginator.get_page(page_number)
-        print(f"Total items for pagination: {paginator.count}")
-        print(f"Total pages: {paginator.num_pages}")
-        print(f"Products on current page ({products_page.number}): {len(products_page.object_list) if hasattr(products_page, 'object_list') else 'N/A'}")
+        print(f"DEBUG: Total items for pagination: {paginator.count}")
+        print(f"DEBUG: Total pages: {paginator.num_pages}")
+        print(f"DEBUG: Products on current page ({products_page.number}): {len(products_page.object_list) if hasattr(products_page, 'object_list') else 'N/A'}")
     except PageNotInteger:
         products_page = paginator.get_page(1)
-        print("Invalid page number, getting page 1.")
+        print("DEBUG: Invalid page number, getting page 1.")
     except EmptyPage:
         products_page = paginator.get_page(paginator.num_pages)
-        print("Empty page requested, getting last page.")
+        print("DEBUG: Empty page requested, getting last page.")
     except Exception as e:
-         print(f"Unexpected error during pagination: {e}")
+         print(f"DEBUG: Unexpected error during pagination: {e}")
          from django.core.paginator import Page
          products_page = Page([], 1, paginator)
-         print("Unexpected pagination error, providing empty page.")
+         print("DEBUG: Unexpected pagination error, providing empty page.")
 
 
     context = {
@@ -495,17 +518,20 @@ def stones_detail(request, material_name):
 
         'all_materials': all_materials,
         'selected_gender': selected_gender,
-        'selected_min_price': selected_min_price,
-        'selected_max_price': selected_max_price,
+        'selected_min_price': selected_min_price_str,
+        'selected_max_price': selected_max_price_str,
         'selected_materials': [], # Na tej stronie nie filtrujemy po wielu materiałach z sidebar
         'selected_sale_only': selected_sale_only,
+        'selected_available_only': selected_available_only,
+
+        'overall_min_price': float(overall_min_price),
+        'overall_max_price': float(overall_max_price),
     }
 
-    print(f"Context keys: {context.keys()}")
+    print(f"DEBUG: Context keys: {context.keys()}")
     print(f"--- End stones_detail view ---")
 
     return render(request, 'stones.html', context)
-
 
 def home(request):
 	products = Product.objects.all()

@@ -2,177 +2,171 @@
 {% block content %}
 {% load static %}
 
+{% load custom_filters %}
+
+
 {# Upewnij się, że te linki są poprawne i Swiper jest zainstalowany/dostępny #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 {# Upewnij się, że masz załadowane jQuery, jeśli używasz $.ajax #}
-{# <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> #}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
 
 
-<div class="container mt-4"> {# Dodajemy górny margines #}
+<div class="container mt-4">
 
-    {# Główny kontener produktu #}
-    <div class="row g-0 product-layout-row"> {# Używamy row g-0 dla braku odstępów między kolumnami #}
+    <div class="row g-0 product-layout-row">
 
         {# === Lewa kolumna - Miniatury Zdjęć === #}
-        {# col-md-2 na średnich i większych ekranach, zajmuje 2/12 szerokości #}
-        <div class="col-md-2 d-none d-md-block"> {# Ukrywamy na małych ekranach, pokazujemy na średnich wzwyż #}
-            <div class="product-thumbnails-list pe-3"> {# Dodajemy padding po prawej #}
+        <div class="col-md-2 d-none d-md-block">
+            <div class="product-thumbnails-list pe-3">
                 {% if product.images.all %}
                 {% for image_obj in product.images.all %}
-                <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}"> {# Dodano klasę active dla pierwszego #}
-                    <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}"> {# Dodano klasę #}
+                <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}">
+                    <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}">
                 </div>
                 {% endfor %}
                 {% else %}
-                {# Fallback: domyślna miniatura, jeśli brak zdjęć #}
                 <div class="thumbnail-item mb-2 active" data-src="{% static 'img/kolczyki.png' %}">
                     <img src="{% static 'img/kolczyki.png' %}" class="img-fluid thumbnail-image" alt="Domyślna miniatura">
                 </div>
                 {% endif %}
             </div>
-        </div> {# Koniec lewej kolumny #}
+        </div>
 
         {# === Środkowa kolumna - Duże Zdjęcie Główne === #}
-        {# col-md-6 na średnich i większych ekranach, zajmuje 6/12 szerokości #}
-        {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
         <div class="col-md-6">
             <div class="product-main-image-container">
                 {% if product.images.all %}
-                {# Duże zdjęcie główne - src będzie zmieniane przez JS #}
-                {# Użyj pierwszego zdjęcia jako domyślnego #}
-                <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}"> {# Dodano ID i klasę #}
+                <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}">
                 {% else %}
-                {# Fallback: domyślny obrazek, jeśli brak zdjęć produktu #}
-                <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu"> {# Dodano ID i klasę #}
+                <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu">
                 {% endif %}
             </div>
-            {# Opcjonalnie: Karuzela na małych ekranach zamiast miniatur i dużego zdjęcia #}
-            {# Możesz tutaj wstawić Swipera lub Karuzelę Bootstrapa dla ekranów < md #}
-        </div> {# Koniec środkowej kolumny #}
+        </div>
 
 
         {# === Prawa kolumna - Informacje o produkcie, wybór wariacji i przycisk "Dodaj do koszyka" === #}
-        {# col-md-4 na średnich i większych ekranach, zajmuje 4/12 szerokości #}
-        {# Na małych ekranach zajmie całą szerokość (domyślnie col-12) #}
         <div class="col-md-4">
-            {# Formularz Dodaj do koszyka - obejmuje tylko prawą kolumnę #}
-            {# Ten formularz będzie wysyłał ID WARIacji, a nie produktu #}
+             {# FORMULARZ DODAJ DO KOSZYKA - Obejmuje całą prawą kolumnę #}
+             {# Akcja formularza i metoda - bez zmian #}
+             {# ID 'product_addtocart_form' jest używane przez JS #}
             <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
                 {% csrf_token %}
-                {# Ukryte pole, które będzie przechowywać ID wybranej wariacji #}
-                <input type="hidden" name="variation_id" id="selected-variation-id" value="">
-                {# Pole na ilość (można pozwolić użytkownikowi wybrać, domyślnie 1) #}
+                {# Ukryte pole, które będzie przechowywać ID wybranej wariacji LUB ID PRODUKTU #}
+                {# Wartość domyślna będzie ustawiana przez JS #}
+                <input type="hidden" name="item_id" id="selected-item-id" value="">
+                {# Pole na ilość #}
                 <div class="form-group mb-3">
                     <label for="qty">Ilość:</label>
                     <input type="number" name="quantity" value="1" min="1" class="form-control" id="qty" style="width: 80px;">
                 </div>
 
-
-                <div class="product-info-box p-4"> {# Dodajemy padding do kontenera informacji #}
+                <div class="product-info-box p-4">
 
                     {# Nagłówek produktu (Nazwa) #}
                     <div class="product-header-detail mb-3">
-                        <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1> {# Zmieniono na h3 i dodano margines #}
+                        <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1>
                     </div>
 
-                    {# Sekcja ceny - Teraz wyświetla "Od X zł" jeśli są wariacje #}
+                    {# Sekcja ceny - Zawsze wyświetla cenę produktu bazowego #}
                     <div class="price-box-detail mb-3">
-                        {% if product.has_variations %}
-                        {# Jeśli produkt ma wariacje, wyświetl cenę "Od" #}
-                        <p class="product-price-detail h4 text-danger mb-0">Cena: Od {{ product.get_min_variation_price }} zł</p>
-                        {% else %}
-                        {# Jeśli brak wariacji, wyświetl cenę bazową z uwzględnieniem wyprzedaży #}
                         {% if product.is_sale %}
-                        {# Cena regularna przekreślona #}
-                        <p class="old-price-detail text-muted mb-0">
-                            <span class="price-label">Normalna cena:</span>
-                            <span class="price"><strike>{{ product.price }} zł</strike></span>
-                        </p>
-                        {# Cena wyprzedażowa #}
-                        <p class="special-price-detail h4 text-danger mb-0"> {# Użyj h4 i klasy text-danger dla wyróżnienia #}
-                            <span class="price-label">Cena specjalna:</span>
-                            <span class="price">{{ product.sale_price }} zł</span>
-                        </p>
-                        {% else %}
-                        {# Normalna cena #}
-                        <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p> {# Użyj h4 dla normalnej ceny #}
-                        {% endif %}
-                        {% endif %}
+                           {# Cena wyprzedażowa produktu bazowego #}
+                           <p class="product-sale-price h4 mb-0">{{ product.sale_price }} zł</p>
+                           {# Cena regularna przekreślona #}
+                            <p class="small text-muted"><del>{{ product.price }} zł</del></p>
+                       {% else %}
+                           {# Normalna cena produktu bazowego #}
+                           <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p>
+                       {% endif %}
+                       {# Dodaj informację o najniższej cenie z 30 dni pod ceną (jeśli is_sale) #}
+                       {% if product.is_sale %}
+                            <p class="small text-muted lowest-price-line">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p> {# Zakładając, że najniższa cena = obecna wyprzedażowa #}
+                       {% endif %}
                     </div>
 
                     {# ---------------------------------------------------------- #}
-                    {# SEKCJA WYBORU WARIAcji (ROZMIARU) #}
+                    {# SEKCJA WYBORU WARIAcji (ROZMIARU) LUB INFORMACJI O JEDNYM ROZMIARZE #}
                     {# ---------------------------------------------------------- #}
 
-                    {% if variations %} {# Wyświetl wybór rozmiaru tylko jeśli istnieją wariacje #}
-                    <div class="variation-select-section my-4"> {# Dodajemy margines góra/dół #}
-                        <div class="form-group">
-                            <label for="size-select">Wybierz rozmiar:</label>
-                            <select class="form-control" id="size-select">
-                                <option value="">-- Wybierz rozmiar --</option>
-                                {% for variation in variations %}
-                                {# value w option to ID wariacji #}
-                                <option value="{{ variation.id }}"
-                                        data-price="{{ variation.get_effective_price }}" {# Przekazujemy efektywną cenę wariacji #}
-                                        data-stock="{{ variation.stock }}" {# Przekazujemy stan magazynowy wariacji #}
-                                        {% if variation.stock <= 0 %}disabled{% endif %}> {# Wyłącz opcję jeśli brak na stanie #}
-                                    {{ variation.size }}
-                                    {# Opcjonalnie: pokaż cenę w nawiasie jeśli różni się od ceny bazowej produktu #}
-                                    {% if variation.get_effective_price != product.get_effective_price %}
-                                    ({{ variation.get_effective_price }} zł)
-                                    {% endif %}
-                                    {# Opcjonalnie: pokaż informację o niskim stanie lub braku #}
-                                    {% if variation.stock <= 5 and variation.stock > 0 %} (Pozostało: {{ variation.stock }}) {% endif %}
-                                    {% if variation.stock <= 0 %} (Brak w magazynie) {% endif %}
-                                </option>
-                                {% endfor %}
-                            </select>
+                    {% if product.has_multiple_variations %} {# Wyświetl dropdown tylko jeśli ma WIELE wariacji #}
+                        <div class="variation-select-section my-4">
+                            <div class="form-group">
+                                <label for="size-select">Wybierz rozmiar:</label>
+                                <select class="form-control" id="size-select">
+                                    <option value="">-- Wybierz rozmiar --</option>
+                                    {% for variation in variations %}
+                                    <option value="{{ variation.id }}"
+                                            data-stock="{{ variation.stock }}"
+                                            {% if variation.stock <= 0 %}disabled{% endif %}>
+                                        {{ variation.size|default:"Brak rozmiaru" }} {# Wyświetl "Brak rozmiaru" jeśli pole size jest puste #}
+                                        {% if variation.stock <= 0 %} (Brak w magazynie) {% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {# Div do dynamicznego wyświetlania informacji o wybranej wariacji (stock) #}
+                            <div id="variation-info" class="mt-2 small text-muted">
+                                {# Informacja o stanie pojawi się tutaj po wybraniu rozmiaru #}
+                            </div>
                         </div>
-                        {# Div do dynamicznego wyświetlania informacji o wybranej wariacji (cena, stan) #}
-                        <div id="variation-info" class="mt-2 small text-muted">
-                            {# Informacja o cenie i stanie pojawi się tutaj po wybraniu rozmiaru #}
+                    {% elif product.has_variations %} {# Produkt ma DOKŁADNIE JEDNĄ wariację #}
+                         {# Wyświetl informacje o tej pojedynczej wariacji #}
+                         {% with single_variation=variations.first %} {# Pobierz pierwszą (i jedyną) wariację #}
+                            <div class="single-variation-info my-4">
+                                <p>Rozmiar: {{ single_variation.size|default:"Uniwersalny" }}</p> {# Wyświetl rozmiar lub "Uniwersalny" #}
+                                {% if single_variation.stock > 0 %}
+                                    <p class="text-success">Dostępność: {{ single_variation.stock }} szt.</p>
+                                {% else %}
+                                    <p class="text-danger">Brak w magazynie</p>
+                                {% endif %}
+                                {# Ukryte pole z ID tej pojedynczej wariacji, aby JS mógł je pobrać #}
+                                <input type="hidden" id="single-variation-id" value="{{ single_variation.id }}">
+                                <input type="hidden" id="single-variation-stock" value="{{ single_variation.stock }}">
+                            </div>
+                         {% endwith %}
+                    {% else %} {# Produkt NIE MA żadnych wariacji (jest produktem bazowym z własnym stockiem) #}
+                        <div class="no-variation-info my-4">
+                            {# Wyświetl informację o stocku produktu bazowego #}
+                            <p>Rozmiar: Uniwersalny</p> {# Możesz przyjąć "Uniwersalny" lub "Brak rozmiaru" #}
+                            {% if product.stock > 0 %}
+                                <p class="text-success">Dostępność: {{ product.stock }} szt.</p>
+                                {# Ukryte pole z ID produktu bazowego, aby JS mógł je pobrać #}
+                                <input type="hidden" id="single-product-id" value="{{ product.id }}">
+                                <input type="hidden" id="single-product-stock" value="{{ product.stock }}">
+                            {% else %}
+                                <p class="text-danger">Brak w magazynie</p>
+                            {% endif %}
                         </div>
-                    </div>
-                    {% else %} {# Jeśli produkt nie ma wariacji #}
-                    <div class="no-variation-info my-4">
-                        {# Możesz tutaj wyświetlić informację o stanie magazynowym produktu bazowego, jeśli go masz #}
-                        {# Zakładam, że produkt bez wariacji ma pole 'stock' #}
-                        {% if product.stock > 0 %}
-                        <p class="text-success">Dostępny w magazynie (Pozostało: {{ product.stock }})</p>
-                        {# Upewnij się, że formularz i przycisk są widoczne i aktywne #}
-                        {% else %}
-                        <p class="text-danger">Brak w magazynie</p>
-                        {# Upewnij się, że przycisk "Dodaj do koszyka" jest wyłączony #}
-                        {% endif %}
-                 
-                    </div>
                     {% endif %}
 
                     {# ---------------------------------------------------------- #}
 
                     {# Sekcja "Dodaj do koszyka" (przycisk) #}
-                    <div class="add-to-cart-section-detail my-4"> {# Dodajemy margines góra/dół #}
+                    <div class="add-to-cart-section-detail my-4">
 
-                        {# Przycisk Dodaj do koszyka - ID 'add-cart' jest używane przez Twoje JS #}
-                        {# Przycisk będzie domyślnie wyłączony, jeśli są wariacje, a żaden rozmiar nie został wybrany lub jest brak na stanie #}
-                        <button type="submit" id="add-cart" class="btn btn-dark w-100" {% if variations %}disabled{% endif %}> {# Ustawiamy type="submit" i domyślnie disabled jeśli są wariacje #}
-                            Dodaj do koszyka
-                        </button>
+                        {# Przycisk Dodaj do koszyka / Brak w magazynie #}
+                        {% if product.is_available %} {# Użyj nowej metody is_available #}
+                            <button type="submit" id="add-cart" class="btn btn-dark w-100">
+                                Dodaj do koszyka
+                            </button>
+                        {% else %}
+                            {# Przycisk "Brak w magazynie" - wyszarzony #}
+                            <button type="button" class="btn btn-secondary w-100" disabled>
+                                Brak w magazynie
+                            </button>
+                        {% endif %}
+
 
                         {# === DODATKOWE LINIE POD PRZYCISKIEM === #}
-                        <div class="small text-muted mt-2"> {# Kontener na małe linie tekstu #}
-                            <p class="mb-0">Wysyłka: 1 dzień roboczy</p> {# Pierwsza linia #}
-                            <p class="mb-0">Darmowa dostawa od 300zl</p> {# Druga linia #}
+                        <div class="small text-muted mt-2">
+                            <p class="mb-0">Wysyłka: 1 dzień roboczy</p>
+                            <p class="mb-0">Darmowa dostawa od 300zl</p>
                         </div>
                         {# ====================================== #}
 
                     </div>
-
-                    {# Sekcja dostępności (opcjonalnie) #}
-                    {# ... (pozostałe opcjonalne sekcje) ... #}
-
 
                 </div> {# Koniec product-info-box #}
             </form> {# Koniec formularza Dodaj do koszyka #}
@@ -182,67 +176,44 @@
 
 
     {# Sekcja z opisem produktu pod głównym blokiem #}
-    <div class="product-description-section-detail mt-4"> {# Dodajemy margines górny #}
-        <h3 class="description-heading-detail">Opis produktu</h3> {# Dodano klasę #}
-        <hr class="description-separator-detail" /> {# Separator w formie linii #}
-        <p class="product-description-detail">{{ product.description|linebreaksbr }}</p> {# Akapit z opisem i filtrem linebreaksbr #}
+    <div class="product-description-section-detail mt-4">
+        <h3 class="description-heading-detail">Opis produktu</h3>
+        <hr class="description-separator-detail" />
+        <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
     </div>
 
-
     {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
-    {# Wyświetlamy tylko jeśli są podobne produkty #}
     {% if similar_products %}
-    <div class="similar-products-section mt-5"> {# Dodajemy duży margines górny #}
-        <header class="text-center"> {# Używamy headera jak w home.html #}
-            <p class="small text-muted small text-uppercase mb-1">Podobne produkty</p> {# Tytuł sekcji #}
-            <h3 class="similar-products-heading mb-4">Produkty z tym samym materiałem</h3> {# Podtytuł sekcji #}
+    <div class="similar-products-section mt-5">
+        <header class="text-center">
+            <p class="small text-muted small text-uppercase mb-1">Podobne produkty</p>
+            <h3 class="similar-products-heading mb-4">Produkty z tym samym materiałem</h3>
         </header>
 
-        {# Nowy wrapper dla slidera i strzałek/paginacji (jeśli są na zewnątrz) #}
-        {# Używamy klas z home.html #}
         <div class="swiper-container-wrapper swiper-items-wrapper">
-            {# Główny kontener Swipera #}
-            <div class="swiper swiper-items similar-products-swiper"> {# Dodano unikalną klasę dla tego slidera #}
+            <div class="swiper swiper-items similar-products-swiper">
                 <div class="swiper-wrapper">
 
-                    {# Iterujemy po podobnych produktach #}
                     {% for similar_product in similar_products %}
-                    {# === ELEMENT SLIDERA (SLIDE) === #}
-                    {# Używamy klasy swiper-slide wymaganej przez Swiper #}
                     <div class="swiper-slide">
-
-                        {# === STRUKTURA KARTY PRODUKTU Z HOME.HTML === #}
-                        <div class="product text-center"> {# Klasy z home.html #}
-                            <div class="mb-3 position-relative"> {# Kontener obrazka/karuzeli #}
-
-                                {# Badge - jeśli używasz #}
+                        <div class="product text-center">
+                            <div class="mb-3 position-relative">
                                 <div class="badge text-white badge-"></div>
-
-                                {# Obrazek/Karuzela owinięta w link do strony produktu #}
-                                <a class="d-block" href="{% url 'product' similar_product.id %}">
+                                <a class="d-block" href="{% url 'product' similar_product.id  %}">
                                     {% if similar_product.images.all %}
-                                    {# Mini karuzela Bootstrapa wewnątrz slajdu Swipera #}
-                                    {# Użyj unikalnego ID dla każdej karuzeli #}
                                     <div id="similarProductCardCarousel{{ similar_product.id }}" class="carousel slide card-product-carousel">
-
-                                        {# Optional: Indicators (małe kropki na dole karuzeli) #}
                                         <div class="carousel-indicators">
                                             {% for image_obj in similar_product.images.all %}
                                             <button type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
                                             {% endfor %}
                                         </div>
-
-                                        {# Slides #}
                                         <div class="carousel-inner">
                                             {% for image_obj in similar_product.images.all %}
                                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                                {# img-fluid d-block w-100 są standardem, rozmiar w CSS #}
                                                 <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:similar_product.name }}">
                                             </div>
                                             {% endfor %}
                                         </div>
-
-                                        {# Ukrywamy nawigację Bootstrapa w karcie (jeśli nie chcesz jej widzieć) #}
                                         <button class="carousel-control-prev" type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide="prev">
                                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">Poprzednie</span>
@@ -252,301 +223,289 @@
                                             <span class="visually-hidden">Następne</span>
                                         </button>
                                     </div>
-
                                     {% else %}
-                                    {# Fallback obrazek jeśli brak zdjęć #}
                                     <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
                                     {% endif %}
                                 </a>
-
-                                {# Produkt Overlay (Wishlist/Add to Cart na hover) - opcjonalnie #}
-                                {# ... (pozostawione zakomentowane) ... #}
-                            </div> {# Koniec kontenera obrazka/karuzeli #}
-
-                            {# Informacje o produkcie POD KARUZELĄ #}
-                            <div class="product-info"> {# Klasy z home.html #}
-                                {# Nazwa produktu jako link #}
+                            </div>
+                            <div class="product-info">
                                 <a href="{% url 'product' similar_product.id %}" style="text-decoration: none; color: inherit;">
-                                    <h6 class="product-name">{{ similar_product.name }}</h6> {# Zmieniamy na h6 i dodajemy klasę #}
+                                    <h6 class="product-name">{{ similar_product.name }}</h6>
                                 </a>
-
-                                {# Status wyprzedaży i ceny - Zmienione, aby uwzględnić wariacje #}
+                                {# Wyświetlanie ceny - Używamy uproszczonej logiki, bo wszystkie wariacje mają cenę bazową #}
                                 <p class="small text-muted product-price-display">
-                                    {% if similar_product.has_variations %}
-                                    {# Pokaż cenę "Od" korzystając z metody dodanej w modelu #}
-                                    Od {{ similar_product.get_min_variation_price }} zł
-                                    {% else %}
-                                    {# Dla produktów bez wariacji, pokaż cenę bazową z uwzględnieniem wyprzedaży #}
-                                    {% if similar_product.is_sale %}
-                                    <span class="text-danger">{{ similar_product.sale_price }} zł</span> <span class="text-muted"><del>{{ similar_product.price }} zł</del></span>
-                                    {% else %}
-                                    {{ similar_product.price }} zł
-                                    {% endif %}
-                                    {% endif %}
+                                     {% if similar_product.has_variations %}
+                                        Od {{ similar_product.get_effective_price }} zł
+                                     {% else %}
+                                        {% if similar_product.is_sale %}
+                                            <span class="text-sale-price">{{ similar_product.sale_price }} zł</span> <span class="text-muted"><del>{{ similar_product.price }} zł</del></span>
+                                        {% else %}
+                                            {{ similar_product.price }} zł
+                                        {% endif %}
+                                     {% endif %}
                                 </p>
-
-                            </div> {# Koniec product-info #}
-
-                        </div> {# Koniec product text-center #}
-                        {# === KONIEC STRUKTURY KARTY PRODUKTU Z HOME.HTML === #}
-
-                    </div> {# Koniec swiper-slide #}
-
+                                {# Dodaj informację o najniższej cenie z 30 dni pod ceną (jeśli is_sale) #}
+                                {% if similar_product.is_sale %}
+                                     <p class="small text-muted lowest-price-line">Najniższa cena z 30 dni: {{ similar_product.sale_price }} zł</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
 
-                </div> {# Koniec swiper-wrapper #}
-
-                {# Paginacja (kropki na dole) - umieszczona poza swiper-wrapper, wewnątrz swiper-container-wrapper #}
-                {# Używamy klasy z home.html #}
-                <div class="swiper-pagination similar-products-pagination"></div> {# Dodano unikalną klasę #}
-
-            </div> {# Koniec swiper swiper-items similar-products-swiper #}
-
-            {# Opcjonalnie: Strzałki nawigacyjne Swipera (jeśli są na zewnątrz slidera) #}
-            {# Jeśli home.html ma strzałki na zewnątrz, dodaj je tutaj #}
-            {% comment %}
-            <div class="swiper-button-prev similar-products-prev"></div>
-            <div class="swiper-button-next similar-products-next"></div>
-            {% endcomment %}
-
-        </div> {# === KONIEC KONTENERA SLIDERA === #}
-
-    </div> {# Koniec similar-products-section #}
+                </div>
+                <div class="swiper-pagination similar-products-pagination"></div>
+            </div>
+        </div>
+    </div>
     {% endif %}
-    {# ======================================== #}
 
 
-</div> {# Koniec container #}
+</div>
 
 {# Skrypty JS #}
 <script>
     // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
     $(document).ready(function() {
         $('.thumbnail-item').on('click', function() {
-            // Usuń klasę 'active' ze wszystkich miniatur
             $('.thumbnail-item').removeClass('active');
-            // Dodaj klasę 'active' do klikniętej miniatury
             $(this).addClass('active');
-
-            // Pobierz URL dużego zdjęcia z atrybutu data-src
             var mainImageUrl = $(this).data('src');
-
-            // Ustaw URL dużego zdjęcia w tagu img głównego zdjęcia
             $('#mainProductImage').attr('src', mainImageUrl);
-
-            // Opcjonalnie: Zaktualizuj alt text dużego zdjęcia
             var altText = $(this).find('img').attr('alt');
             $('#mainProductImage').attr('alt', altText);
-
-            // Opcjonalnie: Jeśli używasz MagicZoomPlus lub podobnego, wywołaj jego metodę aktualizacji
-            // if (typeof MagicZoomPlus !== 'undefined' && MagicZoomPlus.update) {
-            // MagicZoomPlus.update('mainProductImage', mainImageUrl);
-            // }
         });
 
-        // === SKRYPT JS DO OBSŁUGI WYBORU WARIAcji (ROZMIARU) ===
-        const sizeSelect = document.getElementById('size-select');
-        const selectedVariationIdInput = document.getElementById('selected-variation-id');
-        const addToCartButton = document.getElementById('add-cart'); // Upewnij się, że ID przycisku jest poprawne
-        const variationInfoDiv = document.getElementById('variation-info');
-        const quantityInput = document.getElementById('qty'); // Pobierz referencję do pola ilości
+        // === SKRYPT JS DO OBSŁUGI WYBORU WARIAcji (ROZMIARU) I PRZYCISKU DODAJ DO KOSZYKA ===
+        const sizeSelect = document.getElementById('size-select'); // Dropdown dla wielu wariacji
+        const selectedItemIdInput = document.getElementById('selected-item-id'); // Ukryte pole na ID (wariacji lub produktu)
+        const addToCartButton = document.getElementById('add-cart'); // Przycisk "Dodaj do koszyka"
+        const variationInfoDiv = document.getElementById('variation-info'); // Div na info o wariacji (stock)
+        const quantityInput = document.getElementById('qty'); // Pole ilości
 
-        if (sizeSelect && addToCartButton) { // Sprawdź, czy elementy istnieją (produkt może nie mieć wariacji)
-            sizeSelect.addEventListener('change', function() {
-                const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
-                const variationId = selectedOption.value; // To jest ID wariacji
-                const stock = parseInt(selectedOption.getAttribute('data-stock')); // Pobierz stock jako liczbę
-                const price = selectedOption.getAttribute('data-price'); // Pobierz cenę
+        // Sprawdź typ produktu i ustaw początkowe ID oraz stock/max ilość
+        const hasMultipleVariations = {{ product.has_multiple_variations|lower }}; // True/False
+        const hasVariations = {{ product.has_variations|lower }}; // True/False
 
-                // Ustaw ID wybranej wariacji w ukrytym polu
-                selectedVariationIdInput.value = variationId;
+        if (hasMultipleVariations) {
+            // Produkt z wieloma wariacjami (używamy dropdownu)
+            console.log("Produkt z wieloma wariacjami.");
 
-                // Dynamiczne wyświetlanie informacji o wariacji (opcjonalne)
-                if (variationId) {
-                    let infoHtml = `<p>Cena: ${price} zł</p>`;
-                    if (stock > 0) {
-                        infoHtml += `<p class="text-success">Dostępność: ${stock} szt.</p>`;
-                        // Ustaw maksymalną ilość, jaką można dodać do koszyka
-                        quantityInput.max = stock;
-                         // Jeśli obecna ilość w polu przekracza nowy max, zresetuj ją do max lub 1
-                        if (parseInt(quantityInput.value) > stock) {
-                            quantityInput.value = stock > 0 ? stock : 1; // Zresetuj do max lub 1
+            // Początkowo przycisk jest wyłączony, dopóki nie wybrano rozmiaru
+            if (addToCartButton) {
+                 addToCartButton.disabled = true;
+            }
+
+
+            if (sizeSelect) {
+                 sizeSelect.addEventListener('change', function() {
+                    const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
+                    const variationId = selectedOption.value; // To jest ID wariacji
+                    const stock = parseInt(selectedOption.getAttribute('data-stock')); // Pobierz stock
+
+                    // Ustaw ID wybranej wariacji w ukrytym polu
+                    selectedItemIdInput.value = variationId;
+
+                    // Dynamiczne wyświetlanie informacji o stocku
+                    if (variationId) {
+                        let infoHtml = '';
+                        if (stock > 0 && stock < 5) { // Niska dostępność (np. mniej niż 5)
+                            infoHtml += `<p class="text-danger">Ostatnie sztuki! (${stock} szt.)</p>`;
+                            quantityInput.max = stock; // Ogranicz max ilość do stocku
+                            if (parseInt(quantityInput.value) > stock) {
+                                quantityInput.value = stock > 0 ? stock : 1; // Zresetuj ilość
+                            }
+                        } else if (stock >= 5) { // Wysoka dostępność
+                            infoHtml += `<p class="text-success">Dostępność: ${stock} szt.</p>`;
+                             quantityInput.max = 9999; // Brak ograniczenia ilości
+                        } else { // Stock <= 0
+                             infoHtml += `<p class="text-danger">Brak w magazynie</p>`;
+                              quantityInput.max = 1; // Nie można dodać więcej niż 1 (przycisk będzie wyłączony)
+                              quantityInput.value = 1; // Zresetuj ilość
                         }
+                        variationInfoDiv.innerHTML = infoHtml;
+
                     } else {
-                        infoHtml += `<p class="text-danger">Brak w magazynie</p>`;
-                         quantityInput.max = 1; // Nie można dodać więcej niż 1 (lub 0, jeśli chcesz)
-                         quantityInput.value = 1; // Zresetuj do 1 (przycisk będzie wyłączony)
+                        // Jeśli wybrano opcję "-- Wybierz rozmiar --"
+                        variationInfoDiv.innerHTML = '';
+                        selectedItemIdInput.value = ''; // Wyczyść ID
+                         quantityInput.max = 9999; // Resetuj max ilość
+                         quantityInput.value = 1; // Zresetuj ilość
                     }
-                    variationInfoDiv.innerHTML = infoHtml;
-                } else {
-                    // Jeśli wybrano opcję "-- Wybierz rozmiar --"
-                    variationInfoDiv.innerHTML = '';
-                     quantityInput.max = 9999; // Resetuj max ilość, jeśli nie wybrano wariacji
-                     quantityInput.value = 1; // Zresetuj ilość do 1
-                }
 
-                // Włącz/Wyłącz przycisk "Dodaj do koszyka"
-                // Przycisk jest aktywny tylko gdy wybrano WARIację (value nie jest puste) I stock > 0
-                if (variationId && stock > 0) {
-                    addToCartButton.disabled = false;
-                } else {
-                    addToCartButton.disabled = true;
-                }
-            });
+                    // Włącz/Wyłącz przycisk "Dodaj do koszyka"
+                    // Aktywny tylko gdy wybrano WARIację (value nie jest puste) I stock > 0
+                    if (addToCartButton) {
+                         if (variationId && stock > 0) {
+                             addToCartButton.disabled = false;
+                         } else {
+                             addToCartButton.disabled = true;
+                         }
+                    }
+                });
 
-            // Opcjonalnie: Ustaw domyślny stan przycisku i info przy ładowaniu strony,
-            // jeśli pierwsza opcja (np. "Wybierz rozmiar") nie jest wybrana domyślnie
-            // lub jeśli chcesz wyświetlić info dla pierwszej dostępnej wariacji.
-            // sizeSelect.dispatchEvent(new Event('change')); // Symuluj zdarzenie zmiany przy ładowaniu
-        } else if (addToCartButton) {
-             // Jeśli produkt nie ma wariacji, upewnij się, że przycisk jest aktywny
-             // (zakładając, że produkty bez wariacji są zawsze dostępne lub mają oddzielny stock)
-             // LUB jeśli masz pole 'stock' w modelu Product:
-             // if (product.stock > 0) { addToCartButton.disabled = false; } else { addToCartButton.disabled = true; }
-             // Bez pola 'stock' w Product, zakładamy dostępność lub pozostawiamy domyślny stan
-             // Jeśli produkt bez wariacji ma być zawsze dostępny, usuń disabled z przycisku w HTML
-             // Jeśli ma mieć stock, dodaj go do modelu Product i sprawdź tutaj
-              // Jeśli nie ma wariacji i nie masz pola stock w Product, przycisk jest zawsze aktywny
-              addToCartButton.disabled = false; // Zakładamy, że bez wariacji produkt jest dostępny
+                // Opcjonalnie: Symuluj zdarzenie 'change' przy ładowaniu strony,
+                // jeśli chcesz od razu wyświetlić info dla domyślnie wybranej opcji (np. pierwszej)
+                // sizeSelect.dispatchEvent(new Event('change'));
+            }
+
+        } else if (hasVariations) { // Produkt ma DOKŁADNIE JEDNĄ wariację (bez dropdownu)
+            console.log("Produkt z jedną wariacją.");
+            const singleVariationId = document.getElementById('single-variation-id')?.value;
+            const singleVariationStock = parseInt(document.getElementById('single-variation-stock')?.value || '0');
+
+             // Ustaw ID tej pojedynczej wariacji w ukrytym polu
+            if (selectedItemIdInput && singleVariationId) {
+                selectedItemIdInput.value = singleVariationId;
+            }
+
+            // Ustaw max ilość do stocku pojedynczej wariacji
+            if (quantityInput) {
+                quantityInput.max = singleVariationStock > 0 ? singleVariationStock : 1;
+                 // Jeśli obecna ilość w polu przekracza stock, zresetuj ją
+                if (parseInt(quantityInput.value) > singleVariationStock) {
+                     quantityInput.value = singleVariationStock > 0 ? singleVariationStock : 1;
+                }
+            }
+
+        
+            // JS nie musi go tu włączać/wyłączać, ale upewnijmy się, że ID jest ustawione.
+
+
+        } else { // Produkt NIE MA wariacji (jest produktem bazowym z własnym stockiem)
+             console.log("Produkt bez wariacji.");
+             const singleProductId = document.getElementById('single-product-id')?.value;
+             const singleProductStock = parseInt(document.getElementById('single-product-stock')?.value || '0');
+
+             // Ustaw ID produktu bazowego w ukrytym polu
+             if (selectedItemIdInput && singleProductId) {
+                 selectedItemIdInput.value = singleProductId;
+             }
+
+             // Ustaw max ilość do stocku produktu bazowego
+            if (quantityInput) {
+                 quantityInput.max = singleProductStock > 0 ? singleProductStock : 1;
+                 // Jeśli obecna ilość w polu przekracza stock, zresetuj ją
+                 if (parseInt(quantityInput.value) > singleProductStock) {
+                      quantityInput.value = singleProductStock > 0 ? singleProductStock : 1;
+                 }
+            }
+
+     
+             // JS nie musi go tu włączać/wyłączać.
+
         }
 
 
         // === SKRYPT JS DO OBSŁUGI PRZYCISKU DODAJ DO KOSZYKA (AJAX) ===
-        // Ten skrypt musi teraz wysyłać variation_id zamiast product_id
-        $(document).on('click', '#add-cart', function(e) {
-            e.preventDefault();
-
-            // Sprawdź, czy przycisk jest aktywny (jeśli są wariacje, to znaczy, że wybrano dostępny rozmiar)
-            if ($(this).is(':disabled')) {
-                console.log("Przycisk 'Dodaj do koszyka' jest wyłączony.");
-                return; // Nie rób nic, jeśli przycisk jest wyłączony
-            }
+        // Ten skrypt teraz wysyła item_id (które jest variation_id LUB product_id)
+        if (addToCartButton) { // Upewnij się, że przycisk istnieje
+            $(document).on('click', '#add-cart', function(e) {
+                e.preventDefault();
 
 
-            // Pobieramy ID wybranej wariacji z ukrytego inputa
-            var variationId = $('#selected-variation-id').val();
-
-            // Pobieramy ilość z pola ilości
-            var quantity = $('#qty').val();
-
-            // Sprawdź, czy wybrano wariację, jeśli produkt ma wariacje
-            if (sizeSelect && !variationId) {
-                alert("Proszę wybrać rozmiar."); // Komunikat dla użytkownika
-                return; // Przerwij, jeśli nie wybrano wariacji
-            }
-
-            // Sprawdź, czy ilość jest większa niż 0
-            if (parseInt(quantity) <= 0) {
-                 alert("Ilość musi być większa niż 0.");
-                 return;
-            }
-
-            // Dane do wysłania - teraz wysyłamy variation_id
-            var postData = {
-                quantity: quantity, // Zmieniono nazwę na quantity, jak w modelu Order
-                csrfmiddlewaretoken: '{{ csrf_token }}',
-                action: 'post'
-            };
-
-            // Dodaj variation_id do danych, jeśli produkt ma wariacje i wybrano rozmiar
-            // LUB dodaj product_id, jeśli produkt nie ma wariacji (wymaga zmian w widoku cart_add)
-            if (variationId) {
-                 postData['variation_id'] = variationId; // Wysyłamy variation_id
-            } else {
-                 // Jeśli produkt nie ma wariacji, możesz wysłać product_id
-                 // WIDOK cart_add MUSI OBSŁUGIWAĆ OBA PRZYPADKI!
-                 // Najlepiej, jeśli produkty bez wariacji mają domyślną wariację 'One Size'
-                 // LUB widok cart_add potrafi utworzyć tymczasową wariację dla produktu bazowego
-                 // lub po prostu dodać produkt bazowy z quantity (jeśli Twoja klasa Cart to obsługuje)
-                 // Na razie zakładamy, że wysyłasz variation_id. Jeśli produkt nie ma wariacji,
-                 // ten blok else się nie wykona, a variationId będzie puste.
-                 // Trzeba dostosować widok cart_add.
-                 console.warn("Produkt bez wariacji. Wysyłanie product_id nie jest zaimplementowane w tym JS.");
-                 // Alternatywnie, jeśli Twoja klasa Cart obsługuje dodawanie produktu_id bezpośrednio:
-                 // postData['product_id'] = '{{ product.id }}';
-                 // console.log("Wysyłanie product_id zamiast variation_id.");
-                 // Ale to wymaga, aby widok cart_add wiedział, co zrobić z product_id vs variation_id
-                 alert("Dodawanie produktów bez wariacji wymaga dostosowania logiki koszyka.");
-                 return; // Przerwij, jeśli nie wiesz co wysłać
-            }
-
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
-                data: postData, // Wysyłamy postData
-
-                success: function(json) {
-                    console.log("Sukces dodania do koszyka:", json);
-                    // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
-                    if (json.qty !== undefined) { // Sprawdź, czy odpowiedź zawiera qty
-                        $('#cart_quantity').text(json.qty);
-                    } else {
-                         // Jeśli odpowiedź nie zwraca qty, możesz założyć, że dodano 1 i zaktualizować
-                         // LUB odświeżyć całą stronę, aby koszyk się odświeżył
-                         console.warn("Odpowiedź AJAX nie zawiera qty koszyka.");
-                         // location.reload(); // Opcjonalnie: odśwież stronę
-                    }
-
-
-                    // Pokaż komunikat sukcesu
-                    alert("Produkt dodany do koszyka!");
-
-                    // Opcjonalnie: Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
-                    // location.reload();
-                },
-
-                error: function(xhr, errmsg, err) {
-                    console.error("Błąd podczas dodawania do koszyka:", errmsg, err, xhr.responseText);
-                    // Tutaj możesz wyświetlić komunikat błędu użytkownikowi
-                    // Parsuj odpowiedź JSON, jeśli serwer zwraca błąd w formacie JSON
-                    try {
-                        const errorJson = JSON.parse(xhr.responseText);
-                        alert("Wystąpił błąd: " + (errorJson.error || "Nieznany błąd"));
-                    } catch (e) {
-                        alert("Wystąpił błąd podczas dodawania do koszyka.");
-                    }
+                if ($(this).is(':disabled')) {
+                    console.log("Przycisk 'Dodaj do koszyka' jest wyłączony z powodu braku dostępności.");
+                    return; // Nie rób nic, jeśli przycisk jest wyłączony
                 }
+
+                // Pobieramy ID przedmiotu (wariacji lub produktu) z ukrytego inputa
+                var itemId = $('#selected-item-id').val();
+
+                // Sprawdź, czy ID zostało ustawione (powinno być ustawione na starcie lub po wyborze wariacji)
+                if (!itemId) {
+                     console.error("Brak ID przedmiotu do dodania do koszyka.");
+                     alert("Wystąpił błąd: Nie można dodać przedmiotu do koszyka (brak ID).");
+                     return;
+                }
+
+                // Pobieramy ilość z pola ilości
+                var quantity = parseInt($('#qty').val() || '1'); // Pobierz jako int, domyślnie 1
+
+                // Sprawdź, czy ilość jest większa niż 0
+                if (quantity <= 0) {
+                     alert("Ilość musi być większa niż 0.");
+                     return;
+                }
+
+                // Dane do wysłania - wysyłamy item_id i quantity
+                var postData = {
+                    quantity: quantity,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'post'
+                };
+
+                // Zdecyduj, czy wysłać variation_id czy product_id
+                // Zakładamy, że jeśli produkt ma wariacje (hasVariations), wysyłamy variation_id.
+                // Jeśli nie ma wariacji, wysyłamy product_id.
+                if (hasVariations) { // Produkt ma 1 lub więcej wariacji
+                    postData['variation_id'] = itemId;
+                    console.log("Wysyłanie variation_id:", itemId);
+                } else { // Produkt bez wariacji
+                    postData['product_id'] = itemId; // itemId jest tutaj product.id
+                    console.log("Wysyłanie product_id:", itemId);
+                }
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
+                    data: postData,
+
+                    success: function(json) {
+                        console.log("Sukces dodania do koszyka:", json);
+                        // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
+                        if (json.qty !== undefined) {
+                            $('#cart_quantity').text(json.qty);
+                        } else {
+                            console.warn("Odpowiedź AJAX nie zawiera qty koszyka.");
+                        }
+
+                        // Pokaż komunikat sukcesu
+                        alert("Produkt dodany do koszyka!");
+
+                        // Opcjonalnie: Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
+                        // location.reload();
+                    },
+
+                    error: function(xhr, errmsg, err) {
+                        console.error("Błąd podczas dodawania do koszyka:", errmsg, err, xhr.responseText);
+                        try {
+                            const errorJson = JSON.parse(xhr.responseText);
+                            alert("Wystąpił błąd: " + (errorJson.error || "Nieznany błąd"));
+                        } catch (e) {
+                            alert("Wystąpił błąd podczas dodawania do koszyka.");
+                        }
+                    }
+                });
             });
-        });
+        }
 
 
         // === INICJALIZACJA SLIDERA PODOBNYCH PRODUKTÓW (SWIPER) ===
-        // Upewnij się, że biblioteka Swiper jest załadowana (CSS i JS)
-        // Targetujemy unikalną klasę dla tego slidera
         const similarProductsSwiper = new Swiper('.similar-products-swiper', {
-            // Konfiguracja Swipera (dostosuj do potrzeb i konfiguracji slidera z home.html)
-            slidesPerView: 1, // Domyślnie 1 slajd na ekranie
-            spaceBetween: 10, // Odstęp między slajdami
-            loop: false, // Czy slider ma zapętlać
-            pagination: { // Konfiguracja paginacji (kropki)
-                el: '.similar-products-pagination', // Element paginacji
-                clickable: true, // Czy kropki są klikalne
+            slidesPerView: 1,
+            spaceBetween: 10,
+            loop: false,
+            pagination: {
+                el: '.similar-products-pagination',
+                clickable: true,
             },
-            navigation: { // Konfiguracja nawigacji (strzałki)
-                // Jeśli masz strzałki na zewnątrz slidera, podaj ich selektory
-                // nextEl: '.similar-products-next',
-                // prevEl: '.similar-products-prev',
-            },
-            breakpoints: { // Ustawienia responsywności (dostosuj do potrzeb)
-                576: { // >= 576px (sm)
+            breakpoints: {
+                576: {
                     slidesPerView: 2,
                     spaceBetween: 10,
                 },
-                768: { // >= 768px (md)
+                768: {
                     slidesPerView: 3,
                     spaceBetween: 15,
                 },
-                992: { // >= 992px (lg)
+                992: {
                     slidesPerView: 4,
                     spaceBetween: 20,
                 },
-                // Dodaj więcej breakpointów jeśli potrzebujesz
             },
         });
-        // ========================================================
     });
-    // ========================================================================
 </script>
-
 {% endblock %}
