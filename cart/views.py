@@ -90,29 +90,29 @@ def cart_add(request):
         # Get the item object (Product or ProductVariation)
         try:
             if item_type == 'variation':
-                item_object = ProductVariation.objects.get(id=item_id)
+                item_object = get_object_or_404(ProductVariation, id=item_id)
                 # Ensure the variation belongs to a product that exists
                 if not item_object.product:
-                     raise Product.DoesNotExist # Treat as product not found
+                     # This case is unlikely if variation exists, but good practice
+                     return JsonResponse({'error': f'Wariacja (ID: {item_id}) nie jest przypisana do produktu.'}, status=404)
             elif item_type == 'product':
-                item_object = Product.objects.get(id=item_id)
+                item_object = get_object_or_404(Product, id=item_id)
             # item_object is now either a Product or ProductVariation instance
-        except (Product.DoesNotExist, ProductVariation.DoesNotExist):
-             return JsonResponse({'error': f'Przedmiot ({item_type} ID: {item_id}) nie znaleziony.'}, status=404)
-        except Exception as e:
+        except Exception as e: # Catch potential errors from get_object_or_404 or others
              print(f"Error getting item object (type: {item_type}, id: {item_id}): {e}")
-             return JsonResponse({'error': 'Wystąpił błąd podczas pobierania danych przedmiotu.'}, status=500)
+             return JsonResponse({'error': 'Wystąpił błąd podczas pobierania danych przedmiotu.'}, status=404) # Changed to 404 for not found
 
 
         # --- Stock Check ---
         # Determine available stock based on item type
-        available_stock = item_object.stock if isinstance(item_object, Product) else item_object.stock # Both models now have .stock
+        available_stock = item_object.stock # Both models should have .stock
 
         # Construct the item_key for the cart dictionary
         item_key = f"{'p' if item_type == 'product' else 'v'}_{item_id}"
 
         # Calculate current quantity of this item already in the cart
-        current_cart_quantity = cart.cart.get(item_key, 0)
+        # Use .get() with a default of 0 to safely get the current quantity
+        current_cart_quantity = cart.cart.get(item_key, {}).get('quantity', 0)
         requested_total_quantity = current_cart_quantity + quantity # Total quantity after adding
 
         if available_stock < requested_total_quantity:
@@ -121,17 +121,17 @@ def cart_add(request):
         # --- End Stock Check ---
 
         # Add the item to the cart using the updated cart.add method
-        # The add method now accepts the item object (Product or ProductVariation)
+        # The add method now expects the item object (Product or ProductVariation)
         cart.add(item=item_object, quantity=quantity)
 
         # Get the new total quantity of items in the cart (sum of all quantities)
         cart_quantity = cart.get_total_quantity() # Użyj helpera
 
         # Return a JSON response with the updated total cart quantity
-        response_data = {'qty': cart_quantity}
+        response_data = {'qty': cart_quantity} # Używamy 'qty' dla spójności
 
         # Optional: Add a success message (frontend JS needs to handle displaying it)
-        messages.success(request, f"Dodano {item_object.product.name if item_type == 'variation' else item_object.name} do koszyka.")
+        # messages.success(request, f"Dodano {item_object.product.name if item_type == 'variation' else item_object.name} do koszyka.")
 
 
         return JsonResponse(response_data)
@@ -164,6 +164,17 @@ def cart_delete(request):
              return JsonResponse({'error': 'Nieprawidłowe ID w kluczu przedmiotu.'}, status=400)
         # --- End Validation ---
 
+        # Check if the item_key exists in the cart before attempting to delete
+        if item_key not in cart.cart:
+             # Item not found in cart, maybe it was already deleted?
+             # Return success response as if deleted, but perhaps with a message
+             return JsonResponse({
+                 'qty': cart.get_total_quantity(),
+                 'cart_total': cart.cart_total(),
+                 'item_key': item_key, # Return the key so JS knows which row was targeted
+                 'message': 'Przedmiot nie znaleziono w koszyku (może już usunięty?).'
+             })
+
 
         # Call the delete method in the Cart class
         # The delete method now expects the item_key (string)
@@ -181,7 +192,7 @@ def cart_delete(request):
         }
 
         # Optional: Message for full page reload scenario
-        messages.success(request, "Przedmiot usunięty z koszyka.")
+        # messages.success(request, "Przedmiot usunięty z koszyka.")
 
         return JsonResponse(response_data)
 
@@ -194,6 +205,7 @@ def cart_update(request):
     Handles updating the quantity of an item (Product or ProductVariation) in the cart via AJAX POST.
     Expects 'item_key' and 'quantity' in POST data.
     Includes validation and stock check.
+    NOTE: Does NOT handle quantity = 0 (that's handled by cart_delete via JS trigger).
     """
     cart = Cart(request)
 
@@ -215,48 +227,38 @@ def cart_update(request):
 
          try:
              quantity = int(quantity_str)
-             if quantity < 0: # Allow quantity 0 to trigger deletion
-                  return JsonResponse({'error': 'Ilość nie może być ujemna.'}, status=400)
+             # This view only handles quantities > 0
+             if quantity <= 0:
+                  # This case should ideally be handled by frontend triggering delete
+                  # But if it happens, return an error or redirect to delete logic
+                  # Returning 400 is safest to avoid unexpected behavior
+                  return JsonResponse({'error': 'Ilość musi być większa od zera dla aktualizacji.'}, status=400)
          except ValueError:
               return JsonResponse({'error': 'Nieprawidłowa ilość.'}, status=400)
          # --- End Validation ---
 
-         # If the requested quantity is 0, delegate to the delete view logic directly
-         if quantity == 0:
-             # Call the delete method in the Cart class
-             cart.delete(item_key=item_key)
-             cart_quantity = cart.get_total_quantity()
-             cart_total = cart.cart_total()
-             # Optional: messages.success(request, "Przedmiot usunięty z koszyka.")
-             # Return success response indicating deletion
-             return JsonResponse({
-                 'qty': cart_quantity,
-                 'item_key': item_key,
-                 'cart_total': cart_total,
-                 'deleted': True # Indicate that the item was deleted
-                 })
+         # Check if the item_key exists in the cart
+         if item_key not in cart.cart:
+              return JsonResponse({'error': f'Przedmiot o kluczu {item_key} nie znaleziony w koszyku.'}, status=404)
 
 
          # Get the item object (Product or ProductVariation) for stock check and subtotal calculation
          item_object = None
+         item_id = int(item_key.split('_')[1])
          try:
              if item_key.startswith('p_'):
-                 product_id = int(item_key.split('_')[1])
-                 item_object = Product.objects.get(id=product_id)
+                 item_object = get_object_or_404(Product, id=item_id)
              elif item_key.startswith('v_'):
-                  variation_id = int(item_key.split('_')[1])
-                  item_object = ProductVariation.objects.get(id=variation_id)
+                  item_object = get_object_or_404(ProductVariation, id=item_id)
              # item_object is now the instance
-         except (IndexError, ValueError, Product.DoesNotExist, ProductVariation.DoesNotExist):
-              return JsonResponse({'error': f'Przedmiot o kluczu {item_key} nie znaleziony.'}, status=404)
-         except Exception as e:
+         except Exception as e: # Catch potential errors from get_object_or_404 or others
               print(f"Error getting item object (key: {item_key}): {e}")
-              return JsonResponse({'error': 'Wystąpił błąd podczas pobierania danych przedmiotu.'}, status=500)
+              return JsonResponse({'error': f'Przedmiot o kluczu {item_key} nie znaleziony w bazie danych.'}, status=404) # Changed to 404
 
 
          # --- Stock Check ---
          # Determine available stock based on item type
-         available_stock = item_object.stock if isinstance(item_object, Product) else item_object.stock
+         available_stock = item_object.stock # Both models should have .stock
 
          # For update, check if the new requested quantity exceeds available stock
          if quantity > available_stock:
@@ -272,16 +274,17 @@ def cart_update(request):
          # Get updated data for the response
          cart_quantity = cart.get_total_quantity() # Total quantity of items
          cart_total = cart.cart_total()   # Total price of the cart
-         item_subtotal = item_object.get_effective_price() * Decimal(quantity) # Subtotal for this specific item
+         # Calculate subtotal using the item object's price and the new quantity
+         item_subtotal = item_object.get_effective_price() * Decimal(quantity)
 
          # Prepare data for JSON response
          response_data = {
              'item_key': item_key, # Key of the updated item
              'quantity': quantity, # New quantity for this item
-             'cart_quantity': cart_quantity, # New global total quantity
-             'cart_total': cart_total, # New total cart price
+             'qty': cart_quantity, # New global total quantity (SPÓJNE Z DELETE)
+             'cart_total': cart_total, # New total cart price (SPÓJNE Z DELETE)
              'item_subtotal': item_subtotal, # New subtotal for this item
-             'deleted': False # Indicate that the item was not deleted
+             # 'deleted': False # Usunięto, bo ten widok nie obsługuje usuwania
          }
 
          # Optional: Message for full page reload scenario

@@ -41,25 +41,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {# Zmieniamy pętlę, aby iterowała po 'cart_items' (liście przygotowanej w widoku) #}
-                            {# LUB po prostu iterujemy po 'cart', co wywoła __iter__ #}
-                            {# Sprawdźmy, co dokładnie przekazuje widok: 'cart_items' #}
-                            {# Zmieniamy warunek {% if cart %} na {% if cart_items %} dla jasności #}
                             {% if cart_items %}
-                                {% for item in cart_items %} {# item to słownik z yield w cart.__iter__ #}
+                                {% for item in cart_items %}
 
                                     {# === Określ obiekt produktu bazowego i jego ID === #}
-                                    {# item.item_object jest albo Product, albo ProductVariation #}
-                                    {# Jeśli item.item_object jest ProductVariation, jego product bazowy to item.item_object.product #}
-                                    {# Jeśli item.item_object jest Product, to jego product bazowy to on sam #}
                                     {% with current_product_obj=item.item_object.product|default:item.item_object %}
                                     {% with product_id=current_product_obj.id %}
-                                    {# Używamy filtra default, aby jeśli item.item_object.product jest None (czyli item.item_object to Product), użyć item.item_object #}
-                                    {# Następnie pobieramy .id z tego obiektu #}
                                     {# === Koniec określania === #}
 
-                                    {# Używamy item.item_key jako unikalnego ID wiersza dla JS #}
-                                    {# Sprawdzamy czy product_id jest ustawione, zanim wygenerujemy wiersz #}
                                     {% if product_id %}
                                         <tr id="item-{{ item.item_key }}">
                                             <th class="pl-0 border-0" scope="row">
@@ -85,10 +74,10 @@
                                                     </div>
                                                 </div>
                                             </th>
-                                            {# Cena jednostkowa - dostępna bezpośrednio z item.item_object (Product/ProductVariation) #}
+                                            {# Cena jednostkowa #}
                                             <td class="align-middle border-0">
                                                 <p class="mb-0 small">
-                                                    {{ item.item_object.get_effective_price }} zł
+                                                    {{ item.item_object.get_effective_price|floatformat:2 }} zł {# Dodano floatformat dla pewności #}
                                                 </p>
                                             </td>
                                             {# Pole ilości z formularzem aktualizacji #}
@@ -100,15 +89,17 @@
                                                             {% csrf_token %}
                                                             {# Ukryte pole z kluczem itemu #}
                                                             <input type="hidden" name="item_key" value="{{ item.item_key }}">
-                                                            {# Input ilości - nazwa 'quantity' jest oczekiwana przez widok update #}
-                                                            <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control form-control-sm border-0 shadow-0 quantity-input" data-item-key="{{ item.item_key }}" min="0"> {# Zmieniono min="1" na min="0" aby umożliwić usunięcie przez ustawienie ilości na 0 #}
+                                                            {# Ukryte pole action #}
+                                                            <input type="hidden" name="action" value="post"> {# DODANO TO POLE #}
+                                                            {# Input ilości #}
+                                                            <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control form-control-sm border-0 shadow-0 quantity-input" data-item-key="{{ item.item_key }}" min="0">
                                                         </form>
                                                     </div>
                                                 </div>
                                             </td>
                                             {# Suma częściowa (subtotal) #}
-                                            <td class="align-middle border-0 subtotal-cell" id="subtotal-{{ item.item_key }}"> {# Dodaj ID do aktualizacji przez JS #}
-                                                <p class="mb-0 small">{{ item.subtotal }} zł</p>
+                                            <td class="align-middle border-0 subtotal-cell" id="subtotal-{{ item.item_key }}">
+                                                <p class="mb-0 small">{{ item.subtotal|floatformat:2 }} zł</p> {# Dodano floatformat #}
                                             </td>
                                             {# Przycisk usuwania #}
                                             <td class="align-middle border-0">
@@ -117,6 +108,8 @@
                                                     {% csrf_token %}
                                                     {# Ukryte pole z kluczem itemu #}
                                                     <input type="hidden" name="item_key" value="{{ item.item_key }}">
+                                                    {# Ukryte pole action #}
+                                                    <input type="hidden" name="action" value="post"> {# DODANO TO POLE #}
                                                     {# Przycisk submit #}
                                                     <button type="submit" class="reset-anchor remove-item-button" data-item-key="{{ item.item_key }}"><i class="fas fa-trash-alt"></i></button>
                                                 </form>
@@ -135,7 +128,6 @@
                     </table>
                 </div>
                 <!-- BAR PRODUCTS-->
-                {# Możesz tutaj dodać sekcję "polecane produkty" lub "kontynuuj zakupy" #}
                 <div class="bg-light px-4 py-3">
                     <div class="row align-items-center text-center">
                         <div class="col-md-6 mb-3 mb-md-0 text-md-left">
@@ -144,9 +136,7 @@
                             </a>
                         </div>
                         <div class="col-md-6 text-md-right">
-                            {# Przycisk do aktualizacji całego koszyka (jeśli masz taką funkcjonalność) lub do przejścia dalej #}
-                            {# Jeśli używasz AJAX do aktualizacji ilości/usuwania, przycisk "Update cart" może nie być potrzebny #}
-                            {# <a class="btn btn-outline-dark btn-sm" href="cart.html">Update cart</a> #}
+                            {# Przycisk do aktualizacji całego koszyka (niepotrzebny przy AJAX per item) #}
                         </div>
                     </div>
                 </div>
@@ -160,19 +150,19 @@
                             <li class="d-flex align-items-center justify-content-between mb-4">
                                 <strong class="text-uppercase small font-weight-bold">Subtotal</strong>
                                 {# Całkowita suma koszyka #}
-                                <span id="cart-total-display">{{ totals|default:0 }} zł</span> {# Używamy zmiennej totals z kontekstu, dodano default:0 #}
+                                <span id="cart-total-display">{{ totals|default:0|floatformat:2 }} zł</span> {# Dodano floatformat #}
                             </li>
                             {# Możesz dodać tutaj koszt wysyłki, rabaty itp. #}
                             <li class="border-bottom my-2"></li>
                             <li class="d-flex align-items-center justify-content-between mb-4">
                                 <strong class="text-uppercase small font-weight-bold">Total</strong>
                                 {# Całkowita suma koszyka (z opłatami jeśli są) #}
-                                <span id="order-total-display">{{ totals|default:0 }} zł</span> {# Używamy zmiennej totals z kontekstu, dodano default:0 #}
+                                <span id="order-total-display">{{ totals|default:0|floatformat:2 }} zł</span> {# Dodano floatformat #}
                             </li>
                             <li>
                                 {# Przycisk do przejścia do płatności/checkoutu #}
                                 {# Wyłącz przycisk checkout, jeśli koszyk jest pusty #}
-                                <a class="btn btn-dark btn-block {% if not cart_items %}disabled{% endif %}" href="{% url 'checkout' %}">Proceed to checkout</a> {# Zmień 'checkout' na nazwę URL Twojego widoku checkout #}
+                                <a class="btn btn-dark btn-block {% if not cart_items %}disabled{% endif %}" href="{% url 'checkout' %}">Proceed to checkout</a>
                             </li>
                         </ul>
                     </div>
@@ -184,81 +174,82 @@
 
 {# === SKRYPTY JS DLA KOSZYKA (AJAX) === #}
 {# Upewnij się, że jQuery jest załadowane przed tym skryptem #}
-{# === SKRYPTY JS DLA KOSZYKA (AJAX) === #}
-{# Upewnij się, że jQuery jest załadowane przed tym skryptem #}
+
 <script>
 $(document).ready(function() {
 
-    // === OBSŁUGA ZMIANY ILOŚCI ===
-    // Używamy event delegation, bo inputy ilości mogą być dynamicznie dodawane/usuwane
-    $(document).on('change', '.quantity-input', function() {
-        var $input = $(this);
-        var itemKey = $input.data('item-key'); // Pobierz klucz itemu z data-attribute
-        var newQuantity = parseInt($input.val() || '0'); // Pobierz nową ilość jako int, domyślnie 0
+    // Standardowa funkcja do pobierania CSRF tokenu z ciasteczka
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
 
-        // Walidacja ilości (opcjonalnie, ale zalecane)
+    // Konfiguracja AJAX do automatycznego dodawania nagłówka X-CSRFToken
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
+   $(document).on('change', '.quantity-input', function() {
+        var $input = $(this);
+        var itemKey = $input.data('item-key');
+        var newQuantity = parseInt($input.val() || '0');
+
         if (newQuantity < 0) {
              alert("Quantity cannot be negative.");
-             // Możesz tutaj przywrócić poprzednią wartość inputa
-             // $input.val($input.data('old-value')); // Wymaga zapisania starej wartości przy ładowaniu strony/zmianie
-             location.reload(); // Proste rozwiązanie w przypadku nieprawidłowej ilości
+             location.reload();
              return;
         }
+
          if (newQuantity === 0) {
-              // Jeśli ilość wynosi 0, zamiast aktualizacji wyślij żądanie usunięcia
-              // Znajdź przycisk usuwania dla tego wiersza i kliknij go programowo
+              console.log("Quantity set to 0, triggering delete for item:", itemKey);
               $('#item-' + itemKey).find('.remove-item-button').click();
-              return; // Zakończ przetwarzanie zmiany ilości
+              return;
          }
 
-
-        // Pobierz formularz, do którego należy ten input
         var $form = $input.closest('form');
 
-        // Wysyłamy formularz AJAX-em
-        $.ajax({
-            type: $form.attr('method'), // POST
-            url: $form.attr('action'), // URL do cart_update
-            data: $form.serialize(), // Serializuj dane formularza (item_key i quantity)
-            dataType: 'json', // Oczekujemy odpowiedzi JSON
+        // *** PRZENIEŚ SERIALIZACJĘ TUTAJ, PRZED ZABLOKOWANIEM INPUTA ***
+        var formData = $form.serialize();
+        // *** KONIEC PRZENIESIENIA ***
 
+        // Opcjonalnie: Zablokuj input podczas requestu
+        $input.prop('disabled', true);
+
+
+        // Wysyłamy formularz AJAX-em (tylko gdy newQuantity > 0)
+        $.ajax({
+            type: $form.attr('method'),
+            url: $form.attr('action'),
+            data: formData, // Użyj zmiennej z serializowanymi danymi
+            dataType: 'json',
             success: function(json) {
                 console.log("Update success:", json);
-                // Sprawdź, czy item nie został usunięty (gdy ilość = 0)
-                if (json.deleted) {
-                    // Logika usunięcia jest już w handlerze .remove-item-button click
-                    // Więc tutaj nie musimy nic robić, handler usunięcia się wykonał
-                    console.log("Item deleted via quantity 0 update.");
-                    return;
-                }
-
-
-                // Aktualizuj wyświetlane dane
-                $('#cart_quantity').text(json.cart_quantity); // Aktualizuj ilość w navbarze (zmieniono z json.qty)
-                // Użyj Number() aby upewnić się, że cart_total jest liczbą przed toFixed
-                $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę koszyka (toFixed dla formatu)
-                $('#order-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę zamówienia
-
-                // Aktualizuj subtotal dla zaktualizowanego wiersza
-                 // Użyj Number() aby upewnić się, że item_subtotal jest liczbą przed toFixed
-                $('#subtotal-' + json.item_key).text(Number(json.item_subtotal).toFixed(2) + ' zł'); // (toFixed dla formatu)
-
-                // Opcjonalnie: Pokaż komunikat sukcesu
-                // alert("Cart updated!");
+                // ... reszta kodu sukcesu ...
+                $input.prop('disabled', false); // Odblokuj input po sukcesie
+                // ...
             },
             error: function(xhr, errmsg, err) {
                 console.error("Update error:", errmsg, err, xhr.responseText);
-                 // Przywróć starą wartość inputa, jeśli aktualizacja się nie powiodła
-                 // Najprościej: odśwież stronę, aby przywrócić poprawny stan
+                // ... reszta kodu błędu ...
+                 $input.prop('disabled', false); // Odblokuj input po błędzie
                  location.reload();
-
-                // Pokaż komunikat błędu
-                try {
-                    const errorJson = JSON.parse(xhr.responseText);
-                    alert("Error updating cart: " + (errorJson.error || "Unknown error"));
-                } catch (e) {
-                    alert("Error updating cart.");
-                }
             }
         });
     });
@@ -272,56 +263,63 @@ $(document).ready(function() {
 
         // Pobierz formularz, do którego należy przycisk
         var $form = $button.closest('form');
+        var $row = $('#item-' + itemKey); // Rząd do usunięcia
 
-        // Opcjonalnie: Pytaj o potwierdzenie
-        // if (!confirm("Are you sure you want to remove this item?")) {
-        //     return; // Anuluj, jeśli użytkownik nie potwierdzi
-        // }
+        // Opcjonalnie: Zablokuj przycisk podczas requestu
+        $button.prop('disabled', true);
+
 
         // Wysyłamy formularz AJAX-em
         $.ajax({
             type: $form.attr('method'), // POST
             url: $form.attr('action'), // URL do cart_delete
-            data: $form.serialize(), // Serializuj dane formularza (item_key)
+            data: $form.serialize(), // Serializuj dane formularza (item_key, action)
             dataType: 'json', // Oczekujemy odpowiedzi JSON
 
             success: function(json) {
                 console.log("Delete success:", json);
+                // Oczekujemy JSON z kluczami: item_key, qty, cart_total
+
                 // Usuń wiersz itemu z tabeli
-                $('#item-' + json.item_key).remove();
+                $row.remove();
 
                 // Aktualizuj wyświetlane dane
-                $('#cart_quantity').text(json.qty); // Aktualizuj ilość w navbarze
-                 // Użyj Number() aby upewnić się, że cart_total jest liczbą przed toFixed
+                $('#cart_quantity').text(json.qty); // Aktualizuj ilość w navbarze (Używamy json.qty)
                 $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę koszyka
                 $('#order-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę zamówienia
 
-                // Opcjonalnie: Pokaż komunikat sukcesu
-                // alert("Item removed!");
+                // Opcjonalnie: Odblokuj przycisk (choć element jest usuwany, może się przydać w error handlerze)
+                $button.prop('disabled', false);
 
                 // Jeśli koszyk jest teraz pusty, pokaż komunikat "Your cart is empty"
-                // Sprawdź, czy w tabeli pozostały wiersze body tr (oprócz nagłówka jeśli jest w tbody)
-                if ($('tbody tr').length === 0 || ($('tbody tr').length === 1 && $('tbody tr td[colspan="5"]').length > 0) ) {
-                     // Sprawdź, czy po usunięciu pozostał tylko wiersz "Koszyk jest pusty"
-                     if ($('tbody tr td[colspan="5"]').length === 0) {
-                         $('tbody').html('<tr><td colspan="5" class="text-center border-0">Your cart is empty.</td></tr>');
-                     }
-                }
-
-                // Wyłącz przycisk checkout jeśli koszyk jest pusty
+                // Sprawdzamy łączną ilość przedmiotów zwróconą z serwera
                  if (json.qty === 0) {
+                     // Wstawiamy wiersz informujący o pustym koszyku
+                     $('tbody').html('<tr><td colspan="5" class="text-center border-0">Your cart is empty.</td></tr>');
+                     // Wyłącz przycisk checkout
                      $('.btn-block[href="{% url 'checkout' %}"]').addClass('disabled');
+                 } else {
+                      // Upewnij się, że przycisk checkout jest włączony
+                     $('.btn-block[href="{% url 'checkout' %}"]').removeClass('disabled');
                  }
+
+                // Opcjonalnie: Pokaż komunikat sukcesu
+                // alert("Item removed!");
             },
             error: function(xhr, errmsg, err) {
                 console.error("Delete error:", errmsg, err, xhr.responseText);
-                try {
-                    const errorJson = JSON.parse(xhr.responseText);
-                    alert("Error removing item: " + (errorJson.error || "Unknown error"));
-                } catch (e) {
-                    alert("Error removing item.");
-                }
-                 // Odśwież stronę w przypadku błędu
+                // Pokaż komunikat błędu
+                 let errorMsg = "Błąd podczas usuwania produktu.";
+                 try {
+                     const errorJson = JSON.parse(xhr.responseText);
+                     errorMsg = "Błąd usuwania: " + (errorJson.error || errmsg || "Nieznany błąd.");
+                 } catch (e) {
+                     // ignore
+                 }
+                 alert(errorMsg);
+
+                 // Odblokuj przycisk i odśwież stronę w przypadku błędu
+                 $button.prop('disabled', false);
                  location.reload();
             }
         });
