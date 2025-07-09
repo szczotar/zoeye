@@ -477,3 +477,59 @@
      margin: 0 5px; /* Odstęp między przyciskami */
 }
 
+#custom-alerts-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    max-width: 400px;
+    width: 90%;
+    pointer-events: none; /* Pozwala klikać przez kontener, ale nie przez same alerty */
+}
+
+/* Styl dla pojedynczego alertu w kontenerze */
+#custom-alerts-container .alert {
+    margin-bottom: 10px;
+    pointer-events: auto; /* Przywraca interakcję dla samego alertu (np. przycisk zamykania) */
+
+    /* Przykładowe customowe style: */
+    border-radius: 8px; /* Zaokrąglone rogi */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Delikatny cień */
+    padding: 15px 20px; /* Większy padding */
+    border: none; /* Usuń domyślną ramkę */
+    opacity: 0.95; /* Lekka przezroczystość */
+    /* Dodaj animację wejścia/wyjścia jeśli nie polegasz na Bootstrap fade */
+    /* transition: opacity 0.3s ease-in-out; */
+}
+
+/* Przykładowe style dla różnych typów komunikatów (success, danger) */
+#custom-alerts-container .alert-success {
+    background-color: #ffe4c6; /* Jasnozielone tło */
+    color: #ffd700; /* Ciemnozielony tekst */
+    /* Możesz nadpisać border-color, jeśli chcesz */
+    /* border-left: 5px solid #28a745; */ /* Dodaj lewą ramkę */
+}
+
+#custom-alerts-container .alert-danger {
+    background-color: #f8d7da; /* Jasnoczerwone tło */
+    color: #721c24; /* Ciemnoczerwony tekst */
+    /* border-left: 5px solid #dc3545; */ /* Dodaj lewą ramkę */
+}
+
+#custom-alerts-container .alert-warning {
+    background-color: #fff3cd; /* Jasnożółte tło */
+    color: #856404; /* Ciemnożółty tekst */
+}
+
+#custom-alerts-container .alert-info {
+    background-color: #d1ecf1; /* Jasnoniebieskie tło */
+    color: #0c5460; /* Ciemnoniebieski tekst */
+}
+
+
+/* Styl dla przycisku zamykania (opcjonalnie, jeśli chcesz go zmienić) */
+#custom-alerts-container .alert .btn-close {
+    /* np. zmiana koloru ikony, pozycji */
+     /* filter: invert(1); */ /* Jeśli tło jest ciemne i chcesz biały X */
+}
