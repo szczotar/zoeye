@@ -452,31 +452,27 @@
                     url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
                     data: postData,
 
-                    success: function(json) {
-                        console.log("Sukces dodania do koszyka:", json);
-                        // Aktualizujemy ilość w badge koszyka w navbarze (jeśli masz element z id="cart_quantity")
-                        if (json.qty !== undefined) {
-                            $('#cart_quantity').text(json.qty);
-                        } else {
-                            console.warn("Odpowiedź AJAX nie zawiera qty koszyka.");
-                        }
+                 success: function(json) {
+    console.log("Add success:", json);
+    // Oczekujemy JSON z kluczem 'qty' (i opcjonalnie 'message')
+    var $cartQuantitySpan = $('#cart_quantity');
+    $cartQuantitySpan.text(json.qty);
+    if (json.qty > 0) { $cartQuantitySpan.removeClass('d-none'); } else { $cartQuantitySpan.addClass('d-none'); }
 
-                        // Pokaż komunikat sukcesu
-                        alert("Produkt dodany do koszyka!");
+    // Wywołaj customowy komunikat sukcesu
+    showCustomAlert(json.message || "Produkt dodany do koszyka.", 'success');
 
-                        // Opcjonalnie: Przeładowanie strony po dodaniu do koszyka (możesz usunąć)
-                        // location.reload();
-                    },
+    // Opcjonalnie: zresetuj formularz dodawania, odblokuj przycisk itp.
+},
 
-                    error: function(xhr, errmsg, err) {
-                        console.error("Błąd podczas dodawania do koszyka:", errmsg, err, xhr.responseText);
-                        try {
-                            const errorJson = JSON.parse(xhr.responseText);
-                            alert("Wystąpił błąd: " + (errorJson.error || "Nieznany błąd"));
-                        } catch (e) {
-                            alert("Wystąpił błąd podczas dodawania do koszyka.");
-                        }
-                    }
+     error: function(xhr, errmsg, err) {
+     console.error("Add error:", errmsg, err, xhr.responseText);
+     let errorMsg = "Wystąpił błąd podczas dodawania produktu.";
+     try { const errorJson = JSON.parse(xhr.responseText); errorMsg = errorJson.error || errorJson.message || errmsg || "Nieznany błąd."; } catch (e) {}
+     // Zastąp alert customowym komunikatem błędu
+     showCustomAlert(errorMsg, 'danger');
+     // Opcjonalnie: odblokuj przycisk dodawania
+}
                 });
             });
         }

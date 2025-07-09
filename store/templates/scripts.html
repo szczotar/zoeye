@@ -37,11 +37,33 @@
               }
             }
         });
-        
-      </script>
+         // Funkcja do wyświetlania customowych komunikatów Bootstrap Alert
+    function showCustomAlert(message, type = 'info') {
+        const $container = $('#custom-alerts-container');
+        // Użyj Bootstrap Alert HTML structure
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="min-width: 250px;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        const $alert = $(alertHtml);
 
-      
-     
+        $container.append($alert); // Dodaj alert do kontenera
+
+        // Automatyczne zamykanie po kilku sekundach
+        setTimeout(function() {
+            $alert.alert('close'); // Użyj funkcji Bootstrap do zamykania
+        }, 5000); // Zamknij po 5 sekundach (5000 ms)
+
+        // Opcjonalnie: usuń element z DOM po zamknięciu
+        $alert.on('closed.bs.alert', function () {
+            $(this).remove();
+        });
+    }
+ 
+      </script>
+  
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     </div>
   </body>

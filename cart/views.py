@@ -288,7 +288,7 @@ def cart_update(request):
          }
 
          # Optional: Message for full page reload scenario
-         # messages.success(request, f"Ilość dla {item_object.product.name if isinstance(item_object, ProductVariation) else item_object.name} zaktualizowana.")
+        #  messages.success(request, f"Ilość dla {item_object.product.name if isinstance(item_object, ProductVariation) else item_object.name} zaktualizowana.")
 
 
          return JsonResponse(response_data)

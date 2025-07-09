@@ -38,6 +38,7 @@
     <body>
 
         {% include 'navbar.html' %}
+        
         {% if messages %}
             {% for message in messages %}
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -46,12 +47,16 @@
               </div>
             {% endfor %}
         {% endif %}
-
+   
         {% include 'scripts.html' %}
+             <div id="custom-alerts-container" style="position: fixed; top: 20px; right: 20px; z-index: 2000;">
+    {# Komunikaty będą dodawane tutaj przez JS #}
+      </div>
         {% block content %}
      
         {% endblock %}
-        
+
+      </div>
                  
 
       
