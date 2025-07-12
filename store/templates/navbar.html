@@ -22,19 +22,19 @@
                      
                     </li>  
 
-                  <li class="nav-item dropdown">
+            <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="stonesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">KAMIENIE</a>
                     <div class="dropdown-menu mt-3" aria-labelledby="stonesDropdown"> {# <-- Użyj nowego ID #}
                     
                        {% for material in all_materials %}
                          <a class="dropdown-item border-0 transition-link" href="{% url 'stones_detail' material.name %}">{{ material.name|upper }}</a>
                        {% endfor %}
-
+                    
                     </div>
                   </li>
-
+                  
                 <li class="nav-item">
-                  <!-- Link--><a class="nav-link" href="{% url 'home' %}">O NAS</a>
+                 <a class="nav-link" href="{% url 'home' %}">PROMOCJE</a>
                 </li>
 
               <a class="navbar-brand" href="{% url 'home' %}">
@@ -107,3 +107,6 @@
         </div>
       </header>
 
+<script>
+  
+</script>

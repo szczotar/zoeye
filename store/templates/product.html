@@ -15,7 +15,7 @@
 
 <div class="container mt-4">
 
-    <div class="row g-0 product-layout-row">
+    <div class="row g-0 product-layout-row" style="background-color:#F7F7F7;">
 
         {# === Lewa kolumna - Miniatury Zdjęć === #}
         <div class="col-md-2 d-none d-md-block">
@@ -47,120 +47,109 @@
 
 
         {# === Prawa kolumna - Informacje o produkcie, wybór wariacji i przycisk "Dodaj do koszyka" === #}
-        <div class="col-md-4">
-             {# FORMULARZ DODAJ DO KOSZYKA - Obejmuje całą prawą kolumnę #}
-             {# Akcja formularza i metoda - bez zmian #}
-             {# ID 'product_addtocart_form' jest używane przez JS #}
+       <div class="col-md-4">
+
             <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
                 {% csrf_token %}
                 {# Ukryte pole, które będzie przechowywać ID wybranej wariacji LUB ID PRODUKTU #}
                 {# Wartość domyślna będzie ustawiana przez JS #}
                 <input type="hidden" name="item_id" id="selected-item-id" value="">
-                {# Pole na ilość #}
-                <div class="form-group mb-3">
-                    <label for="qty">Ilość:</label>
-                    <input type="number" name="quantity" value="1" min="1" class="form-control" id="qty" style="width: 80px;">
-                </div>
+                {# Pole na ilość - USUNIĘTO #}
+                {# <div class="form-group mb-3"> #}
+                {#     <label for="qty">Ilość:</label> #}
+                {#     <input type="number" name="quantity" value="1" min="1" class="form-control" id="qty" style="width: 80px;"> #}
+                {# </div> #}
+                {# Ukryte pole ilości z domyślną wartością 1 #}
+                <input type="hidden" name="quantity" id="qty" value="1">
 
-                <div class="product-info-box p-4">
 
-                    {# Nagłówek produktu (Nazwa) #}
-                    <div class="product-header-detail mb-3">
-                        <h1 class="product-name-detail h3 mb-2">{{ product.name }}</h1>
+               <div class="product-info-box d-flex flex-column align-items-center justify-content-center">
+
+<br><br>
+
+                    <div class="product-header-detail mb-3 text-center"> {# DODANO: text-center #}
+                        <h1 class="product-name-detail h3 mb-0">{{ product.name }}</h1>
                     </div>
 
                     {# Sekcja ceny - Zawsze wyświetla cenę produktu bazowego #}
-                    <div class="price-box-detail mb-3">
+                    {# Dodano mb-3 dla odstępu #}
+                    <div class="price-box-detail mb-3 text-center"> {# DODANO: text-center dla centrowania cen #}
                         {% if product.is_sale %}
-                           {# Cena wyprzedażowa produktu bazowego #}
-                           <p class="product-sale-price h4 mb-0">{{ product.sale_price }} zł</p>
-                           {# Cena regularna przekreślona #}
-                            <p class="small text-muted"><del>{{ product.price }} zł</del></p>
+                           <p class="product-sale-price h4 mb-0 text-sale-price">{{ product.sale_price }} zł</p>
+                           <div class="sale-details mt-3"> {# Zmieniono mt-0 na mt-3 #}
+                                {# mb-0 aby usunąć dolny margines paragrafów #}
+                                <p class="small text-muted lowest-price-line mb-0">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p>
+                                {# mb-0 aby usunąć dolny margines paragrafów #}
+                                <p class="small text-muted product-sale-price mb-0">Cena regularna: <del>{{ product.price }} zł</del></p>
+                           </div>
+
                        {% else %}
                            {# Normalna cena produktu bazowego #}
                            <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p>
                        {% endif %}
-                       {# Dodaj informację o najniższej cenie z 30 dni pod ceną (jeśli is_sale) #}
-                       {% if product.is_sale %}
-                            <p class="small text-muted lowest-price-line">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p> {# Zakładając, że najniższa cena = obecna wyprzedażowa #}
-                       {% endif %}
                     </div>
 
-                    {# ---------------------------------------------------------- #}
-                    {# SEKCJA WYBORU WARIAcji (ROZMIARU) LUB INFORMACJI O JEDNYM ROZMIARZE #}
-                    {# ---------------------------------------------------------- #}
-
-                    {% if product.has_multiple_variations %} {# Wyświetl dropdown tylko jeśli ma WIELE wariacji #}
-                        <div class="variation-select-section my-4">
+                    {% if product.has_multiple_variations %} 
+                        <div class="variation-select-section my-4 text-center p-3 "> 
                             <div class="form-group">
-                                <label for="size-select">Wybierz rozmiar:</label>
+                                <label for="size-select">obwód nadgarstka:</label>
                                 <select class="form-control" id="size-select">
                                     <option value="">-- Wybierz rozmiar --</option>
                                     {% for variation in variations %}
                                     <option value="{{ variation.id }}"
                                             data-stock="{{ variation.stock }}"
                                             {% if variation.stock <= 0 %}disabled{% endif %}>
-                                        {{ variation.size|default:"Brak rozmiaru" }} {# Wyświetl "Brak rozmiaru" jeśli pole size jest puste #}
+                                        {{ variation.size|default:"Brak rozmiaru" }}
                                         {% if variation.stock <= 0 %} (Brak w magazynie) {% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            {# Div do dynamicznego wyświetlania informacji o wybranej wariacji (stock) #}
                             <div id="variation-info" class="mt-2 small text-muted">
-                                {# Informacja o stanie pojawi się tutaj po wybraniu rozmiaru #}
                             </div>
                         </div>
                     {% elif product.has_variations %} {# Produkt ma DOKŁADNIE JEDNĄ wariację #}
-                         {# Wyświetl informacje o tej pojedynczej wariacji #}
-                         {% with single_variation=variations.first %} {# Pobierz pierwszą (i jedyną) wariację #}
-                            <div class="single-variation-info my-4">
-                                <p>Rozmiar: {{ single_variation.size|default:"Uniwersalny" }}</p> {# Wyświetl rozmiar lub "Uniwersalny" #}
+                         {% with single_variation=variations.first %}
+                            <div class="single-variation-info my-4 text-center p-3"> {# DODANO: p-3 border rounded #}
+                                <p>Rozmiar: {{ single_variation.size|default:"Uniwersalny" }}</p>
                                 {% if single_variation.stock > 0 %}
                                     <p class="text-success">Dostępność: {{ single_variation.stock }} szt.</p>
-                                {% else %}
-                                    <p class="text-danger">Brak w magazynie</p>
+                    
                                 {% endif %}
-                                {# Ukryte pole z ID tej pojedynczej wariacji, aby JS mógł je pobrać #}
                                 <input type="hidden" id="single-variation-id" value="{{ single_variation.id }}">
                                 <input type="hidden" id="single-variation-stock" value="{{ single_variation.stock }}">
                             </div>
                          {% endwith %}
                     {% else %} {# Produkt NIE MA żadnych wariacji (jest produktem bazowym z własnym stockiem) #}
-                        <div class="no-variation-info my-4">
-                            {# Wyświetl informację o stocku produktu bazowego #}
-                            <p>Rozmiar: Uniwersalny</p> {# Możesz przyjąć "Uniwersalny" lub "Brak rozmiaru" #}
-                            {% if product.stock > 0 %}
-                                <p class="text-success">Dostępność: {{ product.stock }} szt.</p>
-                                {# Ukryte pole z ID produktu bazowego, aby JS mógł je pobrać #}
+                         {# DODANO: p-3 dla paddingu wewnętrznego #}
+                        <div class="no-variation-info my-4 text-center p-3"> {# DODANO: p-3 border rounded #}
+                            <p>Rozmiar: Uniwersalny</p>
+                            {% if product.stock < 3 and product.stock > 0 %}
+                                <p class="text-danger">ostatnie sztuki!</p>
                                 <input type="hidden" id="single-product-id" value="{{ product.id }}">
                                 <input type="hidden" id="single-product-stock" value="{{ product.stock }}">
-                            {% else %}
-                                <p class="text-danger">Brak w magazynie</p>
+                    
+                         
                             {% endif %}
                         </div>
                     {% endif %}
 
-                    {# ---------------------------------------------------------- #}
-
-                    {# Sekcja "Dodaj do koszyka" (przycisk) #}
-                    <div class="add-to-cart-section-detail my-4">
+                    <div class="add-to-cart-section-detail my-4 text-center p-3"> {# Zmieniono klasę i DODANO text-center, p-3 border rounded #}
 
                         {# Przycisk Dodaj do koszyka / Brak w magazynie #}
-                        {% if product.is_available %} {# Użyj nowej metody is_available #}
-                            <button type="submit" id="add-cart" class="btn btn-dark w-100">
+                        {% if product.is_available %}
+                            {# DODANO: klasę custom-add-to-cart-button dla szerokości i koloru #}
+                            <button type="submit" id="add-cart" class="btn btn-dark custom-add-to-cart-button">
                                 Dodaj do koszyka
                             </button>
                         {% else %}
-                            {# Przycisk "Brak w magazynie" - wyszarzony #}
-                            <button type="button" class="btn btn-secondary w-100" disabled>
+                            {# DODANO: klasę custom-add-to-cart-button dla szerokości #}
+                            <button type="button" class="btn btn-secondary custom-add-to-cart-button" disabled>
                                 Brak w magazynie
                             </button>
                         {% endif %}
 
-
-                        {# === DODATKOWE LINIE POD PRZYCISKIEM === #}
-                        <div class="small text-muted mt-2">
+                        <div class="small text-muted mt-3"> {# Zmieniono mt-2 na mt-3 #}
                             <p class="mb-0">Wysyłka: 1 dzień roboczy</p>
                             <p class="mb-0">Darmowa dostawa od 300zl</p>
                         </div>
@@ -177,7 +166,7 @@
 
     {# Sekcja z opisem produktu pod głównym blokiem #}
     <div class="product-description-section-detail mt-4">
-        <h3 class="description-heading-detail">Opis produktu</h3>
+        <h3 class="description-heading-detail">Szczegóły</h3>
         <hr class="description-separator-detail" />
         <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
     </div>
@@ -309,14 +298,14 @@
                     // Dynamiczne wyświetlanie informacji o stocku
                     if (variationId) {
                         let infoHtml = '';
-                        if (stock > 0 && stock < 5) { // Niska dostępność (np. mniej niż 5)
-                            infoHtml += `<p class="text-danger">Ostatnie sztuki! (${stock} szt.)</p>`;
+                        if (stock > 0 && stock < 3) { // Niska dostępność (np. mniej niż 5)
+                            infoHtml += `<p class="text-danger">Ostatnie sztuki!`;
                             quantityInput.max = stock; // Ogranicz max ilość do stocku
                             if (parseInt(quantityInput.value) > stock) {
                                 quantityInput.value = stock > 0 ? stock : 1; // Zresetuj ilość
                             }
-                        } else if (stock >= 5) { // Wysoka dostępność
-                            infoHtml += `<p class="text-success">Dostępność: ${stock} szt.</p>`;
+                        } else if (stock >= 3) { // Wysoka dostępność
+                            infoHtml += `<p class="text-success"></p>`;
                              quantityInput.max = 9999; // Brak ograniczenia ilości
                         } else { // Stock <= 0
                              infoHtml += `<p class="text-danger">Brak w magazynie</p>`;
@@ -467,7 +456,7 @@
 
      error: function(xhr, errmsg, err) {
      console.error("Add error:", errmsg, err, xhr.responseText);
-     let errorMsg = "Wystąpił błąd podczas dodawania produktu.";
+     let errorMsg = "Wystąpił błąd podczas dodawania produktu. Sprawdź czy produkt już znajduję się w koszyku";
      try { const errorJson = JSON.parse(xhr.responseText); errorMsg = errorJson.error || errorJson.message || errmsg || "Nieznany błąd."; } catch (e) {}
      // Zastąp alert customowym komunikatem błędu
      showCustomAlert(errorMsg, 'danger');

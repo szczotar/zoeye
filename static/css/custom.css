@@ -506,9 +506,9 @@
 /* Przykładowe style dla różnych typów komunikatów (success, danger) */
 #custom-alerts-container .alert-success {
     background-color: #ffe4c6; /* Jasnozielone tło */
-    color: #ffd700; /* Ciemnozielony tekst */
+    color: #000000; /* Ciemnozielony tekst */
     /* Możesz nadpisać border-color, jeśli chcesz */
-    /* border-left: 5px solid #28a745; */ /* Dodaj lewą ramkę */
+    /* border-left: 5px solid #28a745; */ /* Dodaj lewą ramkęxs */
 }
 
 #custom-alerts-container .alert-danger {
@@ -533,3 +533,28 @@
     /* np. zmiana koloru ikony, pozycji */
      /* filter: invert(1); */ /* Jeśli tło jest ciemne i chcesz biały X */
 }
+
+/* W Twoim pliku CSS (np. custom.css) */
+.custom-add-to-cart-button {
+    width: 70%; /* Ustaw pożądaną szerokość, np. 70% dostępnej przestrzeni */
+    background-color: #FFE4C6; /* Ustaw kolor tła */
+    border-color: #FFE4C6; /* Opcjonalnie: ustaw kolor ramki na ten sam */
+    color: #000; /* Opcjonalnie: ustaw kolor tekstu na czarny dla kontrastu */
+    width: 100%;
+    height: 50%;
+}
+
+/* Styl dla przycisku "Brak w magazynie" (jeśli chcesz inny kolor tła) */
+.custom-add-to-cart-button:disabled {
+    background-color: #e9ecef; /* Domyślny szary kolor Bootstrapa */
+    border-color: #e9ecef;
+    color: #6c757d;
+    opacity: 0.65; /* Domyślna przezroczystość dla wyłączonych przycisków */
+}
+
+.text-sale-price {
+    color: #dcb14a;
+    /* Opcjonalnie: jeśli nadal jest czarny, spróbuj dodać !important, ale lepiej rozwiązać konflikty CSS inaczej */
+    /* color: #dcb14a !important; */
+}
+
