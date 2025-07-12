@@ -3,6 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.db.models import Case, When, DecimalField, Sum # Dodaj Sum do agregacji stocku
+from django.core.validators import MinValueValidator, MaxValueValidator 
 
 # Create Customer Profile
 class Profile(models.Model):
@@ -231,3 +232,40 @@ class Order(models.Model):
         if not self.variation and not self.product:
              from django.core.exceptions import ValidationError
              raise ValidationError("Zamówienie musi dotyczyć wariacji lub produktu.")
+        
+
+class Review(models.Model):
+    """
+    Model reprezentujący recenzję (komentarz z opcjonalną oceną) dla produktu.
+    """
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='reviews' # Umożliwi dostęp do recenzji produktu przez product.reviews.all()
+    )
+    # Powiązanie z użytkownikiem (opcjonalnie - jeśli tylko zalogowani mogą pisać recenzje)
+    # Jeśli chcesz pozwolić niezarejestrowanym, rozważ pola CharField dla imienia/emaila
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL, # Co się stanie, gdy użytkownik zostanie usunięty? SET_NULL zachowa recenzję
+        null=True, blank=True # Umożliwia recenzje od niezarejestrowanych (jeśli nie ma powiązania z User)
+    )
+    # Jeśli chcesz pozwolić niezarejestrowanym, dodaj pola:
+    # name = models.CharField(max_length=100, blank=True)
+    # email = models.EmailField(blank=True)
+
+    comment = models.TextField() # Treść komentarza
+    # Ocena (opcjonalna) - użyj IntegerField z walidatorami
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        null=True, blank=True # Umożliwia komentarze bez oceny
+    )
+    created_at = models.DateTimeField(auto_now_add=True) # Data utworzenia recenzji
+
+    class Meta:
+        ordering = ['-created_at'] # Sortuj recenzje od najnowszych
+
+    def __str__(self):
+        return f"Review for {self.product.name} by {self.user.username if self.user else 'Anonymous'} ({self.rating}/5)"
+
+# --- KONIEC NOWYCH MODELI ---   

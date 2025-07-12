@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% load static %}
-
+{% load rating_filters %}
 {% load custom_filters %}
 
 
@@ -164,12 +164,101 @@
     </div> {# Koniec row #}
 
 
-    {# Sekcja z opisem produktu pod głównym blokiem #}
     <div class="product-description-section-detail mt-4">
-        <h3 class="description-heading-detail">Szczegóły</h3>
+        <h3 class="description-heading-detail">Opis produktu</h3>
         <hr class="description-separator-detail" />
         <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
     </div>
+
+    {# === NOWA SEKCJA RECENZJI I OCEN === #}
+    <div class="reviews-section mt-5">
+        <h3 class="reviews-heading-detail">Recenzje i Oceny</h3>
+        <hr class="reviews-separator-detail" />
+
+        {# --- Wyświetlanie średniej oceny --- #}
+      
+{% if rating_count > 0 %}
+    <div class="average-rating mb-3">
+        <p class="mb-0">
+            Średnia ocena: <strong>{{ average_rating }}/5</strong>
+            {# Użyj filtra render_stars dla średniej oceny #}
+            <span class="stars">{{ average_rating|render_stars }}</span> {# DODANO #}
+            (na podstawie {{ rating_count }} ocen)
+        </p>
+    </div>
+{% else %}
+    {# ... #}
+{% endif %}
+{# ----------------------------------------------- #}
+
+
+        {# --- Lista istniejących recenzji --- #}
+{% if reviews %}
+    <div class="reviews-list mt-4">
+        {% for review in reviews %}
+            <div class="review-item border p-3 mb-3 rounded">
+                {# ... (informacje o autorze i dacie) ... #}
+                {# Ocena (jeśli ustawiona) #}
+                {% if review.rating is not None %}
+                    <p class="mb-1">
+                        Ocena: <strong>{{ review.rating }}/5</strong>
+                        {# Użyj filtra render_stars dla oceny pojedynczej recenzji #}
+                        <span class="stars">{{ review.rating|render_stars }}</span> {# DODANO #}
+                    </p>
+                {% endif %}
+                {# Treść komentarza #}
+                <div class="review-comment">
+                    <p>{{ review.comment|linebreaksbr }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    {# ... #}
+
+            <div class="reviews-list mt-4">
+                <p class="text-muted">Brak recenzji dla tego produktu. Bądź pierwszy!</p>
+            </div>
+        {% endif %}
+        {# ----------------------------------- #}
+  <div class="add-review-form mt-5">
+            <h4 class="mb-3">Dodaj swoją recenzję</h4>
+            {# Sprawdź, czy użytkownik jest zalogowany, jeśli tylko zalogowani mogą pisać recenzje #}
+            {% if request.user.is_authenticated %}
+                {# Ten formularz będzie wysyłany do nowego widoku (np. add_review) #}
+                <form method="post" action="{% url 'add_review' product.id %}"> {# Zmień 'add_review' na nazwę URL Twojego widoku #}
+                    {% csrf_token %}
+                    {# Pole oceny (jeśli opcjonalne) #}
+                    <div class="form-group mb-3">
+                        <label for="rating">Ocena (1-5, opcjonalnie):</label>
+                        {# Użyj NumberInput z min/max lub RadioSelect dla gwiazdek #}
+                        <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" style="width: 80px;">
+                        {# Alternatywnie dla gwiazdek: #}
+                        {# <div class="rating-stars"> ... radio buttons for 1-5 stars ... </div> #}
+                    </div>
+                    {# Pole komentarza #}
+                    <div class="form-group mb-3">
+                        <label for="comment">Twój komentarz:</label>
+                        <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea> {# required jeśli komentarz jest obowiązkowy #}
+                    </div>
+                    {# Przycisk wysyłania #}
+                    <button type="submit" class="btn btn-primary">Wyślij recenzję</button>
+                </form>
+            {% else %}
+                <p class="text-muted">Zaloguj się, aby dodać recenzję.</p>
+                {# Opcjonalnie: dodaj link do strony logowania #}
+                <p><a href="{% url 'login' %}?next={{ request.get_full_path }}">Zaloguj się</a></p>
+            {% endif %}
+        </div>
+        {# ---------------------------------------- #}
+
+    </div>
+    {# ===================================== #}
+
+
+    {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
+    {# ... (kod sekcji podobnych produktów - bez zmian) ... #}
+
 
     {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
     {% if similar_products %}

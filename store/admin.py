@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Customer, Product, Order, Profile, ProductImage, Material, ProductVariation
+from .models import Category, Customer, Product, Order, Profile, ProductImage, Material, ProductVariation,Review
 from django.contrib.auth.models import User
 from django.db.models.aggregates import Sum
 
@@ -141,3 +141,26 @@ admin.site.unregister(User)
 
 # Re-Register the new way
 admin.site.register(User, UserAdmin)
+
+
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('product', 'user', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at', 'product__name') # Filtruj po ocenie, dacie, nazwie produktu
+    search_fields = ('comment', 'product__name', 'user__username') # Wyszukuj w komentarzach, nazwie produktu, nazwie użytkownika
+    date_hierarchy = 'created_at' # Dodaj pasek nawigacji po dacie
+
+# Opcjonalnie: Dodaj recenzje jako inline w ProductAdmin
+class ReviewInline(admin.TabularInline):
+    model = Review
+    extra = 0 # Nie pokazuj pustych formularzy domyślnie
+    readonly_fields = ('user', 'created_at') # Te pola nie powinny być edytowalne w inline
+    fields = ('user', 'rating', 'comment', 'created_at') # Pola do wyświetlenia
+
+# Zmodyfikuj ProductAdmin, aby dodać ReviewInline
+class ProductAdmin(admin.ModelAdmin):
+    inlines = [ProductImageInline, ProductVariationInline, ReviewInline] # DODANO ReviewInline
+
+    # ... (pozostałe ustawienia ProductAdmin: fields, filter_horizontal, list_display, list_filter, search_fields, metody display_...) ...
+
+# Zarejestruj nowy model Admin
+admin.site.register(Review, ReviewAdmin)

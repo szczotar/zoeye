@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 # Upewnij się, że importujesz ProductVariation i inne potrzebne modele
-from .models import Product, Category, Profile, Material, ProductVariation
+from .models import Product, Category, Profile, Material, ProductVariation, Review
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -13,10 +13,13 @@ from payment.forms import ShippingForm
 from payment.models import ShippingAddress
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Upewnij się, że wszystkie potrzebne importy z django.db.models są tutaj
-from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef
+from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef, Avg
 from django.db import models
 # Dodaj importy dla agregacji - Nadal potrzebne do obliczenia ogólnego zakresu cen dla suwaka
 from django.db.models.aggregates import Min, Max
+from django.http import HttpResponseRedirect
+from django.urls import reverse # Do generowania URL po sukcesie
+from django.contrib.auth.decorators import login_required
 
 # ... (pozostałe widoki przed category - bez zmian) ...
 def search(request):
@@ -313,8 +316,8 @@ def category(request, foo):
 # --- Widok szczegółów produktu ---
 def product(request, pk):
     """
-    Widok wyświetlający szczegóły produktu, jego wariacje (rozmiary)
-    i produkty z tym samym materiałem.
+    Widok wyświetlający szczegóły produktu, jego wariacje (rozmiary),
+    recenzje/oceny i produkty z tym samym materiałem.
     Argument 'pk' przyjmuje ID produktu z URL.
     """
     print(f"--- Debugging product view ---")
@@ -327,41 +330,51 @@ def product(request, pk):
         print(f"Error getting product with pk '{pk}': {e}")
         raise # Zgłoś błąd 404
 
+    # --- Pobierz Recenzje dla tego produktu ---
+    reviews = product.reviews.all() # Użyj related_name 'reviews'
+    print(f"Found {reviews.count()} total reviews for product '{product.name}'.")
+
+    # --- Oblicz średnią ocenę i liczbę ocen (w widoku) ---
+    # Filtruj recenzje, które mają ustawioną ocenę (rating is not null)
+    reviews_with_rating = reviews.filter(rating__isnull=False)
+
+    # Oblicz średnią ocenę
+    average_rating_agg = reviews_with_rating.aggregate(Avg('rating'))
+    average_rating = average_rating_agg['rating__avg'] # Poprawiono klucz
+
+    # Zaokrąglij średnią ocenę do np. 1 miejsca po przecinku
+    if average_rating is not None:
+        average_rating = round(average_rating, 1)
+    print(f"Average rating: {average_rating}")
+
+    # Oblicz liczbę recenzji z oceną
+    # Możesz użyć .count() na przefiltrowanym QuerySet
+    rating_count = reviews_with_rating.count()
+    print(f"Number of reviews with rating: {rating_count}")
+
+
     # --- Pobierz Wariacje Produktu (posortowane) ---
-    # Jeśli produkt ma wariacje, pobierz je. Jeśli nie, variations będzie pustym querysetem.
     variations = product.variations.all().order_by('size')
-
     print(f"Found {variations.count()} variations for product '{product.name}'.")
-
 
     # --- Pobierz Produkty z Tym Samym Materiałem (Podobne Produkty) ---
     product_materials = product.materials.all()
     similar_products = Product.objects.none()
-
     if product_materials.exists():
         material_q_objects = Q()
         for material in product_materials:
             material_q_objects |= Q(materials=material)
-
-        # Pobierz podobne produkty, wykluczając bieżący
-        similar_products = Product.objects.filter(material_q_objects).distinct().exclude(pk=product.pk)
-
-        # Opcjonalnie: Dodaj filtrowanie dostępności dla podobnych produktów
-        # similar_products = similar_products.filter(
-        #     Q(variations__isnull=True, stock__gt=0) |
-        #     Q(variations__isnull=False, variations__stock__gt=0)
-        # ).distinct()
-
-
-        similar_products = similar_products[:6] # Pokaż np. 6 podobnych produktów
-
+        similar_products = Product.objects.filter(material_q_objects).distinct().exclude(pk=product.pk)[:6]
     print(f"Found {similar_products.count()} similar products based on materials.")
 
 
     context = {
         'product': product,
-        'variations': variations, # Nadal przekazujemy wszystkie wariacje, nawet jeśli jest 1 lub 0
+        'variations': variations,
         'similar_products': similar_products,
+        'reviews': reviews, # Przekazujemy wszystkie recenzje (do wyświetlenia listy komentarzy)
+        'average_rating': average_rating, # Przekazujemy obliczoną średnią ocenę
+        'rating_count': rating_count, # DODANO: przekazanie liczby ocen
     }
 
     print(f"Context keys: {context.keys()}")
@@ -603,5 +616,74 @@ def categories_all(request):
     # Fetch all categories
 	categories = Category.objects.all()
 	return render(request, 'cat.html', {'categories': categories})
+
+
+def add_review(request, product_id):
+    """
+    Handles adding a new review for a product.
+    Expects POST request with 'rating' (optional) and 'comment'.
+    Redirects back to the product page after submission.
+    """
+    # Upewnij się, że żądanie jest POST
+    if request.method == 'POST':
+        # Pobierz produkt, do którego dodawana jest recenzja
+        product = get_object_or_404(Product, id=product_id)
+
+        # Pobierz dane z formularza POST
+        rating_str = request.POST.get('rating')
+        comment = request.POST.get('comment')
+
+        # Walidacja danych
+        if not comment:
+            messages.error(request, "Komentarz nie może być pusty.")
+            # Przekieruj z powrotem do strony produktu
+            return HttpResponseRedirect(reverse('product', args=[product.id]))
+
+        # Walidacja oceny (jeśli jest ustawiona)
+        rating = None # Domyślnie brak oceny
+        if rating_str:
+            try:
+                rating = int(rating_str)
+                # Użyj walidatorów z modelu lub sprawdź ręcznie
+                if not (1 <= rating <= 5):
+                    messages.error(request, "Ocena musi być liczbą od 1 do 5.")
+                    return HttpResponseRedirect(reverse('product', args=[product.id]))
+            except ValueError:
+                messages.error(request, "Nieprawidłowa wartość oceny.")
+                return HttpResponseRedirect(reverse('product', args=[product.id]))
+
+        # Utwórz nowy obiekt Review
+        review = Review(
+            product=product,
+            comment=comment,
+            rating=rating,
+            # Ustaw użytkownika tylko jeśli jest zalogowany
+            user=request.user if request.user.is_authenticated else None
+            # Jeśli pozwalasz niezarejestrowanym, pobierz imię/email z POST
+            # name=request.POST.get('name', '') if not request.user.is_authenticated else '',
+            # email=request.POST.get('email', '') if not request.user.is_authenticated else '',
+        )
+
+        try:
+            # Zapisz recenzję do bazy danych
+            review.full_clean() # Wywołaj pełną walidację modelu (w tym walidatory)
+            review.save()
+            messages.success(request, "Twoja recenzja została dodana.")
+        except Exception as e:
+            # Obsłuż błędy zapisu lub walidacji
+            messages.error(request, f"Wystąpił błąd podczas zapisywania recenzji: {e}")
+            print(f"Error saving review: {e}") # Logowanie błędu na serwerze
+
+
+        # Przekieruj z powrotem do strony produktu
+        # Użyj HttpResponseRedirect z reverse, aby wygenerować URL
+        return HttpResponseRedirect(reverse('product', args=[product.id]))
+
+    # Jeśli żądanie nie jest POST, przekieruj na stronę główną lub stronę produktu
+    messages.warning(request, "Nieprawidłowe żądanie dodania recenzji.")
+    # Możesz przekierować z powrotem na stronę produktu, nawet jeśli to GET
+    return HttpResponseRedirect(reverse('product', args=[product_id]))
+
+
 # Załóżmy, że Twoja funkcja widoku nazywa się category_detail
 # Przyjmuje slug kategorii jako argument, np. /category/electronics/
