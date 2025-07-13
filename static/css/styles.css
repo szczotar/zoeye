@@ -2021,9 +2021,9 @@ progress {
 .form-control:focus {
   color: #212529;
   background-color: #fff;
-  border-color: #86b7fe;
+  border-color: #FFE4C6;
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 0.25rem #FFE4C6;
 }
 .form-control::-webkit-date-and-time-value {
   height: 1.5em;
@@ -2844,16 +2844,16 @@ textarea.form-control-lg {
 }
 
 .btn-primary {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #0d6efd;
-  --bs-btn-border-color: #0d6efd;
+  --bs-btn-color: #000000;
+  --bs-btn-bg: #FFE4C6;
+  --bs-btn-border-color: #FFE4C6;
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #0b5ed7;
-  --bs-btn-hover-border-color: #0a58ca;
+  --bs-btn-hover-bg: darkgoldenrod;
+  --bs-btn-hover-border-color: darkgoldenrodd;
   --bs-btn-focus-shadow-rgb: 49, 132, 253;
   --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #0a58ca;
-  --bs-btn-active-border-color: #0a53be;
+  --bs-btn-active-bg: #292c31;
+  --bs-btn-active-border-color: #goldenrod;
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #fff;
   --bs-btn-disabled-bg: #0d6efd;
@@ -2861,12 +2861,12 @@ textarea.form-control-lg {
 }
 
 .btn-secondary {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #6c757d;
+  --bs-btn-color: #6c757d;
+  --bs-btn-bg: #FFE4C6;
   --bs-btn-border-color: #6c757d;
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #5c636a;
-  --bs-btn-hover-border-color: #565e64;
+  --bs-btn-hover-bg: darkgoldenrod;
+  --bs-btn-hover-border-color: darkgoldenrod;
   --bs-btn-focus-shadow-rgb: 130, 138, 145;
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: #565e64;
@@ -2998,18 +2998,18 @@ textarea.form-control-lg {
 
 .btn-outline-secondary {
   --bs-btn-color: #6c757d;
-  --bs-btn-border-color: #6c757d;
+  --bs-btn-border-color: #FFE4C6;
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #6c757d;
-  --bs-btn-hover-border-color: #6c757d;
+  --bs-btn-hover-bg: #FFE4C6;
+  --bs-btn-hover-border-color: #FFE4C6;
   --bs-btn-focus-shadow-rgb: 108, 117, 125;
   --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #6c757d;
-  --bs-btn-active-border-color: #6c757d;
+  --bs-btn-active-bg: #FFE4C6;
+  --bs-btn-active-border-color: #FFE4C6;
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   --bs-btn-disabled-color: #6c757d;
-  --bs-btn-disabled-bg: transparent;
-  --bs-btn-disabled-border-color: #6c757d;
+  --bs-btn-disabled-bg: #FFE4C6;
+  --bs-btn-disabled-border-color: #FFE4C6;
   --bs-gradient: none;
 }
 
@@ -11750,3 +11750,88 @@ textarea.form-control-lg {
 }
 
 
+    /* W Twoim pliku CSS (np. custom.css) */
+
+/* Styl dla wszystkich ikon gwiazdek w kontenerze .stars */
+.stars .fas.fa-star /* Pełne gwiazdki */
+{
+    color: #FFE4C6; /* Ustaw złoty kolor */
+    /* Opcjonalnie: dostosuj rozmiar, marginesy itp. */
+    /* font-size: 1em; */
+    margin-right: 2px;
+    
+}
+.stars .far.fa-star /* Puste gwiazdki */
+{
+    color: #ccc; /* Ustaw złoty kolor */
+    
+    /* Opcjonalnie: dostosuj rozmiar, marginesy itp. */
+    /* font-size: 1em; */
+    margin-right: 2px;
+}
+
+
+/* Styl dla gwiazdek w podsumowaniu (jeśli są większe) */
+.average-rating .stars .fas.fa-star,
+.average-rating .stars .far.fa-star {
+    font-size: 1em; /* Większy rozmiar dla gwiazdek w podsumowaniu */
+}
+
+/* Styl dla gwiazdek w rozkładzie */
+.rating-distribution-item .stars .fas.fa-star,
+.rating-distribution-item .stars .far.fa-star {
+     font-size: 1em; 
+      flex-grow: 1.5; 
+      text-align: right;
+}
+.rating-input-stars {
+    display: inline-block; /* Upewnij się, że kontener nie zajmuje całej szerokości */
+    direction: rtl; /* Ustaw kierunek tekstu od prawej do lewej */
+    unicode-bidi: bidi-override; /* Nadpisz domyślne zachowanie dwukierunkowe */
+}
+
+/* Ukryj standardowe przyciski radiowe */
+.rating-input-stars input[type="radio"] {
+    display: none;
+}
+
+/* Styl dla etykiet (gwiazdek) */
+.rating-input-stars label {
+    color: #ccc; /* Domyślny kolor (szary) dla pustych gwiazdek */
+    font-size: 2em; /* Rozmiar gwiazdek (dostosuj) */
+    padding: 0 5px; /* Odstęp między gwiazdkami (dostosuj) */
+    cursor: pointer; /* Zmień kursor na wskaźnik */
+    transition: color 0.2s ease; /* Płynne przejście koloru */
+}
+
+/* Styl dla ikon Font Awesome w etykietach (upewnij się, że Font Awesome CSS jest załadowany) */
+.rating-input-stars label i {
+    /* Możesz tutaj dostosować specyficzne style ikon Font Awesome, jeśli potrzebujesz */
+}
+
+
+/* Styl dla gwiazdek po najechaniu myszką */
+/* Użyj selektora ~ (sibling combinator) i :hover */
+.rating-input-stars label:hover,
+.rating-input-stars label:hover ~ label {
+    color: #FFE4C6; /* Złoty kolor przy najechaniu (na gwiazdkę i wszystkie poprzednie) */
+}
+
+/* Styl dla wybranych gwiazdek */
+/* Użyj selektora :checked i ~ (sibling combinator) */
+.rating-input-stars input[type="radio"]:checked ~ label {
+    color: #FFE4C6; 
+}
+
+/* Opcjonalnie: Styl dla gwiazdki, która została kliknięta (ta z :checked) */
+/* Może być użyte do dodania dodatkowego efektu wizualnego */
+.rating-input-stars input[type="radio"]:checked + label {
+    /* Dodaj tutaj dodatkowe style, jeśli potrzebujesz */
+}
+
+
+/* Resetuj kierunek tekstu dla elementów poza kontenerem gwiazdek */
+.rating-input-stars + label { /* Przykład: jeśli masz etykietę po kontenerze gwiazdek */
+    direction: ltr;
+    unicode-bidi: unset;
+}

@@ -54,11 +54,6 @@
                 {# Ukryte pole, które będzie przechowywać ID wybranej wariacji LUB ID PRODUKTU #}
                 {# Wartość domyślna będzie ustawiana przez JS #}
                 <input type="hidden" name="item_id" id="selected-item-id" value="">
-                {# Pole na ilość - USUNIĘTO #}
-                {# <div class="form-group mb-3"> #}
-                {#     <label for="qty">Ilość:</label> #}
-                {#     <input type="number" name="quantity" value="1" min="1" class="form-control" id="qty" style="width: 80px;"> #}
-                {# </div> #}
                 {# Ukryte pole ilości z domyślną wartością 1 #}
                 <input type="hidden" name="quantity" id="qty" value="1">
 
@@ -163,101 +158,176 @@
 
     </div> {# Koniec row #}
 
+    <br>
 
-    <div class="product-description-section-detail mt-4">
-        <h3 class="description-heading-detail">Opis produktu</h3>
-        <hr class="description-separator-detail" />
-        <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
+    {# === Sekcja z opisem produktu - ZWIJANA === #}
+    {# Usunięto mt-4 z głównego diva sekcji #}
+    <div class="product-description-section-detail mt-5"> {# DODANO: mt-5 dla odstępu, usunięto mt-4 #}
+
+        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDescription" aria-expanded="false" aria-controls="collapseDescription" role="button"> {# DODANO: role="button" dla dostępności #}
+             <h4 class="reviews-heading-detail mb-0">Opis produktu</h4>
+             {# Ikona strzałki - zmienimy jej kierunek za pomocą CSS/JS #}
+             <i class="fas fa-chevron-down"></i> {# DODANO: ikona #}
+        </div>
+        {# Usunięto hr z wyzwalacza, dodano go po wyzwalaczu #}
+        <hr class="description-separator-detail mt-2 mb-3" /> {# DODANO: marginesy góra/dół #}
+
+        {# Kontener do zwinięcia - domyślnie zwinięty #}
+        <div class="collapse" id="collapseDescription"> {# DODANO: class="collapse" i ID #}
+            <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
+        </div>
     </div>
+    {# ======================================== #}
 
-    {# === NOWA SEKCJA RECENZJI I OCEN === #}
+
+    {# === NOWA SEKCJA RECENZJI I OCEN - PODZIELONA NA KOLUMNY - ZWIJANA === #}
     <div class="reviews-section mt-5">
-        <h3 class="reviews-heading-detail">Recenzje i Oceny</h3>
-        <hr class="reviews-separator-detail" />
-
-        {# --- Wyświetlanie średniej oceny --- #}
       
-{% if rating_count > 0 %}
-    <div class="average-rating mb-3">
-        <p class="mb-0">
-            Średnia ocena: <strong>{{ average_rating }}/5</strong>
-            {# Użyj filtra render_stars dla średniej oceny #}
-            <span class="stars">{{ average_rating|render_stars }}</span> {# DODANO #}
-            (na podstawie {{ rating_count }} ocen)
-        </p>
-    </div>
-{% else %}
-    {# ... #}
-{% endif %}
-{# ----------------------------------------------- #}
+        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseReviews" aria-expanded="false" aria-controls="collapseReviews" role="button"> {# DODANO: role="button" dla dostępności #}
+             <h4 class="reviews-heading-detail mb-0">Opinie</h4>
+             {# Ikona strzałki - zmienimy jej kierunek za pomocą CSS/JS #}
+             <i class="fas fa-chevron-down"></i> {# DODANO: ikona #}
+        </div>
+        {# Usunięto hr z wyzwalacza, dodano go po wyzwalaczu #}
+        <hr class="reviews-separator-detail mt-2 mb-3" /> {# DODANO: marginesy góra/dół #}
+
+        {# Kontener do zwinięcia - domyślnie zwinięty #}
+        <div class="collapse" id="collapseReviews"> {# DODANO: class="collapse" i ID #}
+
+            <div class="row"> {# Kontener row dla kolumn #}
+
+                      {# === Prawa kolumna: Podsumowanie ocen i rozkład === #}
+                <div class="col-md-5">
+                    <div class="rating-summary p-3 border rounded bg-light">
+
+                        <h5 class="mb-3">Średnia ocen</h6>
+
+                        {# --- Wyświetlanie średniej oceny --- #}
+                        {% if rating_count > 0 %}
+                            <div class="average-rating mb-4 text-center">
+                                <p class="mb-0 h2"><strong>{{ average_rating|default:"N/A" }}</strong></p>
+                                <div class="stars h4">{{ average_rating|render_stars }}</div>
+                                <p class="mb-0 text-muted">na podstawie {{ rating_count }} ocen</p>
+                            </div>
+                        {% else %}
+                             <div class="average-rating mb-4 text-center">
+                                 <p class="mb-0 h4 text-muted">Brak ocen dla tego produktu.</p>
+                             </div>
+                        {% endif %}
+                        {# ----------------------------------------------- #}
 
 
-        {# --- Lista istniejących recenzji --- #}
-{% if reviews %}
-    <div class="reviews-list mt-4">
-        {% for review in reviews %}
-            <div class="review-item border p-3 mb-3 rounded">
-                {# ... (informacje o autorze i dacie) ... #}
-                {# Ocena (jeśli ustawiona) #}
-                {% if review.rating is not None %}
-                    <p class="mb-1">
-                        Ocena: <strong>{{ review.rating }}/5</strong>
-                        {# Użyj filtra render_stars dla oceny pojedynczej recenzji #}
-                        <span class="stars">{{ review.rating|render_stars }}</span> {# DODANO #}
-                    </p>
-                {% endif %}
-                {# Treść komentarza #}
-                <div class="review-comment">
-                    <p>{{ review.comment|linebreaksbr }}</p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% else %}
-    {# ... #}
+                        {# --- Rozkład ocen (liczba recenzji dla każdej gwiazdki) --- #}
+                        {% if rating_count > 0 %}
+                            <div class="rating-distribution mt-4">
+                                <h6 class="mb-2">Rozkład ocen:</h6>
+                             {% for rating_value in rating_values %} {# Iteruj po liczbach #}
+                            {% with count=rating_distribution|get_item:rating_value|default:0 %} {# Użyj liczby jako klucza #}
+                                <div class="rating-distribution-item">
+                                    <span class="stars">{{ rating_value|render_stars }}</span> {# Przekazuj liczbę do render_stars #}
+                                    <span class="count text-muted">{{ count }}</span>
+                                </div>
+                            {% endwith %}
+                        {% endfor %}
+                            </div>
+                        {% endif %}
+                        {# ------------------------------------------------------- #}
 
-            <div class="reviews-list mt-4">
-                <p class="text-muted">Brak recenzji dla tego produktu. Bądź pierwszy!</p>
-            </div>
-        {% endif %}
-        {# ----------------------------------- #}
-  <div class="add-review-form mt-5">
-            <h4 class="mb-3">Dodaj swoją recenzję</h4>
-            {# Sprawdź, czy użytkownik jest zalogowany, jeśli tylko zalogowani mogą pisać recenzje #}
+                    </div> {# Koniec rating-summary #}
+                </div> {# Koniec prawej kolumny #}
+
+                {# === Lewa kolumna: Formularz dodawania recenzji i Lista recenzji === #}
+                <div class="col-md-7">
+<div class="add-review-form mt-5">
+            <h5 class="mb-3">Dodaj swoją opinię</h5>
             {% if request.user.is_authenticated %}
-                {# Ten formularz będzie wysyłany do nowego widoku (np. add_review) #}
-                <form method="post" action="{% url 'add_review' product.id %}"> {# Zmień 'add_review' na nazwę URL Twojego widoku #}
+                <form method="post" action="{% url 'add_review' product.id %}">
                     {% csrf_token %}
-                    {# Pole oceny (jeśli opcjonalne) #}
+                    {# Pole oceny (zmienione na gwiazdki) #}
                     <div class="form-group mb-3">
-                        <label for="rating">Ocena (1-5, opcjonalnie):</label>
-                        {# Użyj NumberInput z min/max lub RadioSelect dla gwiazdek #}
-                        <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" style="width: 80px;">
-                        {# Alternatywnie dla gwiazdek: #}
-                        {# <div class="rating-stars"> ... radio buttons for 1-5 stars ... </div> #}
+                        <label class="form-label d-block">Twoja ocena:</label> {# Zmieniono etykietę i dodano d-block #}
+
+                        {# === KONTEJNER DLA GWIAZDEK RADIOWYCH === #}
+                        {# Użyjemy diva z klasą, którą będziemy stylizować #}
+                        <div class="rating-input-stars">
+                            {# Iteruj od 5 do 1, aby przyciski radiowe były w poprawnej kolejności wizualnej #}
+                            {% for i in "54321" %}
+                                {# Input radio dla każdej gwiazdki #}
+                                {# name="rating" - wszystkie inputy w grupie muszą mieć tę samą nazwę #}
+                                {# value="{{ i }}" - wartość wysyłana w formularzu #}
+                                {# id="rating-{{ i }}" - unikalne ID dla powiązania z etykietą #}
+                                <input type="radio" id="rating-{{ i }}" name="rating" value="{{ i }}" required> {# DODANO required, jeśli ocena jest obowiązkowa #}
+                                {# Etykieta dla gwiazdki - użyjemy jej do wyświetlenia ikony gwiazdki #}
+                                {# for="rating-{{ i }}" - powiązanie z inputem radio #}
+                                <label for="rating-{{ i }}" title="{{ i }} gwiazdek">
+                                    {# Ikona gwiazdki (Font Awesome) #}
+                                    <i class="fas fa-star"></i> {# Użyjemy pełnej gwiazdki, a puste stylizujemy CSS #}
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {# ====================================== #}
+
                     </div>
                     {# Pole komentarza #}
                     <div class="form-group mb-3">
                         <label for="comment">Twój komentarz:</label>
-                        <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea> {# required jeśli komentarz jest obowiązkowy #}
+                        <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
                     </div>
                     {# Przycisk wysyłania #}
                     <button type="submit" class="btn btn-primary">Wyślij recenzję</button>
                 </form>
             {% else %}
                 <p class="text-muted">Zaloguj się, aby dodać recenzję.</p>
-                {# Opcjonalnie: dodaj link do strony logowania #}
                 <p><a href="{% url 'login' %}?next={{ request.get_full_path }}">Zaloguj się</a></p>
             {% endif %}
         </div>
-        {# ---------------------------------------- #}
 
+
+                    {# --- Lista istniejących recenzji --- #}
+                    {% if reviews %}
+                        <div class="reviews-list mt-4">
+                            <h5 class="mb-3">Wszystkie recenzje ({{ reviews.count }})</h5>
+                            {% for review in reviews %}
+                                <div class="review-item border p-3 mb-3 rounded">
+                                    <p class="mb-1 small text-muted">
+                                        Przez: <strong>
+                                            {% if review.user %}
+                                                {{ review.user.username }}
+                                            {% else %}
+                                                Anonim
+                                            {% endif %}
+                                        </strong>
+                                        <span class="ml-2">|</span> {{ review.created_at|date:"d.m.Y H:i" }}
+                                    </p>
+                                    {# Ocena (jeśli ustawiona) #}
+                                    {% if review.rating is not None %}
+                                        <p class="mb-1">
+                                            Ocena: <strong>{{ review.rating }}/5</strong>
+                                            <span class="stars">{{ review.rating|render_stars }}</span>
+                                        </p>
+                                    {% endif %}
+                                    {# Treść komentarza #}
+                                    <div class="review-comment">
+                                        <p>{{ review.comment|linebreaksbr }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="reviews-list mt-4">
+                            <p class="text-muted">Brak recenzji dla tego produktu. Bądź pierwszy!</p>
+                        </div>
+                    {% endif %}
+                    {# ----------------------------------- #}
+
+                </div> {# Koniec lewej kolumny #}
+
+
+            </div> {# Koniec row #}
+
+        </div> {# Koniec div.collapse #}
     </div>
-    {# ===================================== #}
-
-
-    {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
-    {# ... (kod sekcji podobnych produktów - bez zmian) ... #}
+    {# ================================================================= #}
 
 
     {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}

@@ -333,53 +333,8 @@
 
 
 /* Styl dla przycisku "Dodaj do koszyka" z własnym kolorem */
-.btn-custom-add-to-cart {
-    /* Domyślny stan */
-    background-color: gold; /* Ustaw kolor tła */
-    border-color: darkgoldenrod; /* Ustaw kolor obramowania */
-    color: #FFE4C6; /* Ustaw kolor tekstu (np. ciemny szary) */
 
-    /* Opcjonalnie: Efekt na najechaniu myszką (hover) */
-    /* Domyślnie Bootstrap .btn style dodają efekt hover, ale możesz go nadpisać */
-    &:hover { /* Ten syntax '&:hover' działa w SCSS/SASS, w czystym CSS użyj .btn-custom-add-to-cart:hover */
-         background-color: darkgoldenrod; /* Ciemniejszy odcień złota na hover */
-         border-color: goldenrod;
-         color: #fff; /* Biały tekst na hover (możesz zostawić #333) */
-    }
 
-     /* Opcjonalnie: Efekt na kliknięciu/aktywny stan */
-     &:active { /* lub .btn-custom-add-to-cart:active */
-          background-color: sienna; /* Jeszcze ciemniejszy odcień */
-          border-color: sienna;
-     }
-
-     /* Opcjonalnie: Stan wyłączony */
-     &:disabled { /* lub .btn-custom-add-to-cart:disabled */
-          opacity: 0.65;
-     }
-}
-
-/* W czystym CSS (jeśli nie używasz preprocesora jak SCSS/SASS) */
-.btn-custom-add-to-cart {
-    background-color: gold;
-    border-color: darkgoldenrod;
-    color: #333;
-}
-
-.btn-custom-add-to-cart:hover {
-     background-color: darkgoldenrod;
-     border-color: goldenrod;
-     color: #fff;
-}
-
-.btn-custom-add-to-cart:active {
-     background-color: sienna;
-     border-color: sienna;
-}
-
-.btn-custom-add-to-cart:disabled {
-     opacity: 0.65;
-}
 
 /* Karuzel dla produktów Ustaw stałą wysokość dla elementów karuzeli w KARTACH PRODUKTÓW */
 
@@ -551,6 +506,17 @@
     color: #6c757d;
     opacity: 0.65; /* Domyślna przezroczystość dla wyłączonych przycisków */
 }
+
+.custom-add-to-cart-button:hover {
+     background-color: darkgoldenrod;
+     border-color: goldenrod;
+     color: #fff;
+}
+.custom-add-to-cart-button:active {
+     background-color: sienna;
+     border-color: sienna;
+}
+
 
 .text-sale-price {
     color: #dcb14a;

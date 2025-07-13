@@ -13,7 +13,7 @@ from payment.forms import ShippingForm
 from payment.models import ShippingAddress
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Upewnij się, że wszystkie potrzebne importy z django.db.models są tutaj
-from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef, Avg
+from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef, Avg, Count 
 from django.db import models
 # Dodaj importy dla agregacji - Nadal potrzebne do obliczenia ogólnego zakresu cen dla suwaka
 from django.db.models.aggregates import Min, Max
@@ -331,7 +331,7 @@ def product(request, pk):
         raise # Zgłoś błąd 404
 
     # --- Pobierz Recenzje dla tego produktu ---
-    reviews = product.reviews.all() # Użyj related_name 'reviews'
+    reviews = product.reviews.all()
     print(f"Found {reviews.count()} total reviews for product '{product.name}'.")
 
     # --- Oblicz średnią ocenę i liczbę ocen (w widoku) ---
@@ -348,9 +348,22 @@ def product(request, pk):
     print(f"Average rating: {average_rating}")
 
     # Oblicz liczbę recenzji z oceną
-    # Możesz użyć .count() na przefiltrowanym QuerySet
     rating_count = reviews_with_rating.count()
     print(f"Number of reviews with rating: {rating_count}")
+
+    # --- Oblicz rozkład ocen (ile recenzji dla każdej oceny 1-5) ---
+    # Użyj annotate i Count z wartościami rating
+    # group_by rating i count
+    rating_distribution = reviews_with_rating.values('rating').annotate(count=Count('rating')).order_by('rating')
+
+    # Przekształć QuerySet w słownik dla łatwiejszego dostępu w szablonie
+    # Słownik będzie wyglądał np. {1: 5, 3: 10, 5: 2}
+    rating_distribution_dict = {item['rating']: item['count'] for item in rating_distribution}
+
+    # Upewnij się, że słownik zawiera wszystkie oceny od 1 do 5, nawet jeśli count wynosi 0
+    # Aby ułatwić iterację w szablonie
+    full_rating_distribution = {i: rating_distribution_dict.get(i, 0) for i in range(1, 6)}
+    print(f"Rating distribution: {full_rating_distribution}")
 
 
     # --- Pobierz Wariacje Produktu (posortowane) ---
@@ -374,7 +387,9 @@ def product(request, pk):
         'similar_products': similar_products,
         'reviews': reviews, # Przekazujemy wszystkie recenzje (do wyświetlenia listy komentarzy)
         'average_rating': average_rating, # Przekazujemy obliczoną średnią ocenę
-        'rating_count': rating_count, # DODANO: przekazanie liczby ocen
+        'rating_count': rating_count, # Przekazanie liczby recenzji z oceną
+        'rating_distribution': full_rating_distribution, # DODANO: przekazanie rozkładu ocen
+        'rating_values': range(5, 0, -1), # Utwórz range od 5 do 1
     }
 
     print(f"Context keys: {context.keys()}")
@@ -382,8 +397,7 @@ def product(request, pk):
 
     return render(request, 'product.html', context)
 
-# --- Widok szczegółów materiału ---
-# Będzie bardzo podobny do widoku category po zmianach
+
 def stones_detail(request, material_name):
     # ... (początek funkcji) ...
 
