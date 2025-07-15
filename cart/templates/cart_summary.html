@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load custom_filters %} {# Upewnij się, że masz filtr is_not_blank lub podobny #}
+{% load custom_filters %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/custom.css' %}">
@@ -43,17 +43,12 @@
                         <tbody>
                             {% if cart_items %}
                                 {% for item in cart_items %}
-
-                                    {# === Określ obiekt produktu bazowego i jego ID === #}
                                     {% with current_product_obj=item.item_object.product|default:item.item_object %}
                                     {% with product_id=current_product_obj.id %}
-                                    {# === Koniec określania === #}
-
                                     {% if product_id %}
                                         <tr id="item-{{ item.item_key }}">
                                             <th class="pl-0 border-0" scope="row">
                                                 <div class="media align-items-center">
-                                                    {# Obrazek produktu - używamy current_product_obj i product_id #}
                                                     <a class="reset-anchor d-block animate-img" href="{% url 'product' product_id %}">
                                                         {% if current_product_obj.images.all %}
                                                             <img src="{{ current_product_obj.get_main_image }}" alt="{{ current_product_obj.name }}" width="70"/>
@@ -62,62 +57,36 @@
                                                         {% endif %}
                                                     </a>
                                                     <div class="media-body ml-3">
-                                                        {# Nazwa produktu - używamy current_product_obj i product_id #}
                                                         <strong class="h6"> <a class="reset-anchor" href="{% url 'product' product_id %}">{{ current_product_obj.name }}</a></strong>
-                                                        {# Rozmiar (tylko dla wariacji) #}
                                                         {% if item.item_type == 'variation' %}
-                                                             <p class="small text-muted">{{ item.item_object.size|default:"Brak rozmiaru" }}</p> {# Wyświetl rozmiar wariacji #}
+                                                             <p class="small text-muted">{{ item.item_object.size|default:"Brak rozmiaru" }}</p>
                                                         {% else %}
-                                                             {# Opcjonalnie: Pokaż "Uniwersalny" lub podobnie dla produktów bez wariacji #}
                                                              <p class="small text-muted">Uniwersalny</p>
                                                         {% endif %}
                                                     </div>
                                                 </div>
                                             </th>
-                                            {# Cena jednostkowa #}
                                             <td class="align-middle border-0">
-                                                <p class="mb-0 small">
-                                                    {{ item.item_object.get_effective_price|floatformat:2 }} zł {# Dodano floatformat dla pewności #}
-                                                </p>
+                                                <p class="mb-0 small">{{ item.item_object.get_effective_price|floatformat:2 }} zł</p>
                                             </td>
-                                            {# Pole ilości z formularzem aktualizacji #}
                                             <td class="align-middle border-0">
-                                                <div class="border d-flex align-items-center justify-content-between px-3"><span class="small text-uppercase text-gray quantities">Quantity</span>
+                                                <div class="border d-flex align-items-center justify-content-between px-3">
+                                                    <span class="small text-uppercase text-gray quantities">Quantity</span>
                                                     <div class="quantity">
-                                                        {# Formularz do aktualizacji ilości dla tego konkretnego itemu #}
-                                                        <form action="{% url 'cart_update' %}" method="post" class="update-cart-form">
-                                                            {% csrf_token %}
-                                                            {# Ukryte pole z kluczem itemu #}
-                                                            <input type="hidden" name="item_key" value="{{ item.item_key }}">
-                                                            {# Ukryte pole action #}
-                                                            <input type="hidden" name="action" value="post"> {# DODANO TO POLE #}
-                                                            {# Input ilości #}
-                                                            <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control form-control-sm border-0 shadow-0 quantity-input" data-item-key="{{ item.item_key }}" min="0" style="width: 60px; display: inline-block; text-align: center;">
-                                                        </form>
+                                                        <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control form-control-sm border-0 shadow-0 quantity-input" data-item-key="{{ item.item_key }}" min="0" style="width: 60px; display: inline-block; text-align: center;">
                                                     </div>
                                                 </div>
                                             </td>
-                                            {# Suma częściowa (subtotal) #}
                                             <td class="align-middle border-0 subtotal-cell" id="subtotal-{{ item.item_key }}">
-                                                <p class="mb-0 small">{{ item.subtotal|floatformat:2 }} zł</p> {# Dodano floatformat #}
+                                                <p class="mb-0 small">{{ item.subtotal|floatformat:2 }} zł</p>
                                             </td>
-                                            {# Przycisk usuwania #}
                                             <td class="align-middle border-0">
-                                                {# Formularz do usuwania itemu #}
-                                                <form action="{% url 'cart_delete' %}" method="post" class="delete-cart-form">
-                                                    {% csrf_token %}
-                                                    {# Ukryte pole z kluczem itemu #}
-                                                    <input type="hidden" name="item_key" value="{{ item.item_key }}">
-                                                    {# Ukryte pole action #}
-                                                    <input type="hidden" name="action" value="post"> {# DODANO TO POLE #}
-                                                    {# Przycisk submit #}
-                                                    <button type="submit" class="reset-anchor remove-item-button" data-item-key="{{ item.item_key }}"><i class="fas fa-trash-alt"></i></button>
-                                                </form>
+                                                <button type="button" class="reset-anchor remove-item-button" data-item-key="{{ item.item_key }}"><i class="fas fa-trash-alt"></i></button>
                                             </td>
                                         </tr>
-                                    {% endif %} {# Koniec if product_id #}
-                                    {% endwith %} {# Koniec with product_id #}
-                                    {% endwith %} {# Koniec with current_product_obj #}
+                                    {% endif %}
+                                    {% endwith %}
+                                    {% endwith %}
                                 {% endfor %}
                             {% else %}
                                 <tr>
@@ -127,7 +96,6 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- BAR PRODUCTS-->
                 <div class="bg-light px-4 py-3">
                     <div class="row align-items-center text-center">
                         <div class="col-md-6 mb-3 mb-md-0 text-md-left">
@@ -135,33 +103,25 @@
                                 <i class="fas fa-long-arrow-alt-left mr-2"> </i> Continue shopping
                             </a>
                         </div>
-                        <div class="col-md-6 text-md-right">
-                            {# Przycisk do aktualizacji całego koszyka (niepotrzebny przy AJAX per item) #}
-                        </div>
+                        <div class="col-md-6 text-md-right"></div>
                     </div>
                 </div>
             </div>
-            <!-- ORDER TOTAL-->
-                <div class="col-lg-4">
+            <div class="col-lg-4">
                 <div class="card border-0 rounded-0 p-lg-4 bg-light">
                     <div class="card-body">
                         <h5 class="text-uppercase mb-4">Order total</h5>
                         <ul class="list-unstyled mb-0">
                             <li class="d-flex align-items-center justify-content-between mb-4">
                                 <strong class="text-uppercase small font-weight-bold">Subtotal</strong>
-                                {# Całkowita suma koszyka #}
-                                <span id="cart-total-display">{{ totals|default:0|floatformat:2 }} zł</span> {# Dodano floatformat #}
+                                <span id="cart-total-display">{{ totals|default:0|floatformat:2 }} zł</span>
                             </li>
-                            {# Możesz dodać tutaj koszt wysyłki, rabaty itp. #}
                             <li class="border-bottom my-2"></li>
                             <li class="d-flex align-items-center justify-content-between mb-4">
                                 <strong class="text-uppercase small font-weight-bold">Total</strong>
-                                {# Całkowita suma koszyka (z opłatami jeśli są) #}
-                                <span id="order-total-display">{{ totals|default:0|floatformat:2 }} zł</span> {# Dodano floatformat #}
+                                <span id="order-total-display">{{ totals|default:0|floatformat:2 }} zł</span>
                             </li>
                             <li>
-                                {# Przycisk do przejścia do płatności/checkoutu #}
-                                {# Wyłącz przycisk checkout, jeśli koszyk jest pusty #}
                                 <a class="btn btn-dark btn-block {% if not cart_items %}disabled{% endif %}" href="{% url 'checkout' %}">Proceed to checkout</a>
                             </li>
                         </ul>
@@ -171,149 +131,4 @@
         </div>
     </section>
 </div>
-
-{# === SKRYPTY JS DLA KOSZYKA (AJAX) === #}
-{# Upewnij się, że jQuery jest załadowane przed tym skryptem #}
-
-<script>
-
-    
-$(document).ready(function() {
-
-    // Standardowa funkcja do pobierania CSRF tokenu z ciasteczka
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    var csrftoken = getCookie('csrftoken');
-
-    // Konfiguracja AJAX do automatycznego dodawania nagłówka X-CSRFToken
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
-
-
-   $(document).on('change', '.quantity-input', function() {
-        var $input = $(this);
-        var itemKey = $input.data('item-key');
-        var newQuantity = parseInt($input.val() || '0');
-
-        if (newQuantity < 0) {
-             alert("Quantity cannot be negative.");
-             location.reload();
-             return;
-        }
-
-         if (newQuantity === 0) {
-              console.log("Quantity set to 0, triggering delete for item:", itemKey);
-              $('#item-' + itemKey).find('.remove-item-button').click();
-              return;
-         }
-
-        var $form = $input.closest('form');
-
-        // *** PRZENIEŚ SERIALIZACJĘ TUTAJ, PRZED ZABLOKOWANIEM INPUTA ***
-        var formData = $form.serialize();
-        // *** KONIEC PRZENIESIENIA ***
-
-        // Opcjonalnie: Zablokuj input podczas requestu
-        $input.prop('disabled', true);
-
-
-        // Wysyłamy formularz AJAX-em (tylko gdy newQuantity > 0)
-        $.ajax({
-            type: $form.attr('method'),
-            url: $form.attr('action'),
-            data: formData, // Użyj zmiennej z serializowanymi danymi
-            dataType: 'json',
-            success: function(json) {
-                console.log("Update success:", json);
-                // ... reszta kodu sukcesu ...
-                  $input.prop('disabled', false);
-                 if (json.qty > 0) { $('.btn-block[href="{% url 'checkout' %}"]').removeClass('disabled'); } else { $('.btn-block[href="{% url 'checkout' %}"]').addClass('disabled'); }
-                
-                 showCustomAlert(json.message || "Ilość produktu zaktualizowana.", 'success'); // Użyj message z JSON lub domyślnego
-                 $('#subtotal-' + json.item_key).text(Number(json.item_subtotal).toFixed(2) + ' zł');
-                 $('#cart_quantity').text(json.qty); // Aktualizuj ilość w navbarze (Używamy json.qty)
-                $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę koszyka
-                $('#order-total-display').text(Number(json.cart_total).toFixed(2) + ' zł'); // Aktualizuj sumę zamówienia
-
-                },
-            
-           error: function(xhr, errmsg, err) {
-    console.error("Update error:", errmsg, err, xhr.responseText);
-    let errorMsg = "Wystąpił błąd.";
-    try { const errorJson = JSON.parse(xhr.responseText); errorMsg = errorJson.error || errorJson.message || errmsg || "Nieznany błąd."; } catch (e) {}
-    // Zastąp alert customowym komunikatem błędu
-    showCustomAlert(errorMsg, 'danger');
-    $input.prop('disabled', false);
-    // Zdecyduj, czy chcesz odświeżać stronę przy błędach
-    // location.reload(); // <-- USUŃ TĘ LINIĘ, jeśli nie chcesz odświeżania przy błędach
-}
-            
-        });
-    });
-
-    // === OBSŁUGA KLIKNIĘCIA PRZYCISKU USUWANIA ===
-  $(document).on('click', '.remove-item-button', function(e) {
-    e.preventDefault(); // Zapobiegaj domyślnej akcji formularza
-
-    var $button = $(this);
-    var itemKey = $button.data('item-key');
-
-    var $form = $button.closest('form');
-    // $row = $('#item-' + itemKey); // Nie potrzebujemy jej tutaj, bo handleAjaxResponse usunie wiersz
-
-    $button.prop('disabled', true); // Zablokuj przycisk podczas requestu
-
-
-    $.ajax({
-        type: $form.attr('method'),
-        url: $form.attr('action'),
-        data: $form.serialize(),
-        dataType: 'json',
-        success: function(json) {
-            console.log("Delete AJAX success:", json);
-            // *** WYWOŁAJ GLOBALNĄ FUNKCJĘ DO OBSŁUGI ODPOWIEDZI ***
-            handleAjaxResponse(json);
-            // *** KONIEC WYWOŁANIA ***
-
-            // Dodatkowa logika specyficzna dla tego handleru: odblokowanie przycisku
-            $button.prop('disabled', false);
-
-            // Logika pokazywania "Koszyk jest pusty" i włączania/wyłączania checkout
-            // TO ZOSTAŁO PRZENIESIONE DO handleAjaxResponse.
-            // Upewnij się, że handleAjaxResponse to robi poprawnie na podstawie json.qty.
-            // Jeśli chcesz, aby przycisk checkout był włączany/wyłączany tylko na stronie koszyka,
-            // upewnij się, że logika w handleAjaxResponse ma odpowiednie sprawdzenie, np.
-            // if ($('.btn-block[href="{% url 'checkout' %}"]').length) { ... }
-        },
-        error: function(xhr, errmsg, err) {
-            console.error("Delete AJAX error:", errmsg, err, xhr.responseText);
-            // Wywołaj globalną funkcję do obsługi błędów
-            handleAjaxError(xhr, errmsg, err);
-            // Dodatkowa logika specyficzna dla tego handleru: odblokowanie przycisku i ew. odświeżenie
-            $button.prop('disabled', false);
-            // location.reload(); // Rozważ usunięcie
-        }
-    });
-});
-
-});
-</script>
 {% endblock %}

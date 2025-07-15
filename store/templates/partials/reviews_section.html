@@ -1,0 +1,69 @@
+{% load rating_filters %}
+{% load custom_filters %}
+
+{% comment %}
+Ten plik zawiera tylko sekcję z listą recenzji i ich paginacją.
+Będzie dołączany do product.html oraz ładowany dynamicznie przez AJAX.
+{% endcomment %}
+
+{% if reviews_page.object_list %}
+    <div class="reviews-list mt-4">
+        <h5 class="mb-3">Wszystkie recenzje ({{ reviews_page.paginator.count }})</h5>
+        
+        {% for review in reviews_page %}
+            <div class="review-item border p-3 mb-3 rounded">
+                <p class="mb-1 small text-muted">
+                    Przez: <strong>
+                        {% if review.user %}
+                            {{ review.user.username }}
+                        {% else %}
+                            Anonim
+                        {% endif %}
+                    </strong>
+                    <span class="ml-2">|</span> {{ review.created_at|date:"d.m.Y H:i" }}
+                </p>
+                {% if review.rating is not None %}
+                    <p class="mb-1">
+                        Ocena: <strong>{{ review.rating }}/5</strong>
+                        <span class="stars">{{ review.rating|render_stars }}</span>
+                    </p>
+                {% endif %}
+                <div class="review-comment">
+                    <p>{{ review.comment|linebreaksbr }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if reviews_page.has_other_pages %}
+    <nav aria-label="Nawigacja po recenzjach">
+        <ul class="pagination justify-content-center">
+            {# Przycisk "Previous" #}
+            <li class="page-item {% if not reviews_page.has_previous %}disabled{% endif %}">
+                <a class="page-link" href="#" data-page="{% if reviews_page.has_previous %}{{ reviews_page.previous_page_number }}{% endif %}">Poprzednia</a>
+            </li>
+    
+            {# Linki do poszczególnych stron #}
+            {% for num in reviews_page.paginator.page_range %}
+                {% if reviews_page.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="#" data-page="{{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+    
+            {# Przycisk "Next" #}
+            <li class="page-item {% if not reviews_page.has_next %}disabled{% endif %}">
+                <a class="page-link" href="#" data-page="{% if reviews_page.has_next %}{{ reviews_page.next_page_number }}{% endif %}">Następna</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+{% else %}
+    <div class="reviews-list mt-4">
+        <p class="text-muted">Brak recenzji dla tego produktu. Bądź pierwszy!</p>
+    </div>
+{% endif %}

@@ -30,13 +30,16 @@
          <!-- Google fonts-->
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Martel:wght@200;30 0;400;600;700;800;900&display=swap" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Martel:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
         
 
           <!--font awesome-->
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
      
     <body>
+        <!-- === KONTENER NA ALERTY PRZENIESIONY TUTAJ === -->
+        <div id="custom-alerts-container"></div>
 
         {% include 'navbar.html' %}
         
@@ -49,20 +52,13 @@
             {% endfor %}
         {% endif %}
    
-        {% include 'scripts.html' %}
-      <div id="custom-alerts-container">
-            {# Alerty Bootstrap będą wstawiane tutaj #}
-        </div>
         {% block content %}
      
         {% endblock %}
-
-      </div>
                  
-
       
-      {% include 'footer.html' %}
-     
- 
+        {% include 'footer.html' %}
+
+        {% include 'scripts.html' %}
       
 </html>

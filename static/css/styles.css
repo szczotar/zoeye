@@ -11236,17 +11236,18 @@ textarea.form-control-lg {
   left: 0;
   width: 100%;
   text-align: center;
+  color: #dc3545;
 }
 
 .swiper-pagination-bullet {
-  background: #000; /* Kolor nieaktywnej kropki */
+  background: #198754; /* Kolor nieaktywnej kropki */
+  color: #0c4128;
   opacity: 0.5;
   margin: 0 4px; /* Odstęp między kropkami */
 }
 
-.swiper-pagination-bullet-active {
-  background: #000; /* Kolor aktywnej kropki */
-  opacity: 1;
+.swiper-items-wrapper .swiper-pagination-bullet-active {
+  background-color:  #FFE4C6; /* Niebieski dla aktywnej kropki */
 }
 
 
@@ -11834,4 +11835,36 @@ textarea.form-control-lg {
 .rating-input-stars + label { /* Przykład: jeśli masz etykietę po kontenerze gwiazdek */
     direction: ltr;
     unicode-bidi: unset;
+}
+
+.similar-products-pagination .swiper-pagination-bullet-active {
+  background-color:  #FFE4C6; /* Ustaw dowolny kolor dla aktywnej kropki */
+}
+
+.product-swiper-mobile {
+    width: 100%;
+    /* Dodaj margines pod sliderem, aby oddzielić go od informacji o produkcie na mobile */
+    margin-bottom: 1.5rem; 
+}
+
+.product-swiper-mobile .swiper-slide {
+    text-align: center;
+    background: #fff; /* Możesz zmienić tło, jeśli chcesz */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-swiper-mobile .swiper-slide img {
+    display: block;
+    width: 100%;
+    /* Ogranicz maksymalną wysokość, aby zdjęcia nie były zbyt duże na wysokich ekranach */
+    max-height: 450px; 
+    /* Użyj 'contain', aby cały produkt był widoczny, co jest lepsze dla zdjęć produktowych */
+    object-fit: contain; 
+}
+
+/* Styl dla aktywnej kropki paginacji, aby pasowała do motywu strony */
+.product-swiper-mobile .swiper-pagination-bullet-active {
+    background-color: #FFE4C6; /* Przykładowy złoty kolor, dostosuj do swoich potrzeb */
 }

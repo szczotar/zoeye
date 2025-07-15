@@ -15,75 +15,81 @@
 
 <div class="container mt-4">
 
-    <div class="row g-0 product-layout-row" style="background-color:#F7F7F7;">
+    <div class="row product-layout-row" style="background-color:#F7F7F7;">
 
-        {# === Lewa kolumna - Miniatury Zdjęć === #}
-        <div class="col-md-2 d-none d-md-block">
-            <div class="product-thumbnails-list pe-3">
-                {% if product.images.all %}
-                {% for image_obj in product.images.all %}
-                <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}">
-                    <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}">
+        <!-- WIDOK ZDJĘĆ NA DESKTOP -->
+        <div class="col-lg-8 d-none d-lg-flex">
+            <div class="row g-0 w-100">
+                <div class="col-2">
+                    <div class="product-thumbnails-list pe-3">
+                        {% if product.images.all %}
+                        {% for image_obj in product.images.all %}
+                        <div class="thumbnail-item mb-2 {% if forloop.first %}active{% endif %}" data-src="{{ image_obj.image.url }}">
+                            <img src="{{ image_obj.image.url }}" class="img-fluid thumbnail-image" alt="{{ image_obj.alt_text|default:'Miniatura' }}">
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="thumbnail-item mb-2 active" data-src="{% static 'img/kolczyki.png' %}">
+                            <img src="{% static 'img/kolczyki.png' %}" class="img-fluid thumbnail-image" alt="Domyślna miniatura">
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                {% endfor %}
-                {% else %}
-                <div class="thumbnail-item mb-2 active" data-src="{% static 'img/kolczyki.png' %}">
-                    <img src="{% static 'img/kolczyki.png' %}" class="img-fluid thumbnail-image" alt="Domyślna miniatura">
+                <div class="col-10">
+                    <div class="product-main-image-container">
+                        {% if product.images.all %}
+                        <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu">
+                        {% endif %}
+                    </div>
                 </div>
-                {% endif %}
             </div>
         </div>
 
-        {# === Środkowa kolumna - Duże Zdjęcie Główne === #}
-        <div class="col-md-6">
-            <div class="product-main-image-container">
-                {% if product.images.all %}
-                <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}">
-                {% else %}
-                <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu">
-                {% endif %}
+        <!-- WIDOK ZDJĘĆ NA MOBILE -->
+        <div class="col-12 d-lg-none">
+            <div class="swiper product-swiper-mobile">
+                <div class="swiper-wrapper">
+                    {% if product.images.all %}
+                        {% for image_obj in product.images.all %}
+                        <div class="swiper-slide">
+                            <img src="{{ image_obj.image.url }}" class="img-fluid" alt="{{ image_obj.alt_text|default:product.name }}">
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="swiper-slide">
+                            <img src="{% static 'img/kolczyki.png' %}" class="img-fluid" alt="Brak zdjęcia dla produktu">
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="swiper-pagination"></div>
             </div>
         </div>
 
 
-        {# === Prawa kolumna - Informacje o produkcie, wybór wariacji i przycisk "Dodaj do koszyka" === #}
-       <div class="col-md-4">
-
+        {# Prawa kolumna - Informacje o produkcie #}
+       <div class="col-12 col-lg-4">
             <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
                 {% csrf_token %}
-                {# Ukryte pole, które będzie przechowywać ID wybranej wariacji LUB ID PRODUKTU #}
-                {# Wartość domyślna będzie ustawiana przez JS #}
                 <input type="hidden" name="item_id" id="selected-item-id" value="">
-                {# Ukryte pole ilości z domyślną wartością 1 #}
                 <input type="hidden" name="quantity" id="qty" value="1">
-
-
                <div class="product-info-box d-flex flex-column align-items-center justify-content-center">
-
-<br><br>
-
-                    <div class="product-header-detail mb-3 text-center"> {# DODANO: text-center #}
+                    <br><br>
+                    <div class="product-header-detail mb-3 text-center">
                         <h1 class="product-name-detail h3 mb-0">{{ product.name }}</h1>
                     </div>
-
-                    {# Sekcja ceny - Zawsze wyświetla cenę produktu bazowego #}
-                    {# Dodano mb-3 dla odstępu #}
-                    <div class="price-box-detail mb-3 text-center"> {# DODANO: text-center dla centrowania cen #}
+                    <div class="price-box-detail mb-3 text-center">
                         {% if product.is_sale %}
                            <p class="product-sale-price h4 mb-0 text-sale-price">{{ product.sale_price }} zł</p>
-                           <div class="sale-details mt-3"> {# Zmieniono mt-0 na mt-3 #}
-                                {# mb-0 aby usunąć dolny margines paragrafów #}
+                           <div class="sale-details mt-3">
                                 <p class="small text-muted lowest-price-line mb-0">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p>
-                                {# mb-0 aby usunąć dolny margines paragrafów #}
                                 <p class="small text-muted product-sale-price mb-0">Cena regularna: <del>{{ product.price }} zł</del></p>
                            </div>
-
                        {% else %}
-                           {# Normalna cena produktu bazowego #}
                            <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p>
                        {% endif %}
                     </div>
-
                     {% if product.has_multiple_variations %} 
                         <div class="variation-select-section my-4 text-center p-3 "> 
                             <div class="form-group">
@@ -91,118 +97,76 @@
                                 <select class="form-control" id="size-select">
                                     <option value="">-- Wybierz rozmiar --</option>
                                     {% for variation in variations %}
-                                    <option value="{{ variation.id }}"
-                                            data-stock="{{ variation.stock }}"
-                                            {% if variation.stock <= 0 %}disabled{% endif %}>
+                                    <option value="{{ variation.id }}" data-stock="{{ variation.stock }}" {% if variation.stock <= 0 %}disabled{% endif %}>
                                         {{ variation.size|default:"Brak rozmiaru" }}
                                         {% if variation.stock <= 0 %} (Brak w magazynie) {% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div id="variation-info" class="mt-2 small text-muted">
-                            </div>
+                            <div id="variation-info" class="mt-2 small text-muted"></div>
                         </div>
-                    {% elif product.has_variations %} {# Produkt ma DOKŁADNIE JEDNĄ wariację #}
+                    {% elif product.has_variations %}
                          {% with single_variation=variations.first %}
-                            <div class="single-variation-info my-4 text-center p-3"> {# DODANO: p-3 border rounded #}
+                            <div class="single-variation-info my-4 text-center p-3">
                                 <p>Rozmiar: {{ single_variation.size|default:"Uniwersalny" }}</p>
                                 {% if single_variation.stock > 0 %}
                                     <p class="text-success">Dostępność: {{ single_variation.stock }} szt.</p>
-                    
                                 {% endif %}
                                 <input type="hidden" id="single-variation-id" value="{{ single_variation.id }}">
                                 <input type="hidden" id="single-variation-stock" value="{{ single_variation.stock }}">
                             </div>
                          {% endwith %}
-                    {% else %} {# Produkt NIE MA żadnych wariacji (jest produktem bazowym z własnym stockiem) #}
-                         {# DODANO: p-3 dla paddingu wewnętrznego #}
-                        <div class="no-variation-info my-4 text-center p-3"> {# DODANO: p-3 border rounded #}
+                    {% else %}
+                        <div class="no-variation-info my-4 text-center p-3">
                             <p>Rozmiar: Uniwersalny</p>
                             {% if product.stock < 3 and product.stock > 0 %}
                                 <p class="text-danger">ostatnie sztuki!</p>
                                 <input type="hidden" id="single-product-id" value="{{ product.id }}">
                                 <input type="hidden" id="single-product-stock" value="{{ product.stock }}">
-                    
-                         
                             {% endif %}
                         </div>
                     {% endif %}
-
-                    <div class="add-to-cart-section-detail my-4 text-center p-3"> {# Zmieniono klasę i DODANO text-center, p-3 border rounded #}
-
-                        {# Przycisk Dodaj do koszyka / Brak w magazynie #}
+                    <div class="add-to-cart-section-detail my-4 text-center p-3">
                         {% if product.is_available %}
-                            {# DODANO: klasę custom-add-to-cart-button dla szerokości i koloru #}
-                            <button type="submit" id="add-cart" class="btn btn-dark custom-add-to-cart-button">
-                                Dodaj do koszyka
-                            </button>
+                            <button type="submit" id="add-cart" class="btn btn-dark custom-add-to-cart-button">Dodaj do koszyka</button>
                         {% else %}
-                            {# DODANO: klasę custom-add-to-cart-button dla szerokości #}
-                            <button type="button" class="btn btn-secondary custom-add-to-cart-button" disabled>
-                                Brak w magazynie
-                            </button>
+                            <button type="button" class="btn btn-secondary custom-add-to-cart-button" disabled>Brak w magazynie</button>
                         {% endif %}
-
-                        <div class="small text-muted mt-3"> {# Zmieniono mt-2 na mt-3 #}
+                        <div class="small text-muted mt-3">
                             <p class="mb-0">Wysyłka: 1 dzień roboczy</p>
                             <p class="mb-0">Darmowa dostawa od 300zl</p>
                         </div>
-                        {# ====================================== #}
-
                     </div>
-
-                </div> {# Koniec product-info-box #}
-            </form> {# Koniec formularza Dodaj do koszyka #}
-        </div> {# Koniec prawej kolumny #}
-
-    </div> {# Koniec row #}
+                </div>
+            </form>
+        </div>
+    </div>
 
     <br>
 
-    {# === Sekcja z opisem produktu - ZWIJANA === #}
-    {# Usunięto mt-4 z głównego diva sekcji #}
-    <div class="product-description-section-detail mt-5"> {# DODANO: mt-5 dla odstępu, usunięto mt-4 #}
-
-        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDescription" aria-expanded="false" aria-controls="collapseDescription" role="button"> {# DODANO: role="button" dla dostępności #}
+    <div class="product-description-section-detail mt-5">
+        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDescription" aria-expanded="false" aria-controls="collapseDescription" role="button">
              <h4 class="reviews-heading-detail mb-0">Opis produktu</h4>
-             {# Ikona strzałki - zmienimy jej kierunek za pomocą CSS/JS #}
-             <i class="fas fa-chevron-down"></i> {# DODANO: ikona #}
+             <i class="fas fa-chevron-down"></i>
         </div>
-        {# Usunięto hr z wyzwalacza, dodano go po wyzwalaczu #}
-        <hr class="description-separator-detail mt-2 mb-3" /> {# DODANO: marginesy góra/dół #}
-
-        {# Kontener do zwinięcia - domyślnie zwinięty #}
-        <div class="collapse" id="collapseDescription"> {# DODANO: class="collapse" i ID #}
+        <hr class="description-separator-detail mt-2 mb-3" />
+        <div class="collapse" id="collapseDescription">
             <p class="product-description-detail">{{ product.description|linebreaksbr }}</p>
         </div>
     </div>
-    {# ======================================== #}
 
-
-    {# === NOWA SEKCJA RECENZJI I OCEN - PODZIELONA NA KOLUMNY - ZWIJANA === #}
     <div class="reviews-section mt-5">
-      
-        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseReviews" aria-expanded="false" aria-controls="collapseReviews" role="button"> {# DODANO: role="button" dla dostępności #}
+        <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseReviews" aria-expanded="false" aria-controls="collapseReviews" role="button">
              <h4 class="reviews-heading-detail mb-0">Opinie</h4>
-             {# Ikona strzałki - zmienimy jej kierunek za pomocą CSS/JS #}
-             <i class="fas fa-chevron-down"></i> {# DODANO: ikona #}
+             <i class="fas fa-chevron-down"></i>
         </div>
-        {# Usunięto hr z wyzwalacza, dodano go po wyzwalaczu #}
-        <hr class="reviews-separator-detail mt-2 mb-3" /> {# DODANO: marginesy góra/dół #}
-
-        {# Kontener do zwinięcia - domyślnie zwinięty #}
-        <div class="collapse" id="collapseReviews"> {# DODANO: class="collapse" i ID #}
-
-            <div class="row"> {# Kontener row dla kolumn #}
-
-                      {# === Prawa kolumna: Podsumowanie ocen i rozkład === #}
+        <hr class="reviews-separator-detail mt-2 mb-3" />
+        <div class="collapse" id="collapseReviews">
+            <div class="row">
                 <div class="col-md-5">
                     <div class="rating-summary p-3 border rounded bg-light">
-
                         <h5 class="mb-3">Średnia ocen</h6>
-
-                        {# --- Wyświetlanie średniej oceny --- #}
                         {% if rating_count > 0 %}
                             <div class="average-rating mb-4 text-center">
                                 <p class="mb-0 h2"><strong>{{ average_rating|default:"N/A" }}</strong></p>
@@ -214,134 +178,70 @@
                                  <p class="mb-0 h4 text-muted">Brak ocen dla tego produktu.</p>
                              </div>
                         {% endif %}
-                        {# ----------------------------------------------- #}
-
-
-                        {# --- Rozkład ocen (liczba recenzji dla każdej gwiazdki) --- #}
                         {% if rating_count > 0 %}
                             <div class="rating-distribution mt-4">
                                 <h6 class="mb-2">Rozkład ocen:</h6>
-                             {% for rating_value in rating_values %} {# Iteruj po liczbach #}
-                            {% with count=rating_distribution|get_item:rating_value|default:0 %} {# Użyj liczby jako klucza #}
+                             {% for rating_value in rating_values %}
+                            {% with count=rating_distribution|get_item:rating_value|default:0 %}
                                 <div class="rating-distribution-item">
-                                    <span class="stars">{{ rating_value|render_stars }}</span> {# Przekazuj liczbę do render_stars #}
+                                    <span class="stars">{{ rating_value|render_stars }}</span>
                                     <span class="count text-muted">{{ count }}</span>
                                 </div>
                             {% endwith %}
                         {% endfor %}
                             </div>
                         {% endif %}
-                        {# ------------------------------------------------------- #}
-
-                    </div> {# Koniec rating-summary #}
-                </div> {# Koniec prawej kolumny #}
-
-                {# === Lewa kolumna: Formularz dodawania recenzji i Lista recenzji === #}
+                    </div>
+                </div>
                 <div class="col-md-7">
-<div class="add-review-form mt-5">
-            <h5 class="mb-3">Dodaj swoją opinię</h5>
-            {% if request.user.is_authenticated %}
-                <form method="post" action="{% url 'add_review' product.id %}">
-                    {% csrf_token %}
-                    {# Pole oceny (zmienione na gwiazdki) #}
-                    <div class="form-group mb-3">
-                        <label class="form-label d-block">Twoja ocena:</label> {# Zmieniono etykietę i dodano d-block #}
-
-                        {# === KONTEJNER DLA GWIAZDEK RADIOWYCH === #}
-                        {# Użyjemy diva z klasą, którą będziemy stylizować #}
-                        <div class="rating-input-stars">
-                            {# Iteruj od 5 do 1, aby przyciski radiowe były w poprawnej kolejności wizualnej #}
-                            {% for i in "54321" %}
-                                {# Input radio dla każdej gwiazdki #}
-                                {# name="rating" - wszystkie inputy w grupie muszą mieć tę samą nazwę #}
-                                {# value="{{ i }}" - wartość wysyłana w formularzu #}
-                                {# id="rating-{{ i }}" - unikalne ID dla powiązania z etykietą #}
-                                <input type="radio" id="rating-{{ i }}" name="rating" value="{{ i }}" required> {# DODANO required, jeśli ocena jest obowiązkowa #}
-                                {# Etykieta dla gwiazdki - użyjemy jej do wyświetlenia ikony gwiazdki #}
-                                {# for="rating-{{ i }}" - powiązanie z inputem radio #}
-                                <label for="rating-{{ i }}" title="{{ i }} gwiazdek">
-                                    {# Ikona gwiazdki (Font Awesome) #}
-                                    <i class="fas fa-star"></i> {# Użyjemy pełnej gwiazdki, a puste stylizujemy CSS #}
-                                </label>
-                            {% endfor %}
-                        </div>
-                        {# ====================================== #}
-
-                    </div>
-                    {# Pole komentarza #}
-                    <div class="form-group mb-3">
-                        <label for="comment">Twój komentarz:</label>
-                        <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
-                    </div>
-                    {# Przycisk wysyłania #}
-                    <button type="submit" class="btn btn-primary">Wyślij recenzję</button>
-                </form>
-            {% else %}
-                <p class="text-muted">Zaloguj się, aby dodać recenzję.</p>
-                <p><a href="{% url 'login' %}?next={{ request.get_full_path }}">Zaloguj się</a></p>
-            {% endif %}
-        </div>
-
-
-                    {# --- Lista istniejących recenzji --- #}
-                    {% if reviews %}
-                        <div class="reviews-list mt-4">
-                            <h5 class="mb-3">Wszystkie recenzje ({{ reviews.count }})</h5>
-                            {% for review in reviews %}
-                                <div class="review-item border p-3 mb-3 rounded">
-                                    <p class="mb-1 small text-muted">
-                                        Przez: <strong>
-                                            {% if review.user %}
-                                                {{ review.user.username }}
-                                            {% else %}
-                                                Anonim
-                                            {% endif %}
-                                        </strong>
-                                        <span class="ml-2">|</span> {{ review.created_at|date:"d.m.Y H:i" }}
-                                    </p>
-                                    {# Ocena (jeśli ustawiona) #}
-                                    {% if review.rating is not None %}
-                                        <p class="mb-1">
-                                            Ocena: <strong>{{ review.rating }}/5</strong>
-                                            <span class="stars">{{ review.rating|render_stars }}</span>
-                                        </p>
-                                    {% endif %}
-                                    {# Treść komentarza #}
-                                    <div class="review-comment">
-                                        <p>{{ review.comment|linebreaksbr }}</p>
+                    <div class="add-review-form mt-5">
+                        <h5 class="mb-3">Dodaj swoją opinię</h5>
+                        {% if request.user.is_authenticated %}
+                            <form method="post" action="{% url 'add_review' product.id %}">
+                                {% csrf_token %}
+                                <div class="form-group mb-3">
+                                    <label class="form-label d-block">Twoja ocena:</label>
+                                    <div class="rating-input-stars">
+                                        {% for i in "54321" %}
+                                            <input type="radio" id="rating-{{ i }}" name="rating" value="{{ i }}" required>
+                                            <label for="rating-{{ i }}" title="{{ i }} gwiazdek">
+                                                <i class="fas fa-star"></i>
+                                            </label>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="reviews-list mt-4">
-                            <p class="text-muted">Brak recenzji dla tego produktu. Bądź pierwszy!</p>
-                        </div>
-                    {% endif %}
-                    {# ----------------------------------- #}
+                                <div class="form-group mb-3">
+                                    <label for="comment">Twój komentarz:</label>
+                                    <textarea name="comment" id="comment" class="form-control" rows="4" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Wyślij opinię</button>
+                            </form>
+                        {% else %}
+                            <p class="text-muted">Zaloguj się, aby dodać recenzję.</p>
+                            <p><a href="{% url 'login' %}?next={{ request.get_full_path }}">Zaloguj się</a></p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- === KONTENER NA DYNAMICZNIE ŁADOWANE RECENZJE === -->
+                    <div id="reviews-container" data-product-id="{{ product.id }}">
+                        {% include 'partials/reviews_section.html' %}
+                    </div>
+                    <!-- === KONIEC KONTENERA === -->
 
-                </div> {# Koniec lewej kolumny #}
-
-
-            </div> {# Koniec row #}
-
-        </div> {# Koniec div.collapse #}
+                </div>
+            </div>
+        </div>
     </div>
-    {# ================================================================= #}
 
-
-    {# === SEKCJA PODOBNE PRODUKTY - SLIDER SWIPER === #}
     {% if similar_products %}
     <div class="similar-products-section mt-5">
         <header class="text-center">
             <p class="small text-muted small text-uppercase mb-1">Podobne produkty</p>
             <h3 class="similar-products-heading mb-4">Produkty z tym samym materiałem</h3>
         </header>
-
         <div class="swiper-container-wrapper swiper-items-wrapper">
             <div class="swiper swiper-items similar-products-swiper">
                 <div class="swiper-wrapper">
-
                     {% for similar_product in similar_products %}
                     <div class="swiper-slide">
                         <div class="product text-center">
@@ -349,12 +249,7 @@
                                 <div class="badge text-white badge-"></div>
                                 <a class="d-block" href="{% url 'product' similar_product.id  %}">
                                     {% if similar_product.images.all %}
-                                    <div id="similarProductCardCarousel{{ similar_product.id }}" class="carousel slide card-product-carousel">
-                                        <div class="carousel-indicators">
-                                            {% for image_obj in similar_product.images.all %}
-                                            <button type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
-                                            {% endfor %}
-                                        </div>
+                                    <div id="similarProductCardCarousel{{ similar_product.id }}" class="carousel slide card-product-carousel" data-bs-ride="false" data-bs-interval="false">
                                         <div class="carousel-inner">
                                             {% for image_obj in similar_product.images.all %}
                                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -362,14 +257,6 @@
                                             </div>
                                             {% endfor %}
                                         </div>
-                                        <button class="carousel-control-prev" type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Poprzednie</span>
-                                        </button>
-                                        <button class="carousel-control-next" type="button" data-bs-target="#similarProductCardCarousel{{ similar_product.id }}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="visually-hidden">Następne</span>
-                                        </button>
                                     </div>
                                     {% else %}
                                     <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
@@ -380,7 +267,6 @@
                                 <a href="{% url 'product' similar_product.id %}" style="text-decoration: none; color: inherit;">
                                     <h6 class="product-name">{{ similar_product.name }}</h6>
                                 </a>
-                                {# Wyświetlanie ceny - Używamy uproszczonej logiki, bo wszystkie wariacje mają cenę bazową #}
                                 <p class="small text-muted product-price-display">
                                      {% if similar_product.has_variations %}
                                         Od {{ similar_product.get_effective_price }} zł
@@ -392,7 +278,6 @@
                                         {% endif %}
                                      {% endif %}
                                 </p>
-                                {# Dodaj informację o najniższej cenie z 30 dni pod ceną (jeśli is_sale) #}
                                 {% if similar_product.is_sale %}
                                      <p class="small text-muted lowest-price-line">Najniższa cena z 30 dni: {{ similar_product.sale_price }} zł</p>
                                 {% endif %}
@@ -400,7 +285,6 @@
                         </div>
                     </div>
                     {% endfor %}
-
                 </div>
                 <div class="swiper-pagination similar-products-pagination"></div>
             </div>
@@ -408,13 +292,11 @@
     </div>
     {% endif %}
 
-
 </div>
 
-{# Skrypty JS #}
 <script>
-    // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
     $(document).ready(function() {
+        // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
         $('.thumbnail-item').on('click', function() {
             $('.thumbnail-item').removeClass('active');
             $(this).addClass('active');
@@ -425,64 +307,48 @@
         });
 
         // === SKRYPT JS DO OBSŁUGI WYBORU WARIAcji (ROZMIARU) I PRZYCISKU DODAJ DO KOSZYKA ===
-        const sizeSelect = document.getElementById('size-select'); // Dropdown dla wielu wariacji
-        const selectedItemIdInput = document.getElementById('selected-item-id'); // Ukryte pole na ID (wariacji lub produktu)
-        const addToCartButton = document.getElementById('add-cart'); // Przycisk "Dodaj do koszyka"
-        const variationInfoDiv = document.getElementById('variation-info'); // Div na info o wariacji (stock)
-        const quantityInput = document.getElementById('qty'); // Pole ilości
+        const sizeSelect = document.getElementById('size-select');
+        const selectedItemIdInput = document.getElementById('selected-item-id');
+        const addToCartButton = document.getElementById('add-cart');
+        const variationInfoDiv = document.getElementById('variation-info');
+        const quantityInput = document.getElementById('qty');
 
-        // Sprawdź typ produktu i ustaw początkowe ID oraz stock/max ilość
-        const hasMultipleVariations = {{ product.has_multiple_variations|lower }}; // True/False
-        const hasVariations = {{ product.has_variations|lower }}; // True/False
+        const hasMultipleVariations = {{ product.has_multiple_variations|lower }};
+        const hasVariations = {{ product.has_variations|lower }};
 
         if (hasMultipleVariations) {
-            // Produkt z wieloma wariacjami (używamy dropdownu)
-            console.log("Produkt z wieloma wariacjami.");
-
-            // Początkowo przycisk jest wyłączony, dopóki nie wybrano rozmiaru
             if (addToCartButton) {
                  addToCartButton.disabled = true;
             }
-
-
             if (sizeSelect) {
                  sizeSelect.addEventListener('change', function() {
                     const selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
-                    const variationId = selectedOption.value; // To jest ID wariacji
-                    const stock = parseInt(selectedOption.getAttribute('data-stock')); // Pobierz stock
-
-                    // Ustaw ID wybranej wariacji w ukrytym polu
+                    const variationId = selectedOption.value;
+                    const stock = parseInt(selectedOption.getAttribute('data-stock'));
                     selectedItemIdInput.value = variationId;
-
-                    // Dynamiczne wyświetlanie informacji o stocku
                     if (variationId) {
                         let infoHtml = '';
-                        if (stock > 0 && stock < 3) { // Niska dostępność (np. mniej niż 5)
+                        if (stock > 0 && stock < 3) {
                             infoHtml += `<p class="text-danger">Ostatnie sztuki!`;
-                            quantityInput.max = stock; // Ogranicz max ilość do stocku
+                            quantityInput.max = stock;
                             if (parseInt(quantityInput.value) > stock) {
-                                quantityInput.value = stock > 0 ? stock : 1; // Zresetuj ilość
+                                quantityInput.value = stock > 0 ? stock : 1;
                             }
-                        } else if (stock >= 3) { // Wysoka dostępność
+                        } else if (stock >= 3) {
                             infoHtml += `<p class="text-success"></p>`;
-                             quantityInput.max = 9999; // Brak ograniczenia ilości
-                        } else { // Stock <= 0
+                             quantityInput.max = 9999;
+                        } else {
                              infoHtml += `<p class="text-danger">Brak w magazynie</p>`;
-                              quantityInput.max = 1; // Nie można dodać więcej niż 1 (przycisk będzie wyłączony)
-                              quantityInput.value = 1; // Zresetuj ilość
+                              quantityInput.max = 1;
+                              quantityInput.value = 1;
                         }
                         variationInfoDiv.innerHTML = infoHtml;
-
                     } else {
-                        // Jeśli wybrano opcję "-- Wybierz rozmiar --"
                         variationInfoDiv.innerHTML = '';
-                        selectedItemIdInput.value = ''; // Wyczyść ID
-                         quantityInput.max = 9999; // Resetuj max ilość
-                         quantityInput.value = 1; // Zresetuj ilość
+                        selectedItemIdInput.value = '';
+                         quantityInput.max = 9999;
+                         quantityInput.value = 1;
                     }
-
-                    // Włącz/Wyłącz przycisk "Dodaj do koszyka"
-                    // Aktywny tylko gdy wybrano WARIację (value nie jest puste) I stock > 0
                     if (addToCartButton) {
                          if (variationId && stock > 0) {
                              addToCartButton.disabled = false;
@@ -491,140 +357,32 @@
                          }
                     }
                 });
-
-                // Opcjonalnie: Symuluj zdarzenie 'change' przy ładowaniu strony,
-                // jeśli chcesz od razu wyświetlić info dla domyślnie wybranej opcji (np. pierwszej)
-                // sizeSelect.dispatchEvent(new Event('change'));
             }
-
-        } else if (hasVariations) { // Produkt ma DOKŁADNIE JEDNĄ wariację (bez dropdownu)
-            console.log("Produkt z jedną wariacją.");
+        } else if (hasVariations) {
             const singleVariationId = document.getElementById('single-variation-id')?.value;
             const singleVariationStock = parseInt(document.getElementById('single-variation-stock')?.value || '0');
-
-             // Ustaw ID tej pojedynczej wariacji w ukrytym polu
             if (selectedItemIdInput && singleVariationId) {
                 selectedItemIdInput.value = singleVariationId;
             }
-
-            // Ustaw max ilość do stocku pojedynczej wariacji
             if (quantityInput) {
                 quantityInput.max = singleVariationStock > 0 ? singleVariationStock : 1;
-                 // Jeśli obecna ilość w polu przekracza stock, zresetuj ją
                 if (parseInt(quantityInput.value) > singleVariationStock) {
                      quantityInput.value = singleVariationStock > 0 ? singleVariationStock : 1;
                 }
             }
-
-        
-            // JS nie musi go tu włączać/wyłączać, ale upewnijmy się, że ID jest ustawione.
-
-
-        } else { // Produkt NIE MA wariacji (jest produktem bazowym z własnym stockiem)
-             console.log("Produkt bez wariacji.");
+        } else {
              const singleProductId = document.getElementById('single-product-id')?.value;
              const singleProductStock = parseInt(document.getElementById('single-product-stock')?.value || '0');
-
-             // Ustaw ID produktu bazowego w ukrytym polu
              if (selectedItemIdInput && singleProductId) {
                  selectedItemIdInput.value = singleProductId;
              }
-
-             // Ustaw max ilość do stocku produktu bazowego
             if (quantityInput) {
                  quantityInput.max = singleProductStock > 0 ? singleProductStock : 1;
-                 // Jeśli obecna ilość w polu przekracza stock, zresetuj ją
                  if (parseInt(quantityInput.value) > singleProductStock) {
                       quantityInput.value = singleProductStock > 0 ? singleProductStock : 1;
                  }
             }
-
-     
-             // JS nie musi go tu włączać/wyłączać.
-
         }
-
-
-        // === SKRYPT JS DO OBSŁUGI PRZYCISKU DODAJ DO KOSZYKA (AJAX) ===
-        // Ten skrypt teraz wysyła item_id (które jest variation_id LUB product_id)
-        if (addToCartButton) { // Upewnij się, że przycisk istnieje
-            $(document).on('click', '#add-cart', function(e) {
-                e.preventDefault();
-
-
-                if ($(this).is(':disabled')) {
-                    console.log("Przycisk 'Dodaj do koszyka' jest wyłączony z powodu braku dostępności.");
-                    return; // Nie rób nic, jeśli przycisk jest wyłączony
-                }
-
-                // Pobieramy ID przedmiotu (wariacji lub produktu) z ukrytego inputa
-                var itemId = $('#selected-item-id').val();
-
-                // Sprawdź, czy ID zostało ustawione (powinno być ustawione na starcie lub po wyborze wariacji)
-                if (!itemId) {
-                     console.error("Brak ID przedmiotu do dodania do koszyka.");
-                     alert("Wystąpił błąd: Nie można dodać przedmiotu do koszyka (brak ID).");
-                     return;
-                }
-
-                // Pobieramy ilość z pola ilości
-                var quantity = parseInt($('#qty').val() || '1'); // Pobierz jako int, domyślnie 1
-
-                // Sprawdź, czy ilość jest większa niż 0
-                if (quantity <= 0) {
-                     alert("Ilość musi być większa niż 0.");
-                     return;
-                }
-
-                // Dane do wysłania - wysyłamy item_id i quantity
-                var postData = {
-                    quantity: quantity,
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                    action: 'post'
-                };
-
-                // Zdecyduj, czy wysłać variation_id czy product_id
-                // Zakładamy, że jeśli produkt ma wariacje (hasVariations), wysyłamy variation_id.
-                // Jeśli nie ma wariacji, wysyłamy product_id.
-                if (hasVariations) { // Produkt ma 1 lub więcej wariacji
-                    postData['variation_id'] = itemId;
-                    console.log("Wysyłanie variation_id:", itemId);
-                } else { // Produkt bez wariacji
-                    postData['product_id'] = itemId; // itemId jest tutaj product.id
-                    console.log("Wysyłanie product_id:", itemId);
-                }
-
-
-                $.ajax({
-                    type: 'POST',
-                    url: '{% url 'cart_add' %}', // Upewnij się, że ten URL jest poprawny
-                    data: postData,
-
-                 success: function(json) {
-    console.log("Add success:", json);
-    // Oczekujemy JSON z kluczem 'qty' (i opcjonalnie 'message')
-    var $cartQuantitySpan = $('#cart_quantity');
-    $cartQuantitySpan.text(json.qty);
-    if (json.qty > 0) { $cartQuantitySpan.removeClass('d-none'); } else { $cartQuantitySpan.addClass('d-none'); }
-
-    // Wywołaj customowy komunikat sukcesu
-    showCustomAlert(json.message || "Produkt dodany do koszyka.", 'success');
-
-    // Opcjonalnie: zresetuj formularz dodawania, odblokuj przycisk itp.
-},
-
-     error: function(xhr, errmsg, err) {
-     console.error("Add error:", errmsg, err, xhr.responseText);
-     let errorMsg = "Wystąpił błąd podczas dodawania produktu. Sprawdź czy produkt już znajduję się w koszyku";
-     try { const errorJson = JSON.parse(xhr.responseText); errorMsg = errorJson.error || errorJson.message || errmsg || "Nieznany błąd."; } catch (e) {}
-     // Zastąp alert customowym komunikatem błędu
-     showCustomAlert(errorMsg, 'danger');
-     // Opcjonalnie: odblokuj przycisk dodawania
-}
-                });
-            });
-        }
-
 
         // === INICJALIZACJA SLIDERA PODOBNYCH PRODUKTÓW (SWIPER) ===
         const similarProductsSwiper = new Swiper('.similar-products-swiper', {
@@ -636,20 +394,68 @@
                 clickable: true,
             },
             breakpoints: {
-                576: {
-                    slidesPerView: 2,
-                    spaceBetween: 10,
-                },
-                768: {
-                    slidesPerView: 3,
-                    spaceBetween: 15,
-                },
-                992: {
-                    slidesPerView: 4,
-                    spaceBetween: 20,
-                },
+                576: { slidesPerView: 2, spaceBetween: 10 },
+                768: { slidesPerView: 3, spaceBetween: 15 },
+                992: { slidesPerView: 4, spaceBetween: 20 },
             },
+            observer: true,
+            observeParents: true,
         });
+
+        // === SKRYPT: DYNAMICZNE ŁADOWANIE RECENZJI ===
+        const reviewsContainer = $('#reviews-container');
+        const productId = reviewsContainer.data('productId');
+        reviewsContainer.on('click', '.pagination a', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            if (!page) {
+                return;
+            }
+            const url = `/product/${productId}/reviews/?page=${page}`;
+            $.ajax({
+                url: url,
+                type: 'GET',
+                beforeSend: function() {
+                    reviewsContainer.html('<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+                },
+                success: function(data) {
+                    reviewsContainer.html(data);
+                    $('html, body').animate({
+                        scrollTop: reviewsContainer.offset().top - 100
+                    }, 500);
+                },
+                error: function() {
+                    reviewsContainer.html('<p class="text-danger text-center">Wystąpił błąd podczas ładowania recenzji.</p>');
+                }
+            });
+        });
+
+        // === SKRYPT: INICJALIZACJA SWIPERA DLA ZDJĘĆ PRODUKTU NA MOBILE ===
+        let productSwiperMobile;
+        const breakpoint = 992; 
+        function initOrDestroyProductSwiper() {
+            const swiperEl = document.querySelector('.product-swiper-mobile');
+            if (!swiperEl) return;
+            if (window.innerWidth < breakpoint && productSwiperMobile === undefined) {
+                productSwiperMobile = new Swiper(swiperEl, {
+                    loop: true,
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    a11y: {
+                      enabled: true,
+                      prevSlideMessage: 'Poprzednie zdjęcie',
+                      nextSlideMessage: 'Następne zdjęcie',
+                    },
+                });
+            } else if (window.innerWidth >= breakpoint && productSwiperMobile !== undefined) {
+                productSwiperMobile.destroy(true, true);
+                productSwiperMobile = undefined;
+            }
+        }
+        initOrDestroyProductSwiper();
+        window.addEventListener('resize', initOrDestroyProductSwiper);
     });
 </script>
 {% endblock %}

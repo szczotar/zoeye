@@ -1,189 +1,187 @@
 {% load static %}
 
 <!-- JavaScript files-->
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="{% static 'js/jquery.min.js' %}"></script>
-      <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-      <script src="{% static 'js/lightbox.min.js' %}"></script>
-      <script src="{% static 'js/nouislider.min.js' %}"></script>  
-      <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-        
-      <!-- <script src="{% static 'vendor/owl.carousel2/owl.carousel.min.js' %}"></script>
-      <script src="{% static 'vendor/owl.carousel2.thumbs/owl.carousel2.thumbs.min.js' %}"></script>
-      <script src="{% static 'js/front.js' %}"></script> --> 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/lightbox.min.js' %}"></script>
+<script src="{% static 'js/nouislider.min.js' %}"></script>  
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        <!-- Core theme JS-->
+<script>
+    $(document).ready(function() {
 
-      <script>
-                        // Standardowa funkcja do pobierania CSRF tokenu (możesz zostawić tutaj, jeśli używasz jQuery AJAX globalnie)
-                function getCookie(name) {
-                    var cookieValue = null;
-                    if (document.cookie && document.cookie !== '') {
-                        var cookies = document.cookie.split(';');
-                        for (var i = 0; i < cookies.length; i++) {
-                            var cookie = cookies[i].trim();
-                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                break;
-                            }
-                        }
+        // --- GLOBALNE FUNKCJE POMOCNICZE ---
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
                     }
-                    return cookieValue;
                 }
-                var csrftoken = getCookie('csrftoken');
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
 
-                // Konfiguracja AJAX do automatycznego dodawania nagłówka X-CSRFToken
-                $.ajaxSetup({
-                    beforeSend: function(xhr, settings) {
-                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
-                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                        }
-                    }
-                });
-
-                // Funkcja do wyświetlania customowych komunikatów Bootstrap Alert
-                // type może być: 'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'
-                function showCustomAlert(message, type = 'info') {
-                    const $container = $('#custom-alerts-container');
-                    // Użyj Bootstrap Alert HTML structure
-                    const alertHtml = `
-                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    `;
-                    const $alert = $(alertHtml);
-
-                    $container.append($alert); // Dodaj alert do kontenera
-
-                    // Automatyczne zamykanie po kilku sekundach
-                    setTimeout(function() {
-                        $alert.alert('close'); // Użyj funkcji Bootstrap do zamykania
-                    }, 5000); // Zamknij po 5 sekundach (5000 ms)
-
-                    // Usuń element z DOM po zamknięciu animacji
-                    $alert.on('closed.bs.alert', function () {
-                        $(this).remove();
-                    });
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 }
-
-
-                // Globalna funkcja do obsługi odpowiedzi sukcesu z AJAX
-                // Ta funkcja aktualizuje UI i wywołuje showCustomAlert
-                function handleAjaxResponse(json) {
-                    console.log("Handling AJAX response:", json);
-
-                    // --- Zaktualizuj globalne elementy (np. ilość w koszyku, sumy) ---
-                    if (json.qty !== undefined) {
-                         $('#cart_quantity').text(json.qty);
-                         var $cartQuantitySpan = $('#cart_quantity');
-                         if (json.qty > 0) { $cartQuantitySpan.removeClass('d-none'); } else { $cartQuantitySpan.addClass('d-none'); }
-                    }
-                    if (json.cart_total !== undefined) {
-                         // Upewnij się, że elementy istnieją na stronie (np. tylko na stronie koszyka)
-                         if ($('#cart-total-display').length) {
-                            $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł');
-                         }
-                         if ($('#order-total-display').length) {
-                            $('#order-total-display').text(Number(json.cart_total).toFixed(2) + ' zł');
-                         }
-                         // Logika włączania/wyłączania przycisku checkout (tylko na stronie koszyka)
-                         if ($('.btn-block[href="{% url 'checkout' %}"]').length) {
-                             if (json.qty > 0) { $('.btn-block[href="{% url 'checkout' %}"]').removeClass('disabled'); } else { $('.btn-block[href="{% url 'checkout' %}"]').addClass('disabled'); }
-                         }
-                    }
-                    // --- Koniec aktualizacji globalnych elementów ---
-
-
-                    // --- Obsługa specyficzna dla typu operacji i strony ---
-
-                    if (json.message) { // Wyświetl komunikat sukcesu z JSON
-                         showCustomAlert(json.message, 'success');
-                    } else {
-                        // Domyślny komunikat sukcesu, jeśli widok go nie zwrócił
-                         showCustomAlert("Operacja zakończona sukcesem.", 'success');
-                    }
-
-
-                    // Logika specyficzna dla strony koszyka (nie ma jej na stronie produktu)
-                    if ($('table.table').length) { // Sprawdź, czy jesteśmy na stronie koszyka (czy tabela istnieje)
-                         // Logika aktualizacji subtotal w wierszu tabeli (tylko dla update)
-                         if (json.item_key && json.item_subtotal !== undefined) {
-                              // Używamy selektora span wewnątrz p, zgodnie z nowym HTML cart_summary
-                             $('#subtotal-' + json.item_key).text(Number(json.item_subtotal).toFixed(2)); // Aktualizuj tylko tekst w span
-                         }
-                         // Logika usuwania wiersza tabeli (tylko dla delete)
-                          if (json.type === 'delete' && json.item_key) {
-                              $('#item-' + json.item_key).remove();
-                              // Logika pokazania "Koszyk jest pusty" jeśli qty === 0
-                              if (json.qty === 0) {
-                                  $('tbody').html('<tr><td colspan="5" class="text-center border-0">Your cart is empty.</td></tr>');
-                              }
-                          }
-                    }
-                    // --- Koniec obsługi specyficznej ---
-
-                }
-
-                // Globalna funkcja do obsługi błędów AJAX (wyświetlanie w prostym popupie błędu)
-                function handleAjaxError(xhr, errmsg, err) {
-                    console.error("AJAX error:", errmsg, err, xhr.responseText);
-                    let errorMsg = "Wystąpił błąd.";
-                    let errorTitle = "Błąd";
-
-                    try {
-                        const errorJson = JSON.parse(xhr.responseText);
-                        // Preferuj error > message > status text
-                        errorMsg = errorJson.error || errorJson.message || xhr.statusText || errmsg || "Nieznany błąd.";
-                         if (xhr.status === 400) errorTitle = "Błąd Walidacji";
-                         if (xhr.status === 404) errorTitle = "Nie znaleziono";
-                         if (xhr.status === 403) errorTitle = "Brak dostępu";
-                         if (xhr.status >= 500) errorTitle = "Błąd Serwera";
-
-                    } catch (e) {
-                        // Jeśli odpowiedź nie jest JSON, użyj statusu i domyślnej wiadomości
-                        errorMsg = xhr.statusText || errmsg || "Wystąpił nieznany błąd.";
-                        errorTitle = "Błąd (" + (xhr.status || '???') + ")";
-                    }
-
-                    // Pokaż customowy komunikat błędu
-                    showCustomAlert("Błąd: " + errorMsg, 'danger');
-
-                    // Opcjonalnie: możesz chcieć odświeżyć stronę w przypadku niektórych krytycznych błędów
-                    // if (xhr.status >= 500) {
-                    //      setTimeout(function() { location.reload(); }, 3000); // Odśwież po 3 sekundach
-                    // }
-                }
-
-        var range = document.getElementById('range');
-        noUiSlider.create(range, {
-            range: {
-                'min': 0,
-                'max': 2000
-            },
-            step: 5,
-            start: [100, 1000],
-            margin: 300,
-            connect: true,
-            direction: 'ltr',
-            orientation: 'horizontal',
-            behaviour: 'tap-drag',
-            tooltips: true,
-            format: {
-              to: function ( value ) {
-                return '$' + value;
-              },
-              from: function ( value ) {
-                return value.replace('', '');
-              }
             }
         });
 
- 
-      </script>
-  
-      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-    </div>
-  </body>
-</html>
+        function showCustomAlert(message, type = 'info') {
+            const $container = $('#custom-alerts-container');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            const $alert = $(alertHtml);
+            $container.append($alert);
+            setTimeout(function() {
+                $alert.alert('close');
+            }, 5000);
+            $alert.on('closed.bs.alert', function () {
+                $(this).remove();
+            });
+        }
+
+        function handleAjaxResponse(json) {
+            console.log("Handling AJAX response:", json);
+            if (json.qty !== undefined) {
+                 $('#cart_quantity').text(json.qty);
+                 var $cartQuantitySpan = $('#cart_quantity');
+                 if (json.qty > 0) { $cartQuantitySpan.removeClass('d-none'); } else { $cartQuantitySpan.addClass('d-none'); }
+            }
+            if (json.cart_total !== undefined) {
+                 if ($('#cart-total-display').length) {
+                    $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł');
+                 }
+                 if ($('#order-total-display').length) {
+                    $('#order-total-display').text(Number(json.cart_total).toFixed(2) + ' zł');
+                 }
+                 if ($('.btn-block[href="{% url 'checkout' %}"]').length) {
+                     if (json.qty > 0) { $('.btn-block[href="{% url 'checkout' %}"]').removeClass('disabled'); } else { $('.btn-block[href="{% url 'checkout' %}"]').addClass('disabled'); }
+                 }
+            }
+            if (json.message) {
+                 showCustomAlert(json.message, 'success');
+            }
+            if ($('table.table').length) {
+                 if (json.item_key && json.item_subtotal !== undefined) {
+                     $('#subtotal-' + json.item_key).text(Number(json.item_subtotal).toFixed(2) + ' zł');
+                 }
+                  if (json.type === 'delete' && json.item_key) {
+                      $('#item-' + json.item_key).fadeOut(300, function() { $(this).remove(); });
+                      if (json.qty === 0) {
+                          $('tbody').html('<tr><td colspan="5" class="text-center border-0">Your cart is empty.</td></tr>');
+                      }
+                  }
+            }
+        }
+
+        function handleAjaxError(xhr, errmsg, err) {
+            console.error("AJAX error:", errmsg, err, xhr.responseText);
+            let errorMsg = "Wystąpił błąd.";
+            try {
+                const errorJson = JSON.parse(xhr.responseText);
+                errorMsg = errorJson.error || errorJson.message || xhr.statusText || errmsg || "Nieznany błąd.";
+            } catch (e) {
+                errorMsg = xhr.statusText || errmsg || "Wystąpił nieznany błąd.";
+            }
+            showCustomAlert("Błąd: " + errorMsg, 'danger');
+        }
+
+
+        // --- LOGIKA DLA STRONY PRODUKTU ---
+        $(document).on('submit', '#product_addtocart_form', function(e) {
+            e.preventDefault();
+            if ($('#add-cart').is(':disabled')) return;
+            var itemId = $('#selected-item-id').val();
+            if (!itemId) {
+                 showCustomAlert("Proszę wybrać wariację produktu.", "warning");
+                 return;
+            }
+            var quantity = parseInt($('#qty').val() || '1');
+            if (quantity <= 0) {
+                 showCustomAlert("Ilość musi być większa niż 0.", "warning");
+                 return;
+            }
+            var postData = { quantity: quantity, action: 'post' };
+            if ($('#size-select').length > 0) {
+                postData['variation_id'] = itemId;
+            } else {
+                postData['product_id'] = itemId;
+            }
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'cart_add' %}',
+                data: postData,
+                success: handleAjaxResponse,
+                error: handleAjaxError
+            });
+        });
+
+        // --- NOWA LOGIKA DLA KOSZYKA (cart_summary.html) ---
+
+        // Aktualizacja ilości
+        $(document).on('change', '.quantity-input', function() {
+            var $input = $(this);
+            var itemKey = $input.data('item-key');
+            var newQuantity = parseInt($input.val() || '0');
+
+            if (newQuantity < 0) {
+                showCustomAlert("Ilość nie może być ujemna.", "warning");
+                location.reload();
+                return;
+            }
+            if (newQuantity === 0) {
+                $('.remove-item-button[data-item-key="' + itemKey + '"]').click();
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url "cart_update" %}',
+                data: {
+                    item_key: itemKey,
+                    quantity: newQuantity,
+                    action: 'post'
+                },
+                dataType: 'json',
+                success: handleAjaxResponse,
+                error: handleAjaxError
+            });
+        });
+
+        // Usuwanie produktu
+        $(document).on('click', '.remove-item-button', function(e) {
+            e.preventDefault();
+            var $button = $(this);
+            var itemKey = $button.data('item-key');
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url "cart_delete" %}',
+                data: {
+                    item_key: itemKey,
+                    action: 'post'
+                },
+                dataType: 'json',
+                success: handleAjaxResponse,
+                error: handleAjaxError
+            });
+        });
+
+    });
+</script>

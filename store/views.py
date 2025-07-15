@@ -328,19 +328,31 @@ def product(request, pk):
         print(f"Product found: {product.name}")
     except Exception as e:
         print(f"Error getting product with pk '{pk}': {e}")
-        raise # Zgłoś błąd 404
+        raise
 
     # --- Pobierz Recenzje dla tego produktu ---
-    reviews = product.reviews.all()
-    print(f"Found {reviews.count()} total reviews for product '{product.name}'.")
+    all_reviews = product.reviews.all().order_by('-created_at') # Pobierz wszystkie recenzje, posortowane
+    print(f"Found {all_reviews.count()} total reviews for product '{product.name}'.")
+
+    # === NOWA SEKCJA: PAGINACJA RECENZJI ===
+    # Utwórz obiekt Paginator, dzieląc recenzje na strony po 5
+    paginator = Paginator(all_reviews, 5)  # 5 recenzji na stronę
+    
+    # Pobierz numer strony z parametrów GET (np. ?page=2)
+    page_number = request.GET.get('page')
+    
+    # Pobierz obiekt strony (zawierający 5 recenzji i informacje o paginacji)
+    reviews_page = paginator.get_page(page_number)
+    # === KONIEC SEKCJI PAGINACJI ===
+
 
     # --- Oblicz średnią ocenę i liczbę ocen (w widoku) ---
     # Filtruj recenzje, które mają ustawioną ocenę (rating is not null)
-    reviews_with_rating = reviews.filter(rating__isnull=False)
+    reviews_with_rating = all_reviews.filter(rating__isnull=False)
 
     # Oblicz średnią ocenę
     average_rating_agg = reviews_with_rating.aggregate(Avg('rating'))
-    average_rating = average_rating_agg['rating__avg'] # Poprawiono klucz
+    average_rating = average_rating_agg['rating__avg']
 
     # Zaokrąglij średnią ocenę do np. 1 miejsca po przecinku
     if average_rating is not None:
@@ -352,16 +364,8 @@ def product(request, pk):
     print(f"Number of reviews with rating: {rating_count}")
 
     # --- Oblicz rozkład ocen (ile recenzji dla każdej oceny 1-5) ---
-    # Użyj annotate i Count z wartościami rating
-    # group_by rating i count
     rating_distribution = reviews_with_rating.values('rating').annotate(count=Count('rating')).order_by('rating')
-
-    # Przekształć QuerySet w słownik dla łatwiejszego dostępu w szablonie
-    # Słownik będzie wyglądał np. {1: 5, 3: 10, 5: 2}
     rating_distribution_dict = {item['rating']: item['count'] for item in rating_distribution}
-
-    # Upewnij się, że słownik zawiera wszystkie oceny od 1 do 5, nawet jeśli count wynosi 0
-    # Aby ułatwić iterację w szablonie
     full_rating_distribution = {i: rating_distribution_dict.get(i, 0) for i in range(1, 6)}
     print(f"Rating distribution: {full_rating_distribution}")
 
@@ -385,11 +389,11 @@ def product(request, pk):
         'product': product,
         'variations': variations,
         'similar_products': similar_products,
-        'reviews': reviews, # Przekazujemy wszystkie recenzje (do wyświetlenia listy komentarzy)
-        'average_rating': average_rating, # Przekazujemy obliczoną średnią ocenę
-        'rating_count': rating_count, # Przekazanie liczby recenzji z oceną
-        'rating_distribution': full_rating_distribution, # DODANO: przekazanie rozkładu ocen
-        'rating_values': range(5, 0, -1), # Utwórz range od 5 do 1
+        'reviews_page': reviews_page, # <-- ZMIENIONO: Przekazujemy obiekt strony, a nie wszystkie recenzje
+        'average_rating': average_rating,
+        'rating_count': rating_count,
+        'rating_distribution': full_rating_distribution,
+        'rating_values': range(5, 0, -1),
     }
 
     print(f"Context keys: {context.keys()}")
@@ -701,3 +705,17 @@ def add_review(request, product_id):
 
 # Załóżmy, że Twoja funkcja widoku nazywa się category_detail
 # Przyjmuje slug kategorii jako argument, np. /category/electronics/
+def get_reviews_page(request, product_id):
+    """
+    Widok AJAX, który zwraca tylko wyrenderowany fragment HTML 
+    z listą recenzji dla danej strony.
+    """
+    product = get_object_or_404(Product, id=product_id)
+    all_reviews = product.reviews.all().order_by('-created_at')
+    
+    paginator = Paginator(all_reviews, 5)  # 5 recenzji na stronę
+    page_number = request.GET.get('page')
+    reviews_page = paginator.get_page(page_number)
+    
+    # Renderuj tylko częściowy szablon i zwróć go jako odpowiedź
+    return render(request, 'partials/reviews_section.html', {'reviews_page': reviews_page, 'product': product})

@@ -21,7 +21,7 @@
             <div class="carousel-item active">
                 <img src="{% static 'img/promo3.gif' %}" class="d-block w-100" alt="...">
                 <div class="carousel-caption d-none d-md-block">
-                    <h5>Summer Sale!!</h5> {# Poprawiony zamknięty tag #}
+                    <h5>Summer Sale!!</h5>
                     <p>Do 60% procent taniej.</p>
                 </div>
             </div>
@@ -59,21 +59,14 @@
         <h2 class="h5 text-uppercase mb-4">Nasza oferta</h2>
     </header>
 
-    {# Nowy wrapper dla slidera i strzałek #}
     <div class="swiper-container-wrapper swiper-categories-wrapper">
-        {# Główny kontener Swipera #}
         <div class="swiper swiper-categories">
             <div class="swiper-wrapper">
-
                 {% if categories %}
                 {% for category in categories %}
-
                 <div class="swiper-slide">
-
                     <a href="{% url 'category' category.name %}" class="category-item text-decoration-none text-dark d-block text-center">
-
                         <strong class="category-item-title d-block mb-2">{{ category.name }}</strong>
-
                         <div class="category-img-container">
                             {% if category.image %}
                                 <img class="category-img" src="{{ category.image.url }}" alt="{{ category.name }}">
@@ -81,28 +74,20 @@
                                 <img class="category-img" src="{% static 'img/placeholder_category.png' %}" alt="{{ category.name }} Placeholder">
                             {% endif %}
                         </div>
-
                     </a>
-
                 </div>
                 {% endfor %}
                 {% else %}
-                {# Jeśli nie ma kategorii, wyświetlamy komunikat w slajdzie #}
                 <div class="swiper-slide text-center">
                     <p>No categories available yet.</p>
                 </div>
                 {% endif %}
-
-            </div> {# Koniec swiper-wrapper #}
-
-
+            </div>
         </div> 
         <div class="swiper-button-next swiper-button-next-categories"></div>
         <div class="swiper-button-prev swiper-button-prev-categories"></div>
-
-    </div> {# Koniec swiper-container-wrapper #}
-
-</div> {# Koniec container #}
+    </div>
+</div>
 <br><br>
 
 
@@ -113,31 +98,17 @@
     </header>
     <br><br>
 
-     {# Nowy wrapper dla slidera i strzałek #}
     <div class="swiper-container-wrapper swiper-items-wrapper">
-        {# Główny kontener Swipera #}
         <div class="swiper swiper-items">
             <div class="swiper-wrapper">
-
                 {% for product in products %}
                 <div class="swiper-slide">
-
                     <div class="product text-center">
                         <div class="mb-3 position-relative">
-
                             <div class="badge text-white badge-"></div>
-
-                            {# Upewniamy się, że link d-block obejmuje całą kartę lub przynajmniej obrazek + nagłówek #}
                             <a class="d-block" href="{% url 'product' product.id  %}">
                                 {% if product.images.all %}
-                                <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel">
-
-                                    <div class="carousel-indicators">
-                                        {% for image_obj in product.images.all %}
-                                        <button type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ forloop.counter }}"></button>
-                                        {% endfor %}
-                                    </div>
-
+                                <div id="productCardCarousel-{{ product.id }}" class="carousel slide card-product-carousel" data-bs-ride="false" data-bs-interval="false">
                                     <div class="carousel-inner">
                                         {% for image_obj in product.images.all %}
                                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -145,38 +116,17 @@
                                         </div>
                                         {% endfor %}
                                     </div>
-
-                                     {# Ukrywamy nawigację Bootstrapa w karcie #}
-                                    <button class="carousel-control-prev" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Poprzednie</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" data-bs-target="#productCardCarousel{{ product.id }}" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Następne</span>
-                                    </button>
                                 </div>
-
                                 {% else %}
                                 <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
                                 {% endif %}
                             </a>
-
-                            <div class="product-overlay">
-                                <ul class="mb-0 list-inline">
-                                    <!-- Przycisk Add to Cart - skomentowany w Twoim kodzie -->
-                                </ul>
-                            </div>
                         </div>
-
-                        {# Informacje o produkcie POD KARUZELĄ #}
                         <div class="product-info">
                             <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
                                 <h6 class="product-name">{{ product.name }}</h6>
                             </a>
-                            
                             {% if product.is_sale %}
-                         
                             <p class="product-sale-price" color=""> {{ product.sale_price }} zł</p>
                             <br>
                             <p class="small text-muted product-sale-price">Cena regularna: {{ product.price }} zł</p>
@@ -185,82 +135,42 @@
                             <p class="small text-muted product-price">{{ product.price }} zł</p>
                             {% endif %}
                         </div>
-
-                    </div> {# Koniec product text-center #}
-
-                </div> {# Koniec swiper-slide #}
-
+                    </div>
+                </div>
                 {% endfor %}
-
-            </div> {# Koniec swiper-wrapper #}
+            </div>
             <br>
-             {# Paginacja (kropki na dole) #}
-
             <div class="swiper-pagination"></div>
-
-        </div> {# Koniec swiper swiper-items #}
-
-         {# Dodajemy nawigację (strzałki) #}
+        </div>
         <div class="swiper-button-next swiper-button-next-items"></div>
         <div class="swiper-button-prev swiper-button-prev-items"></div>
-
-    </div> {# Koniec swiper-container-wrapper #}
-
-</div> {# Koniec container #}
+    </div>
+</div>
 
 
-{# --- JavaScript do inicjalizacji Swipera --- #}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
         // Inicjalizacja Swipera dla Kategorii
         const swiperCategories = new Swiper('.swiper-categories', {
             direction: 'horizontal',
-            loop: true, // Włącz zapętlanie
+            loop: true,
             grabCursor: true,
-
-            // Ustawienia responsywności
             breakpoints: {
-                // 0px (default) - 1 element
-                0: {
-                    slidesPerView: 1,
-                    spaceBetween: 10
-                },
-                // when window width is >= 576px (small)
-                576: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
-                },
-                // when window width is >= 768px (medium)
-                768: {
-                    slidesPerView: 3, // 3 elementy na tabletach i większych
-                    spaceBetween: 30
-                },
-                // when window width is >= 992px (large)
-                992: {
-                    slidesPerView: 3, // 3 elementy na dużych ekranach
-                    spaceBetween: 40
-                },
-                // when window width is >= 1200px (extra large)
-                1200: {
-                   slidesPerView: 3, // 3 elementy na bardzo dużych ekranach
-                   spaceBetween: 40
-                }
+                0: { slidesPerView: 1, spaceBetween: 10 },
+                576: { slidesPerView: 2, spaceBetween: 20 },
+                768: { slidesPerView: 3, spaceBetween: 30 },
+                992: { slidesPerView: 3, spaceBetween: 40 },
+                1200: { slidesPerView: 3, spaceBetween: 40 }
             },
-
-            // Włącz nawigację (strzałki) - odwołujemy się do przycisków w nowym wrapperze
             navigation: {
                 nextEl: '.swiper-button-next-categories',
                 prevEl: '.swiper-button-prev-categories',
             },
-
-            // Włącz paginację (kropki)
             pagination: {
-                el: '.swiper-categories .swiper-pagination', // Paginacja pozostaje w kontenerze swipera
+                el: '.swiper-categories .swiper-pagination',
                 clickable: true,
             },
-
-             // Accessibility
              a11y: {
               enabled: true,
               prevSlideMessage: 'Poprzednia kategoria',
@@ -272,77 +182,77 @@
         // Inicjalizacja Swipera dla Produktów
         const swiperItems = new Swiper('.swiper-items', {
             direction: 'horizontal',
-            loop: true, // Włącz zapętlanie
+            loop: true,
             grabCursor: true,
-
-            // Ustawienia responsywności
              breakpoints: {
-                // 0px (default) - 1 element
-                 0: {
-                    slidesPerView: 1,
-                    spaceBetween: 10
-                },
-                // when window width is >= 576px (small)
-                576: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
-                },
-                // when window width is >= 768px (medium)
-                768: {
-                    slidesPerView: 3, // 3 elementy na tabletach
-                    spaceBetween: 30
-                },
-                // when window width is >= 992px (large)
-                992: {
-                    slidesPerView: 4, // 4 elementy na dużych ekranach
-                    spaceBetween: 40
-                }
+                 0: { slidesPerView: 1, spaceBetween: 10 },
+                576: { slidesPerView: 2, spaceBetween: 20 },
+                768: { slidesPerView: 3, spaceBetween: 30 },
+                992: { slidesPerView: 4, spaceBetween: 40 }
             },
-
-            // Nawigacja
             navigation: {
                 nextEl: '.swiper-button-next-items',
                 prevEl: '.swiper-button-prev-items',
             },
-
-            // Paginacja
             pagination: {
-                el: '.swiper-items .swiper-pagination', // Paginacja pozostaje w kontenerze swipera
+                el: '.swiper-items .swiper-pagination',
                 clickable: true,
             },
-
-             // Accessibility
              a11y: {
               enabled: true,
               prevSlideMessage: 'Poprzedni produkt',
               nextSlideMessage: 'Następny produkt',
               paginationBulletMessage: 'Przejdź do produktu {{index}}',
             },
-        });
-
-         // Uruchomienie karuzel Bootstrapa wewnątrz slajdów Swipera
-        // Swiper klonuje slajdy, co może powodować problemy z JS.
-        // Alternatywnie możesz zainicjalizować karuzele tylko dla *widocznych* slajdów,
-        // ale to wymaga bardziej zaawansowanego skryptu reagującego na zdarzenia Swipera ('slideChangeTransitionEnd').
-        // Najprostszym sposobem jest wyłączenie automatycznego przewijania w karuzeli produktu
-        // (usuwając data-bs-ride="carousel") i pozostawienie jej statycznej lub przewijanej tylko kliknięciami.
-        // Jeśli chcesz automatyczne przewijanie, może być potrzebna bardziej złożona logika JS.
-        // Poniższy kod to prosta próba, ale może nie działać niezawodnie z klonowanymi slajdami w trybie loop:true.
-        // Lepszym podejściem jest usunięcie data-bs-ride="carousel" z karuzeli wewnątrz slajdu produktu.
-
-        // Zmieniono podejście: Usuwamy data-bs-ride="carousel" z HTML karuzeli produktu
-        // i inicjalizujemy je manualnie.
-        const productCarousels = document.querySelectorAll('.card-product-carousel');
-        productCarousels.forEach(carouselEl => {
-            // Sprawdź, czy element nie ma już instancji karuzeli
-            if (!bootstrap.Carousel.getInstance(carouselEl)) {
-                 new bootstrap.Carousel(carouselEl, {
-                    interval: false, // Wyłącz automatyczne przewijanie w karuzelach produktów na liście
-                    ride: false // Upewnij się, że nie startuje automatycznie
-                 });
+            // --- POPRAWIONA INICJALIZACJA KARUZEL ---
+            on: {
+                init: function () {
+                    // Ta funkcja uruchamia się PO tym, jak Swiper stworzy wszystkie slajdy (w tym klony)
+                    this.el.querySelectorAll('.card-product-carousel').forEach(carouselEl => {
+                        if (!bootstrap.Carousel.getInstance(carouselEl)) {
+                            new bootstrap.Carousel(carouselEl, {
+                                interval: false,
+                                ride: false
+                            });
+                        }
+                    });
+                }
             }
         });
 
+        // --- POPRAWIONY KOD: EFEKT ZMIANY ZDJĘCIA PO NAJECHANIU (DELEGACJA ZDARZEŃ) ---
+        const swiperContainer = document.querySelector('.swiper-items');
+        if (swiperContainer) {
+            swiperContainer.addEventListener('mouseover', function(event) {
+                const productCard = event.target.closest('.product');
+                if (!productCard) return;
+
+                const carouselEl = productCard.querySelector('.card-product-carousel');
+                if (!carouselEl) return;
+
+                const carouselInstance = bootstrap.Carousel.getInstance(carouselEl);
+                const items = carouselEl.querySelectorAll('.carousel-item');
+
+                if (carouselInstance && items.length > 1) {
+                    carouselInstance.to(1); // Przejdź do drugiego zdjęcia (indeks 1)
+                }
+            });
+
+            swiperContainer.addEventListener('mouseout', function(event) {
+                const productCard = event.target.closest('.product');
+                if (!productCard) return;
+                
+                const carouselEl = productCard.querySelector('.card-product-carousel');
+                if (!carouselEl) return;
+                
+                const carouselInstance = bootstrap.Carousel.getInstance(carouselEl);
+                const items = carouselEl.querySelectorAll('.carousel-item');
+
+                if (carouselInstance && items.length > 1) {
+                    carouselInstance.to(0); // Wróć do pierwszego zdjęcia (indeks 0)
+                }
+            });
+        }
 
     }); // Koniec DOMContentLoaded
 </script>
