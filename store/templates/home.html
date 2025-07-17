@@ -204,55 +204,30 @@
               nextSlideMessage: 'Następny produkt',
               paginationBulletMessage: 'Przejdź do produktu {{index}}',
             },
-            // --- POPRAWIONA INICJALIZACJA KARUZEL ---
-            on: {
-                init: function () {
-                    // Ta funkcja uruchamia się PO tym, jak Swiper stworzy wszystkie slajdy (w tym klony)
-                    this.el.querySelectorAll('.card-product-carousel').forEach(carouselEl => {
-                        if (!bootstrap.Carousel.getInstance(carouselEl)) {
-                            new bootstrap.Carousel(carouselEl, {
-                                interval: false,
-                                ride: false
-                            });
-                        }
+        });
+
+        // --- ZASTOSOWANO SPRAWDZONY KOD: EFEKT ZMIANY ZDJĘCIA PO NAJECHANIU ---
+        const productCards = document.querySelectorAll('.swiper-items .product');
+        productCards.forEach(card => {
+            const carousel = card.querySelector('.card-product-carousel');
+            if (carousel) {
+                const firstItem = carousel.querySelector('.carousel-item:first-child');
+                const secondItem = carousel.querySelector('.carousel-item:nth-child(2)');
+
+                // Dodaj listenery tylko jeśli są co najmniej 2 zdjęcia
+                if (firstItem && secondItem) {
+                    card.addEventListener('mouseenter', () => {
+                        firstItem.classList.remove('active');
+                        secondItem.classList.add('active');
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        secondItem.classList.remove('active');
+                        firstItem.classList.add('active');
                     });
                 }
             }
         });
-
-        // --- POPRAWIONY KOD: EFEKT ZMIANY ZDJĘCIA PO NAJECHANIU (DELEGACJA ZDARZEŃ) ---
-        const swiperContainer = document.querySelector('.swiper-items');
-        if (swiperContainer) {
-            swiperContainer.addEventListener('mouseover', function(event) {
-                const productCard = event.target.closest('.product');
-                if (!productCard) return;
-
-                const carouselEl = productCard.querySelector('.card-product-carousel');
-                if (!carouselEl) return;
-
-                const carouselInstance = bootstrap.Carousel.getInstance(carouselEl);
-                const items = carouselEl.querySelectorAll('.carousel-item');
-
-                if (carouselInstance && items.length > 1) {
-                    carouselInstance.to(1); // Przejdź do drugiego zdjęcia (indeks 1)
-                }
-            });
-
-            swiperContainer.addEventListener('mouseout', function(event) {
-                const productCard = event.target.closest('.product');
-                if (!productCard) return;
-                
-                const carouselEl = productCard.querySelector('.card-product-carousel');
-                if (!carouselEl) return;
-                
-                const carouselInstance = bootstrap.Carousel.getInstance(carouselEl);
-                const items = carouselEl.querySelectorAll('.carousel-item');
-
-                if (carouselInstance && items.length > 1) {
-                    carouselInstance.to(0); // Wróć do pierwszego zdjęcia (indeks 0)
-                }
-            });
-        }
 
     }); // Koniec DOMContentLoaded
 </script>

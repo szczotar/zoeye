@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 {# Upewnij się, że masz załadowane jQuery, jeśli używasz $.ajax #}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
 <div class="container mt-4">
@@ -400,6 +400,29 @@
             },
             observer: true,
             observeParents: true,
+        });
+
+        // === NOWY SKRYPT: EFEKT ZMIANY ZDJĘCIA PO NAJECHANIU DLA PODOBNYCH PRODUKTÓW ===
+        const similarProductCards = document.querySelectorAll('.similar-products-section .product');
+        similarProductCards.forEach(card => {
+            const carousel = card.querySelector('.card-product-carousel');
+            if (carousel) {
+                const firstItem = carousel.querySelector('.carousel-item:first-child');
+                const secondItem = carousel.querySelector('.carousel-item:nth-child(2)');
+
+                // Dodaj listenery tylko jeśli są co najmniej 2 zdjęcia
+                if (firstItem && secondItem) {
+                    card.addEventListener('mouseenter', () => {
+                        firstItem.classList.remove('active');
+                        secondItem.classList.add('active');
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        secondItem.classList.remove('active');
+                        firstItem.classList.add('active');
+                    });
+                }
+            }
         });
 
         // === SKRYPT: DYNAMICZNE ŁADOWANIE RECENZJI ===
