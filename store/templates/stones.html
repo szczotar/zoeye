@@ -30,8 +30,12 @@
   <section class="py-5">
     <div class="container p-0">
 
-      <div class="row">
+      <!-- PRZYCISK FILTRÓW (skopiowany z category.html) -->
+      <button class="btn btn-secondary mb-3"  type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+          <i class="fa fa-sliders fa-lg" ></i>   Filtry
+      </button>
 
+      <div class="row">
         <div class="col-12 order-1 mb-5 mb-lg-0">
           <div class="row mb-4 align-items-center">
             <div class="col-lg-6 mb-2 mb-lg-0">
@@ -39,15 +43,15 @@
             </div>
             <div class="col-lg-6">
               <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
-                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th-large"></i></a></li>
-                <li class="list-inline-item text-muted mr-3"><a class="reset-anchor p-0" href="#"><i class="fas fa-th"></i></a></li>
-                <li class="list-inline-item">
-                  <form method="get" action="{% url 'stones_detail' material.name %}" id="sortingForm">
-                    <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting" onchange="document.getElementById('sortingForm').submit();">
+                <li class="list-inline-item d-flex align-items-center">
+                  <form method="get" action="{% url 'stones_detail' material.name %}" id="sortingForm" class="d-flex align-items-center">
+                    <label for="sortingSelect" class="me-2">Sortuj:</label>
+                    <select class="form-select form-select-sm" style="width: auto;" name="sorting" id="sortingSelect" onchange="this.form.submit();">
                       <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Domyślnie</option>
                       <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Ceny: Rosnąco</option>
                       <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Ceny: Malejąco</option>
                     </select>
+                    
                     {% for key, value in request.GET.items %} {% if key != 'sorting' and key != 'page' %}
                         {% if value|iterable %}
                             {% for item in value %}
@@ -67,7 +71,6 @@
           <div class="row">
             {% if products_page %}
               {% for product in products_page %}
-
                 <div class="col-lg-4 col-sm-6 mb-4">
                   <div class="product text-center">
                     <div class="mb-3 position-relative">
@@ -143,6 +146,72 @@
       </div>
     </div>
   </section>
+</div>
+
+<!-- === OFFCANVAS STRUCTURE (skopiowany z category.html) === -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Filters</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="get" action="{% url 'stones_detail' material.name %}" id="sidebarFilterForm">
+            {% for key, value in request.GET.items %}
+                {% if key != 'gender' and key != 'min_price' and key != 'max_price' and key != 'sale_only' and key != 'available_only' %}
+                    {% if value|iterable %}
+                        {% for item in value %}
+                            <input type="hidden" name="{{ key }}" value="{{ item }}">
+                        {% endfor %}
+                    {% else %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <input type="hidden" name="page" value="1">
+
+            <h5 class="text-uppercase mb-4">For Whom</h5>
+            <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="gender" value="" id="genderAll" {% if not selected_gender or selected_gender == 'all' %}checked{% endif %}>
+                <label class="form-check-label" for="genderAll">All</label>
+            </div>
+            <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="gender" value="men" id="genderMen" {% if selected_gender == 'men' %}checked{% endif %}>
+                <label class="form-check-label" for="genderMen">Men</label>
+            </div>
+            <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="gender" value="women" id="genderWomen" {% if selected_gender == 'women' %}checked{% endif %}>
+                <label class="form-check-label" for="genderWomen">Women</label>
+            </div>
+            <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}>
+                <label class="form-check-label" for="genderUnisex">Unisex</label>
+            </div>
+
+            <!-- SEKCJA MATERIAŁÓW ZOSTAŁA CELOWO USUNIĘTA -->
+
+            <h5 class="text-uppercase mb-4 mt-4">Price Filter</h5>
+            <div class="d-flex align-items-center mb-3">
+                <input type="number" name="min_price" placeholder="Min" value="{{ selected_min_price|default:'' }}" class="form-control form-control-sm w-50 me-2">
+                <input type="number" name="max_price" placeholder="Max" value="{{ selected_max_price|default:'' }}" class="form-control form-control-sm w-50">
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input class="form-check-input" type="checkbox" name="sale_only" value="true" id="filterSaleOnly" {% if selected_sale_only %}checked{% endif %} role="switch">
+                <label class="form-check-label" for="filterSaleOnly">Show only Sale items</label>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input class="form-check-input" type="checkbox" name="available_only" value="true" id="filterAvailableOnly" {% if selected_available_only %}checked{% endif %} role="switch">
+                <label class="form-check-label" for="filterAvailableOnly">Show only available items</label>
+            </div>
+
+            <button type="submit" class="btn btn-outline-dark btn-sm w-100 mt-3">Apply Filters</button>
+        </form>
+
+        <div class="mt-4">
+            <a href="{% url 'stones_detail' material.name %}" class="btn btn-secondary btn-sm w-100">Reset Filters</a>
+        </div>
+    </div>
 </div>
 
 <script>

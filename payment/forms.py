@@ -1,21 +1,28 @@
 from django import forms
 from .models import ShippingAddress
 
-class ShippingForm(forms.ModelForm):
-	shipping_full_name = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Full Name'}), required=True)
-	shipping_email = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}), required=True)
-	shipping_address1 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address1'}), required=True)
-	shipping_address2 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address2'}), required=True)
-	shipping_city = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'City'}), required=True)
-	shipping_state = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'State'}), required=False)
-	shipping_zipcode = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Zipcode'}), required=False)
-	shipping_country = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Country'}), required=True)
+class CheckoutForm(forms.Form):
+    first_name = forms.CharField(label="Imię", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(label="Nazwisko", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(label="Adres e-mail", required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    phone = forms.CharField(label="Numer telefonu", max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    
+    address1 = forms.CharField(label="Ulica i numer domu", max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    address2 = forms.CharField(label="Numer mieszkania (opcjonalnie)", max_length=255, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    city = forms.CharField(label="Miasto", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    zipcode = forms.CharField(label="Kod pocztowy", max_length=10, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    country = forms.CharField(label="Kraj", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'value': 'Polska'}))
 
-	class Meta:
-		model = ShippingAddress
-		fields = ['shipping_full_name', 'shipping_email', 'shipping_address1', 'shipping_address2', 'shipping_city', 'shipping_state', 'shipping_zipcode', 'shipping_country']
-
-		exclude = ['user',]
+# Formularz dla opcjonalnego, innego adresu dostawy
+# Używa prefiksu 'shipping_', aby uniknąć konfliktów nazw pól
+class ShippingForm(forms.Form):
+    shipping_first_name = forms.CharField(label="Imię", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_last_name = forms.CharField(label="Nazwisko", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_address1 = forms.CharField(label="Ulica i numer domu", max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_address2 = forms.CharField(label="Numer mieszkania (opcjonalnie)", max_length=255, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_city = forms.CharField(label="Miasto", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_zipcode = forms.CharField(label="Kod pocztowy", max_length=10, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    shipping_country = forms.CharField(label="Kraj", max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'value': 'Polska'}))
 		
 class PaymentForm(forms.Form):
 	card_name =  forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Name On Card'}), required=True)

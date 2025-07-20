@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404 # Import get_object_or_404
 from cart.cart import Cart
 # Import forms and models from your payment app
-from payment.forms import ShippingForm, PaymentForm
+from payment.forms import ShippingForm, PaymentForm, CheckoutForm
 from payment.models import ShippingAddress, Order, OrderItem # Assuming Order and OrderItem are here
 # Import models from your store app
 from store.models import Product, Profile, ProductVariation # Import ProductVariation
@@ -112,45 +112,119 @@ def shipped_dash(request):
 
 
 def checkout(request):
-    """
-    Displays the checkout page with cart summary and shipping form.
-    """
     cart = Cart(request)
-
-    # Get cart items using the __iter__() method
-    # This yields dictionaries with 'variation', 'quantity', 'subtotal'
     cart_items = list(cart.__iter__())
-
-    # Check if the cart is empty
-    if not cart_items:
-        messages.warning(request, "Twój koszyk jest pusty.")
-        return redirect('cart_summary') # Redirect to cart summary if empty
-
-    # Get the total price from the Cart object
     totals = cart.cart_total()
 
-    # Handle shipping form - pre-fill for logged-in users if address exists
-    shipping_address = None
-    if request.user.is_authenticated:
-        try:
-            # Assuming ShippingAddress is linked to the User model
-            shipping_address = ShippingAddress.objects.get(user=request.user)
-        except ShippingAddress.DoesNotExist:
-            pass # User does not have a saved shipping address
+    if not cart_items:
+        messages.warning(request, "Twój koszyk jest pusty.")
+        return redirect('cart_summary')
 
-    # Initialize the shipping form
-    # If POST, use POST data; otherwise, use existing shipping_address instance (if any)
-    shipping_form = ShippingForm(request.POST or None, instance=shipping_address)
+    if request.method == 'POST':
+        # Przetwarzanie danych z całego formularza
+        checkout_form = CheckoutForm(request.POST)
+        shipping_form = ShippingForm(request.POST, prefix='shipping') # Używamy prefiksu
 
-    context = {
-        "cart_items": cart_items, # Pass list of cart items to template
-        "totals": totals,         # Pass total cart price
-        "shipping_form": shipping_form, # Pass the shipping form
-        # "cart_products" and "quantities" are no longer needed separately
-    }
+        # Sprawdzamy, czy checkbox "inny adres" był zaznaczony
+        is_different_shipping = 'shipping-address-checkbox' in request.POST
 
-    return render(request, "payment/checkout.html", context)
+        if checkout_form.is_valid() and (not is_different_shipping or shipping_form.is_valid()):
+            # Logika tworzenia zamówienia (przeniesiona z process_order)
+            try:
+                with transaction.atomic():
+                    # Tworzenie adresu do zapisu w modelu Order
+                    if is_different_shipping:
+                        # Użyj danych z formularza wysyłki
+                        data = shipping_form.cleaned_data
+                        full_name = f"{data['shipping_first_name']} {data['shipping_last_name']}"
+                        shipping_address_str = (
+                            f"{full_name}\n"
+                            f"{data['shipping_address1']}\n"
+                            f"{data.get('shipping_address2', '')}\n"
+                            f"{data['shipping_zipcode']} {data['shipping_city']}\n"
+                            f"{data['shipping_country']}"
+                        )
+                    else:
+                        # Użyj danych z głównego formularza
+                        data = checkout_form.cleaned_data
+                        full_name = f"{data['first_name']} {data['last_name']}"
+                        shipping_address_str = (
+                            f"{full_name}\n"
+                            f"{data['address1']}\n"
+                            f"{data.get('address2', '')}\n"
+                            f"{data['zipcode']} {data['city']}\n"
+                            f"{data['country']}"
+                        )
 
+                    # Pobranie kosztu dostawy z formularza
+                    delivery_cost = 0
+                    if request.POST.get('delivery_method') == 'courier':
+                        delivery_cost = 15.00
+                    elif request.POST.get('delivery_method') == 'locker':
+                        delivery_cost = 12.00
+                    
+                    amount_paid = totals + decimal.Decimal(delivery_cost)
+
+                    # Tworzenie obiektu Order
+                    order = Order.objects.create(
+                        user=request.user if request.user.is_authenticated else None,
+                        full_name=full_name,
+                        email=checkout_form.cleaned_data['email'],
+                        shipping_address=shipping_address_str.strip(),
+                        amount_paid=amount_paid,
+                    )
+
+                    # Tworzenie OrderItem dla każdego produktu w koszyku
+                    for item in cart_items:
+                        variation = item['variation']
+                        OrderItem.objects.create(
+                            order=order,
+                            variation=variation,
+                            user=request.user if request.user.is_authenticated else None,
+                            quantity=item['quantity'],
+                            price=item['variation'].get_effective_price(),
+                        )
+                        # Opcjonalnie: zmniejszanie stanu magazynowego
+                        variation.stock -= item['quantity']
+                        variation.save()
+
+                # Czyszczenie koszyka i przekierowanie
+                cart.clear()
+                messages.success(request, "Zamówienie zostało złożone pomyślnie!")
+                return redirect('payment_success')
+
+            except Exception as e:
+                messages.error(request, f"Wystąpił błąd podczas składania zamówienia: {e}")
+                return redirect('checkout')
+        else:
+            # Jeśli formularze są nieprawidłowe, renderuj stronę ponownie z błędami
+            messages.error(request, "Proszę poprawić błędy w formularzu.")
+            # Przekaż formularze z błędami do szablonu
+            context = {
+                "cart_items": cart_items,
+                "totals": totals,
+                "checkout_form": checkout_form,
+                "shipping_form": shipping_form,
+            }
+            return render(request, "payment/checkout.html", context)
+
+    else: # Metoda GET
+        # Przygotowanie pustych formularzy
+        # Można wstępnie wypełnić danymi zalogowanego użytkownika
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data = {'email': request.user.email, 'first_name': request.user.first_name, 'last_name': request.user.last_name}
+        
+        checkout_form = CheckoutForm(initial=initial_data)
+        shipping_form = ShippingForm(prefix='shipping')
+
+        context = {
+            "cart_items": cart_items,
+            "totals": totals,
+            "checkout_form": checkout_form,
+            "shipping_form": shipping_form,
+        }
+        return render(request, "payment/checkout.html", context)
 
 def billing_info(request):
     """
@@ -381,3 +455,9 @@ def payment_success(request):
     # last_order = Order.objects.filter(user=request.user).order_by('-date_ordered').first()
     # context = {'last_order': last_order}
     return render(request, "payment/payment_success.html", {})
+
+def terms_page(request):
+    """
+    Renders the terms and conditions page.
+    """
+    return render(request, "payment/terms_page.html", {})

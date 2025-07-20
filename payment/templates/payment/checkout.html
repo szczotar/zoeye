@@ -1,79 +1,470 @@
 {% extends 'base.html' %}
-
+{% load static %}
+{% load l10n %}
 
 {% block content %}
+<style>
 
-        <!-- Header-->
-        <header class="bg-dark py-5">
-            <div class="container px-4 px-lg-5 my-5">
-                <div class="text-center text-white">
-                    <h1 class="display-4 fw-bolder">Checkout</h1>
-                    <p class="lead fw-normal text-white-50 mb-0">Review Your Order...</p>
+    .accordion-body {
+        padding: 1rem 1.25rem;
+    }
+    /* Zmniejszenie przycisków nagłówka akordeonu */
+    .accordion-button {
+        padding: 0.8rem 1.25rem;
+        font-size: 1rem;
+    }
+    .accordion-button:not(.collapsed) {
+        color: #495057;
+        background-color: #FFE4C6;
+        box-shadow: none;
+    }
+    .accordion-button.disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        pointer-events: none;
+    }
+ 
+   /* Style dla mniejszych pól formularza */
+    .form-floating.form-floating-sm .form-control {
+        min-height: calc(2.5rem + 2px); /* Mniejsza wysokość */
+        height: calc(2.5rem + 2px);
+        padding: 0.75rem 0.75rem 0;
+        font-size: 0.875rem;
+    }
+    .form-floating.form-floating-sm label {
+        padding: 0.5rem 0.75rem; /* Mniejszy padding etykiety */
+        font-size: 0.875rem;
+    }
+    .summary-table { font-size: 0.9rem; }
+    .summary-table td { padding: 0.4rem 0; } /* Mniejszy padding w tabeli */
+    .summary-table .total-row td {
+        font-weight: bold;
+        font-size: 1rem;
+        border-top: 1px solid #dee2e6;
+        padding-top: 0.8rem;
+    }
+    .form-control:read-only {
+        background-color: #e9ecef;
+    }
+    /* Zmniejszenie czcionki dla opisów i checkboxów */
+    .accordion-body p, .form-check-label {
+        font-size: 0.9rem;
+    }
+
+    
+</style>
+
+<!-- Header-->
+<div class="container">
+  <!-- HERO SECTION-->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+        <div class="col-lg-6">
+          <h1 class="h2 text-uppercase mb-0">Zamówienie</h1>
+    
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            
+            <form id="checkout-form" method="POST" action="{% url 'checkout' %}" novalidate>
+                {% csrf_token %}
+
+                <div class="accordion" id="checkoutAccordion">
+
+                    <!-- KROK 1: TWOJE KONTO -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                <strong>1. Twoje konto</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#checkoutAccordion">
+                            <div class="accordion-body">
+                                {% if user.is_authenticated %}
+                                    <p>Jesteś zalogowany jako: <strong>{{ user.email }}</strong>.</p>
+                                    <p>Twoje dane zostaną uzupełnione automatycznie. Możesz je edytować w kolejnym kroku.</p>
+                                    <button type="button" class="btn btn-primary" data-next-step="collapseTwo">Kontynuuj</button>
+                                {% else %}
+                                    <p>Masz już konto? Zaloguj się, aby przyspieszyć proces.</p>
+                                    <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-outline-dark">Zaloguj się</a>
+                                    <hr>
+                                    <p>Nie masz konta? Możesz kontynuować jako gość.</p>
+                                    <button type="button" class="btn btn-primary" data-next-step="collapseTwo">Kontynuuj jako gość</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KROK 2: TWOJE DANE -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingTwo">
+        <button id="btn-collapseTwo" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            <strong>2. Twoje dane</strong>
+        </button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#checkoutAccordion">
+        <div class="accordion-body" data-step="2">
+            <p>Proszę podać dane do faktury i wysyłki.</p>
+            <div class="row g-2"> <!-- Zmieniono g-3 na g-2 dla mniejszych odstępów -->
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.first_name }} 
+                    <label for="{{ checkout_form.first_name.id_for_label }}">{{ checkout_form.first_name.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.last_name }} 
+                    <label for="{{ checkout_form.last_name.id_for_label }}">{{ checkout_form.last_name.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.email }} 
+                    <label for="{{ checkout_form.email.id_for_label }}">{{ checkout_form.email.label }}</label> 
+                    <div class="invalid-feedback">Proszę podać poprawny adres e-mail.</div>
+                </div>
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.phone }} 
+                    <label for="{{ checkout_form.phone.id_for_label }}">{{ checkout_form.phone.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-12 form-floating form-floating-sm"> 
+                    {{ checkout_form.address1 }} 
+                    <label for="{{ checkout_form.address1.id_for_label }}">{{ checkout_form.address1.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-12 form-floating form-floating-sm"> 
+                    {{ checkout_form.address2 }} 
+                    <label for="{{ checkout_form.address2.id_for_label }}">{{ checkout_form.address2.label }}</label> 
+                </div>
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.city }} 
+                    <label for="{{ checkout_form.city.id_for_label }}">{{ checkout_form.city.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-md-6 form-floating form-floating-sm"> 
+                    {{ checkout_form.zipcode }} 
+                    <label for="{{ checkout_form.zipcode.id_for_label }}">{{ checkout_form.zipcode.label }}</label> 
+                    <div class="invalid-feedback">To pole jest wymagane.</div>
+                </div>
+                <div class="col-12 form-floating form-floating-sm"> 
+                    {{ checkout_form.country }} 
+                    <label for="{{ checkout_form.country.id_for_label }}">{{ checkout_form.country.label }}</label> 
                 </div>
             </div>
-        </header>
-        <br/>
-        <div class="container">
-            <div class="row">
-                
-                    <div class="col-md-6 offset-md-3">
-          <div class="card">
-          <div class="card-header">
-            Order Summary
-          </div>
-          <div class="card-body">
-            {% for product in cart_products %}
-                {{ product.name }}: 
-                    {% if product.is_sale %}
-                        ${{ product.sale_price }}
-                    {% else %}
-                        ${{ product.price }}
-                {% endif %}
 
-                <br/>
-                <small>Quantity: 
-                {% for key, value in quantities.items %}
-                    {% if key == product.id|slugify %}
-                        {{ value }}
-                    {% endif %}
-                {% endfor %}</small>
-                <br/><br/>
-
-            {% endfor %}
-            Total:  ${{ totals }}
-            <br/><br/>
-            <a href="{% url 'cart_summary' %}" class="btn btn-sm btn-outline-secondary">Update Items</a>
-          </div>
-        </div>
-<br/><br/>
-<div class="card">
-  <div class="card-header">
-    Shipping Info
-  </div>
-  <div class="card-body">
-    <form method="POST" action="{% url 'billing_info' %}">
-        {% csrf_token %}
-    {{ shipping_form.as_p }}
-
-  </div>
-</div>
-<br/>
-
-<button type="submit" class="btn btn-secondary">
-        Continue To Billing
-</button>
-
-</form>
-<br/><br/>
-
-
+            <div class="form-check mt-3"> <!-- Zmniejszono mt-4 na mt-3 -->
+                <input class="form-check-input" type="checkbox" id="shipping-address-checkbox" name="shipping-address-checkbox">
+                <label class="form-check-label" for="shipping-address-checkbox">Dostawa pod inny adres</label>
             </div>
+
+            <div id="shipping-address-form" style="display: none;" class="mt-3 border-top pt-3">
+                <h5>Adres dostawy</h5>
+                <div class="row g-2"> <!-- Zmieniono g-3 na g-2 -->
+                    <div class="col-md-6 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_first_name }} 
+                        <label for="{{ shipping_form.shipping_first_name.id_for_label }}">{{ shipping_form.shipping_first_name.label }}</label> 
+                        <div class="invalid-feedback">To pole jest wymagane.</div>
+                    </div>
+                    <div class="col-md-6 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_last_name }} 
+                        <label for="{{ shipping_form.shipping_last_name.id_for_label }}">{{ shipping_form.shipping_last_name.label }}</label> 
+                        <div class="invalid-feedback">To pole jest wymagane.</div>
+                    </div>
+                    <div class="col-12 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_address1 }} 
+                        <label for="{{ shipping_form.shipping_address1.id_for_label }}">{{ shipping_form.shipping_address1.label }}</label> 
+                        <div class="invalid-feedback">To pole jest wymagane.</div>
+                    </div>
+                    <div class="col-12 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_address2 }} 
+                        <label for="{{ shipping_form.shipping_address2.id_for_label }}">{{ shipping_form.shipping_address2.label }}</label> 
+                    </div>
+                    <div class="col-md-6 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_city }} 
+                        <label for="{{ shipping_form.shipping_city.id_for_label }}">{{ shipping_form.shipping_city.label }}</label> 
+                        <div class="invalid-feedback">To pole jest wymagane.</div>
+                    </div>
+                    <div class="col-md-6 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_zipcode }} 
+                        <label for="{{ shipping_form.shipping_zipcode.id_for_label }}">{{ shipping_form.shipping_zipcode.label }}</label> 
+                        <div class="invalid-feedback">To pole jest wymagane.</div>
+                    </div>
+                    <div class="col-12 form-floating form-floating-sm"> 
+                        {{ shipping_form.shipping_country }} 
+                        <label for="{{ shipping_form.shipping_country.id_for_label }}">{{ shipping_form.shipping_country.label }}</label> 
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary mt-3" data-next-step="collapseThree" disabled>Kontynuuj</button> <!-- Dodano btn-sm -->
         </div>
     </div>
+</div>
+                    <!-- KROK 3: METODA DOSTAWY -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button id="btn-collapseThree" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                <strong>3. Metoda dostawy</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#checkoutAccordion">
+                            <div class="accordion-body" data-step="3">
+                                <div class="form-check">
+                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_courier" value="courier" data-cost="15.00" required>
+                                    <label class="form-check-label" for="inpost_courier">InPost Kurier (15.00 zł)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_paczkomat" value="locker" data-cost="12.00" required>
+                                    <label class="form-check-label" for="inpost_paczkomat">InPost Paczkomat (12.00 zł)</label>
+                                </div>
+                                <button type="button" class="btn btn-primary mt-3" data-next-step="collapseFour" disabled>Kontynuuj</button>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- KROK 4: PŁATNOŚĆ -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button id="btn-collapseFour" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                <strong>4. Metoda płatności</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#checkoutAccordion">
+                            <div class="accordion-body" data-step="4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="blik" value="blik" required>
+                                    <label class="form-check-label" for="blik">BLIK</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" required>
+                                    <label class="form-check-label" for="card">Karta płatnicza</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="transfer" value="transfer" required>
+                                    <label class="form-check-label" for="transfer">Szybki przelew</label>
+                                </div>
+                                <button type="button" class="btn btn-primary mt-3" data-next-step="collapseFive" disabled>Kontynuuj</button>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- KROK 5: PODSUMOWANIE -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFive">
+                            <button id="btn-collapseFive" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                <strong>5. Podsumowanie</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#checkoutAccordion">
+                            <div class="accordion-body" data-step="5">
+                                <h5>Twoje produkty</h5>
+                                <ul class="list-group list-group-flush mb-4">
+                                    {% for item in cart_items %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        <div>
+                                            <strong>{{ item.item_object.product.name }}</strong><br>
+                                            <small class="text-muted">
+                                                {% if item.item_type == 'variation' %}{{ item.item_object.size|default:"Brak rozmiaru" }}{% else %}Uniwersalny{% endif %} | Ilość: {{ item.quantity }}
+                                            </small>
+                                        </div>
+                                        <span>{{ item.subtotal|floatformat:2 }} zł</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
 
+                                <table class="table table-borderless summary-table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Wartość produktów</td>
+                                            <td class="text-end" id="summary-subtotal">{{ totals|floatformat:2 }} zł</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Koszt dostawy</td>
+                                            <td class="text-end" id="summary-delivery">0.00 zł</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td>Razem do zapłaty</td>
+                                            <td class="text-end" id="summary-grand-total">{{ totals|floatformat:2 }} zł</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" value="" id="terms-checkbox" required>
+                                    <label class="form-check-label" for="terms-checkbox">
+                                        Akceptuję <a href="{% url 'terms_page' %}" target="_blank">regulamin zoeye.pl</a> i wyrażam zgodę na przetwarzanie danych osobowych na potrzeby realizacji zamówienia (obowiązkowe).
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="d-grid gap-2 mt-4">
+                    <button id="submit-order-btn" type="submit" class="btn btn-lg btn-primary" disabled>Zamawiam i płacę</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const accordion = document.getElementById('checkoutAccordion');
+    if (!accordion) return;
 
+    const accordionItems = accordion.querySelectorAll('.accordion-item');
+    const submitBtn = document.getElementById('submit-order-btn');
+
+    // --- FUNKCJE POMOCNICZE ---
+
+    const validateInput = (input) => {
+        input.classList.remove('is-invalid');
+        let isValid = true;
+        if (input.required) {
+            if (input.offsetParent !== null) { // Waliduj tylko widoczne
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    const groupName = input.name;
+                    if (!input.closest('.accordion-body').querySelector(`input[name="${groupName}"]:checked`)) isValid = false;
+                } else if (!input.value.trim()) {
+                    isValid = false;
+                }
+            }
+        }
+        if (input.type === 'email' && input.value.trim() && !/^\S+@\S+\.\S+$/.test(input.value)) isValid = false;
+        if (!isValid) input.classList.add('is-invalid');
+        return isValid;
+    };
+
+    const validateStep = (stepBody) => {
+        let allValid = true;
+        const inputs = stepBody.querySelectorAll('input[required], select[required], textarea[required]');
+        inputs.forEach(input => {
+            if (!validateInput(input)) allValid = false;
+        });
+        return allValid;
+    };
+
+    const checkAndEnableContinueButton = (stepBody) => {
+        const continueBtn = stepBody.querySelector('button[data-next-step]');
+        if (continueBtn) {
+            let canContinue = true;
+            const inputs = stepBody.querySelectorAll('input[required]');
+            inputs.forEach(input => {
+                if (input.offsetParent !== null) {
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        if (!stepBody.querySelector(`input[name="${input.name}"]:checked`)) canContinue = false;
+                    } else if (!input.value.trim()) {
+                        canContinue = false;
+                    }
+                }
+            });
+            continueBtn.disabled = !canContinue;
+        }
+    };
+
+    // --- LOGIKA GŁÓWNA ---
+
+    // 1. Logika przycisków "Kontynuuj"
+    accordion.querySelectorAll('button[data-next-step]').forEach(button => {
+        button.addEventListener('click', function() {
+            const currentStepBody = this.closest('.accordion-body');
+            
+            // Dla kroku 1 nie ma pól do walidacji, więc zawsze przechodzi
+            const isStep1 = !currentStepBody.hasAttribute('data-step');
+            
+            if (isStep1 || validateStep(currentStepBody)) {
+                const nextStepId = this.dataset.nextStep;
+                if (nextStepId) {
+                    const nextAccordionButton = document.getElementById('btn-' + nextStepId);
+                    if (nextAccordionButton) {
+                        nextAccordionButton.classList.remove('disabled');
+                        // === KLUCZOWA ZMIANA: Symulujemy kliknięcie ===
+                        nextAccordionButton.click();
+                    }
+                }
+            }
+        });
+    });
+
+    // 2. Logika blokowania przyszłych kroków po powrocie
+    accordion.addEventListener('show.bs.collapse', function (event) {
+        const openingItem = event.target.closest('.accordion-item');
+        let openingIndex = -1;
+        accordionItems.forEach((item, index) => {
+            if (item === openingItem) openingIndex = index;
+        });
+
+        if (openingIndex !== -1) {
+            accordionItems.forEach((item, index) => {
+                if (index > openingIndex) {
+                    const futureButton = item.querySelector('.accordion-button');
+                    const futureCollapse = item.querySelector('.accordion-collapse');
+                    if (futureButton) futureButton.classList.add('disabled');
+                    // Nie musimy już programowo zwijać, Bootstrap zrobi to sam
+                }
+            });
+        }
+    });
+
+    // 3. Dodajemy event listenery do pól formularza
+    accordion.querySelectorAll('input, select, textarea').forEach(input => {
+        const stepBody = input.closest('.accordion-body');
+        if (stepBody) {
+            input.addEventListener('input', () => {
+                validateInput(input);
+                checkAndEnableContinueButton(stepBody);
+            });
+            input.addEventListener('change', () => checkAndEnableContinueButton(stepBody));
+        }
+    });
+
+    // 4. Obsługa checkboxa "inny adres"
+    const shippingCheckbox = document.getElementById('shipping-address-checkbox');
+    const shippingForm = document.getElementById('shipping-address-form');
+    if (shippingCheckbox && shippingForm) {
+        const shippingInputs = shippingForm.querySelectorAll('input, select, textarea');
+        const toggleShippingForm = () => {
+            const isChecked = shippingCheckbox.checked;
+            shippingForm.style.display = isChecked ? 'block' : 'none';
+            shippingInputs.forEach(input => {
+                input.required = isChecked;
+                if (!isChecked) input.classList.remove('is-invalid');
+            });
+            checkAndEnableContinueButton(document.querySelector('.accordion-body[data-step="2"]'));
+        };
+        shippingCheckbox.addEventListener('change', toggleShippingForm);
+        toggleShippingForm();
+    }
+
+    // 5. Obsługa checkboxa z regulaminem
+    const termsCheckbox = document.getElementById('terms-checkbox');
+    if (termsCheckbox && submitBtn) {
+        termsCheckbox.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+        });
+    }
+
+    // 6. Aktualizacja podsumowania
+    const deliveryRadios = document.querySelectorAll('.delivery-method');
+    const updateSummary = () => {
+        const productsTotal = parseFloat("{{ totals|unlocalize }}");
+        let deliveryCost = 0;
+        const selectedDelivery = document.querySelector('.delivery-method:checked');
+        if (selectedDelivery) deliveryCost = parseFloat(selectedDelivery.dataset.cost);
+        const grandTotal = productsTotal + deliveryCost;
+        document.getElementById('summary-subtotal').textContent = productsTotal.toFixed(2) + ' zł';
+        document.getElementById('summary-delivery').textContent = deliveryCost.toFixed(2) + ' zł';
+        document.getElementById('summary-grand-total').textContent = grandTotal.toFixed(2) + ' zł';
+    };
+    deliveryRadios.forEach(radio => radio.addEventListener('change', updateSummary));
+    updateSummary();
+});
+</script>
 {% endblock %}

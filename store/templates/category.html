@@ -38,14 +38,17 @@
                         </div>
                         <div class="col-lg-6">
                             <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
-                                <li class="list-inline-item">
-                                    <form method="get" action="{% url 'category' category.name %}" id="sortingForm">
-                                        sortuj: 
-                                        <select class="selectpicker ml-auto" name="sorting" data-width="200" data-style="bs-select-form-control" data-title="Default sorting" onchange="document.getElementById('sortingForm').submit();">
+                                <li class="list-inline-item d-flex align-items-center">
+                                    <form method="get" action="{% url 'category' category.name %}" id="sortingForm" class="d-flex align-items-center">
+                                        <label for="sortingSelect" class="me-2">Sortuj:</label>
+                                        <!-- === ZMIENIONY ELEMENT SELECT === -->
+                                        <select class="form-select form-select-sm" style="width: auto;" name="sorting" id="sortingSelect" onchange="this.form.submit();">
                                             <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Domyślnie</option>
                                             <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Ceny: Rosnąco</option>
                                             <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Ceny: Malejąco</option>
                                         </select>
+                                        <!-- === KONIEC ZMIAN === -->
+                                        
                                         {% for key, value in request.GET.items %} {% if key != 'sorting' %}
                                             {% if value|iterable %}
                                                 {% for item in value %}

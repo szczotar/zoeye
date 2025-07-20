@@ -1,13 +1,21 @@
 {% load static %}
 
 <!-- JavaScript files-->
+<!-- Upewnij się, że używasz Bootstrap 5 JS, jest kluczowy dla Offcanvas i Dropdownów -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/jquery.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- PONIŻSZA LINIA ZOSTAŁA USUNIĘTA, PONIEWAŻ POWODOWAŁA KONFLIKT -->
+<!-- <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script> -->
+
 <script src="{% static 'js/lightbox.min.js' %}"></script>
 <script src="{% static 'js/nouislider.min.js' %}"></script>  
-<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- PONIŻSZA LINIA POWODUJE KONFLIKT Z DROPDOWNEM I ZOSTAŁA WYKOMENTOWANA -->
+<!-- <script src="{% static 'js/bootstrap-select.min.js' %}"></script> -->
+
+<!-- Font Awesome - kluczowe dla nowych ikon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <script>
     $(document).ready(function() {
@@ -58,12 +66,27 @@
 
         function handleAjaxResponse(json) {
             console.log("Handling AJAX response:", json);
+            
+            // Aktualizacja ilości i ceny w navbarze
             if (json.qty !== undefined) {
                  $('#cart_quantity').text(json.qty);
                  var $cartQuantitySpan = $('#cart_quantity');
-                 if (json.qty > 0) { $cartQuantitySpan.removeClass('d-none'); } else { $cartQuantitySpan.addClass('d-none'); }
+                 var $cartTotalPriceSpan = $('#cart_total_price');
+
+                 if (json.qty > 0) { 
+                     $cartQuantitySpan.removeClass('d-none');
+                     $cartTotalPriceSpan.removeClass('d-none');
+                 } else { 
+                     $cartQuantitySpan.addClass('d-none'); 
+                     $cartTotalPriceSpan.addClass('d-none');
+                 }
             }
             if (json.cart_total !== undefined) {
+                 // Aktualizacja ceny w navbarze
+                 if ($('#cart_total_price').length) {
+                    $('#cart_total_price').text(Number(json.cart_total).toFixed(2) + ' zł');
+                 }
+                 // Aktualizacja ceny na stronie koszyka
                  if ($('#cart-total-display').length) {
                     $('#cart-total-display').text(Number(json.cart_total).toFixed(2) + ' zł');
                  }
@@ -74,6 +97,7 @@
                      if (json.qty > 0) { $('.btn-block[href="{% url 'checkout' %}"]').removeClass('disabled'); } else { $('.btn-block[href="{% url 'checkout' %}"]').addClass('disabled'); }
                  }
             }
+
             if (json.message) {
                  showCustomAlert(json.message, 'success');
             }
@@ -132,7 +156,7 @@
             });
         });
 
-        // --- NOWA LOGIKA DLA KOSZYKA (cart_summary.html) ---
+        // --- LOGIKA DLA KOSZYKA (cart_summary.html) ---
 
         // Aktualizacja ilości
         $(document).on('change', '.quantity-input', function() {

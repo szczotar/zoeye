@@ -46,7 +46,7 @@ Będzie dołączany do product.html oraz ładowany dynamicznie przez AJAX.
             {# Linki do poszczególnych stron #}
             {% for num in reviews_page.paginator.page_range %}
                 {% if reviews_page.number == num %}
-                    <li class="page-item active" aria-current="page">
+                    <li class="page-item active" style="background-color: #FFE4C6;" aria-current="page">
                         <span class="page-link">{{ num }}</span>
                     </li>
                 {% else %}

@@ -49,7 +49,7 @@
 
 /* Optional: Style the icon when the input is focused */
 .search-input-wrapper .form-control:focus + .search-icon {
-    color: #0d6efd; /* Example: Change icon color to Bootstrap's primary color on focus */
+    color: #FFE4C6; /* Example: Change icon color to Bootstrap's primary color on focus */
 }
 
 
@@ -285,12 +285,7 @@
     /* Dodatkowe style dla sekcji "Dodaj do koszyka" */
 }
 
-.btn btn-primary {
-    /* Styl dla ceny */
-    font-weight: bold;
-    color: #000000; /* Przykład koloru Bootstrap Primary */
-    /* Dostosuj kolor i wygląd */
-}
+
 
 .product-price {
     /* Styl dla ceny */
@@ -508,8 +503,8 @@
 }
 
 .custom-add-to-cart-button:hover {
-     background-color: darkgoldenrod;
-     border-color: goldenrod;
+     background-color: #e6c619;
+     border-color: #e6c619;
      color: #fff;
 }
 .custom-add-to-cart-button:active {
@@ -523,5 +518,82 @@
     color: #dcb14a;
     /* Opcjonalnie: jeśli nadal jest czarny, spróbuj dodać !important, ale lepiej rozwiązać konflikty CSS inaczej */
     /* color: #dcb14a !important; */
+}
+
+/* --- Style dla nowej nawigacji --- */
+
+/* Styl dla ikon Font Awesome w navbarze */
+.nav-icon-fa {
+    font-size: 22px; /* Rozmiar ikon */
+    color: rgb(116, 111, 111); /* Domyślny kolor */
+    transition: color 0.3s ease;
+    vertical-align: middle;
+}
+
+/* Efekt hover dla linków z ikonami */
+.navbar-nav .nav-link:hover .nav-icon-fa {
+    color: #e6c619; /* Ciemniejszy kolor po najechaniu */
+}
+
+/* Ukrycie strzałki przy dropdownie użytkownika */
+#userDropdown::after {
+    display: none;
+}
+
+/* Styl dla ceny w koszyku */
+#cart_total_price {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap; /* Zapobiega łamaniu linii */
+}
+
+/* Upewnienie się, że logo jest responsywne */
+.navbar-brand img {
+  height: 100px; /* Dostosuj wysokość logo */
+  max-height: 100%;
+  width: auto;
+}
+
+/* Poprawka dla wyśrodkowanego logo, aby nie było klikalne "pod spodem" */
+.navbar-brand.position-absolute {
+    z-index: 10;
+}
+
+
+/* --- Style dla Offcanvas (menu bocznego) --- */
+
+/* Styl dla przycisków akordeonu w offcanvas */
+.offcanvas .accordion-button {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #333;
+    background-color: #fff;
+}
+.offcanvas .accordion-button:not(.collapsed) {
+    color: #000;
+    background-color: #f8f9fa;
+    box-shadow: none;
+}
+.offcanvas .accordion-button:focus {
+    box-shadow: none;
+    background-color: #FFE4C6;
+    border-color: rgba(0,0,0,.125);
+}
+
+/* Styl dla linków wewnątrz akordeonu */
+.offcanvas .accordion-body a {
+    text-decoration: none;
+    color: #555;
+    transition: color 0.2s;
+}
+.offcanvas .accordion-body a:hover {
+    color: #e6c619;
+ 
+}
+
+.navbar .dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
 }
 
