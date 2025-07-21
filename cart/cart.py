@@ -327,3 +327,34 @@ class Cart():
 
             except Exception as e:
                  print(f"Unexpected error loading cart from DB for user {self.request.user.username}: {e}")
+
+    def clear(self):
+        """
+        Całkowicie usuwa koszyk z sesji oraz z profilu użytkownika w bazie danych.
+        """
+        # 1. Wyczyść koszyk w sesji
+        # Używamy nazwy klucza zdefiniowanej w __init__
+        session_key_name = 'cart_session_key' 
+        if session_key_name in self.session:
+            del self.session[session_key_name]
+        
+        # Oznacz sesję jako zmodyfikowaną, aby zmiany zostały zapisane
+        self.session.modified = True
+
+        # 2. Wyczyść koszyk w bazie danych (dla zalogowanego użytkownika)
+        if self.request.user.is_authenticated:
+            try:
+                profile = Profile.objects.get(user=self.request.user)
+                # Wyczyść pole old_cart w profilu
+                if profile.old_cart:
+                    profile.old_cart = ""
+                    profile.save()
+            except Profile.DoesNotExist:
+                # Jeśli profil nie istnieje, nie ma czego czyścić
+                pass
+            except Exception as e:
+                print(f"Error clearing old_cart from DB for user {self.request.user.username}: {e}")
+        
+        # 3. Zresetuj obiekt koszyka w bieżącej instancji klasy
+        self.cart = {}
+   

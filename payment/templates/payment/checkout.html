@@ -79,37 +79,48 @@
                 <div class="accordion" id="checkoutAccordion">
 
                     <!-- KROK 1: TWOJE KONTO -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                <strong>1. Twoje konto</strong>
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#checkoutAccordion">
-                            <div class="accordion-body">
-                                {% if user.is_authenticated %}
-                                    <p>Jesteś zalogowany jako: <strong>{{ user.email }}</strong>.</p>
-                                    <p>Twoje dane zostaną uzupełnione automatycznie. Możesz je edytować w kolejnym kroku.</p>
-                                    <button type="button" class="btn btn-primary" data-next-step="collapseTwo">Kontynuuj</button>
-                                {% else %}
-                                    <p>Masz już konto? Zaloguj się, aby przyspieszyć proces.</p>
-                                    <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-outline-dark">Zaloguj się</a>
-                                    <hr>
-                                    <p>Nie masz konta? Możesz kontynuować jako gość.</p>
-                                    <button type="button" class="btn btn-primary" data-next-step="collapseTwo">Kontynuuj jako gość</button>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
+                   <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+        <button 
+            class="accordion-button {% if user.is_authenticated %}collapsed disabled{% endif %}" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#collapseOne" 
+            aria-expanded="{% if user.is_authenticated %}false{% else %}true{% endif %}" 
+            aria-controls="collapseOne">
+            <strong>1. Logowanie</strong>
+        </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse {% if not user.is_authenticated %}show{% endif %}" aria-labelledby="headingOne" data-bs-parent="#checkoutAccordion">
+        <div class="accordion-body">
+            {% if user.is_authenticated %}
+                <p class="mb-0">Jesteś zalogowany jako: <strong>{{ user.email }}</strong>.</p>
+            {% else %}
+                <p>Masz już konto? Zaloguj się, aby przyspieszyć proces.</p>
+                <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-sm btn-outline-dark">Zaloguj się</a>
+                <hr>
+                <p>Nie masz konta? Możesz kontynuować jako gość.</p>
+                <button type="button" class="btn btn-sm btn-dark" data-next-step="collapseTwo">Kontynuuj jako gość</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
                     <!-- KROK 2: TWOJE DANE -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingTwo">
-        <button id="btn-collapseTwo" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        <button 
+            id="btn-collapseTwo" 
+            class="accordion-button {% if not user.is_authenticated %}collapsed disabled{% endif %}" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#collapseTwo" 
+            aria-expanded="{% if user.is_authenticated %}true{% else %}false{% endif %}" 
+            aria-controls="collapseTwo">
             <strong>2. Twoje dane</strong>
         </button>
     </h2>
-    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#checkoutAccordion">
+    <div id="collapseTwo" class="accordion-collapse collapse {% if user.is_authenticated %}show{% endif %}" aria-labelledby="headingTwo" data-bs-parent="#checkoutAccordion">
+        <!-- ... reszta kodu (formularz) pozostaje bez zmian ... -->
         <div class="accordion-body" data-step="2">
             <p>Proszę podać dane do faktury i wysyłki.</p>
             <div class="row g-2"> <!-- Zmieniono g-3 na g-2 dla mniejszych odstępów -->
@@ -262,20 +273,31 @@
                         </h2>
                         <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#checkoutAccordion">
                             <div class="accordion-body" data-step="5">
-                                <h5>Twoje produkty</h5>
-                                <ul class="list-group list-group-flush mb-4">
-                                    {% for item in cart_items %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                        <div>
-                                            <strong>{{ item.item_object.product.name }}</strong><br>
-                                            <small class="text-muted">
-                                                {% if item.item_type == 'variation' %}{{ item.item_object.size|default:"Brak rozmiaru" }}{% else %}Uniwersalny{% endif %} | Ilość: {{ item.quantity }}
-                                            </small>
-                                        </div>
-                                        <span>{{ item.subtotal|floatformat:2 }} zł</span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                               <!-- NOWA WERSJA PODSUMOWANIA PRODUKTÓW -->
+<h5>Twoje produkty</h5>
+<ul class="list-group list-group-flush mb-4">
+    {% for item in cart_items %}
+    {% with product=item.item_object.product|default:item.item_object %}
+    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'product' product.id %}">
+                <img src="{{ product.get_main_image }}" alt="{{ product.name }}" width="60" class="me-3 rounded">
+            </a>
+            <div>
+                <strong class="d-block">{{ product.name }}</strong>
+                <small class="text-muted">
+                    {% if item.item_type == 'variation' %}
+                        Rozmiar: {{ item.item_object.size|default:"Brak" }}
+                    {% endif %}
+                    | Ilość: {{ item.quantity }}
+                </small>
+            </div>
+        </div>
+        <span class="fw-bold">{{ item.subtotal|floatformat:2 }} zł</span>
+    </li>
+    {% endwith %}
+    {% endfor %}
+</ul>
 
                                 <table class="table table-borderless summary-table">
                                     <tbody>

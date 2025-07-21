@@ -121,20 +121,15 @@ def checkout(request):
         return redirect('cart_summary')
 
     if request.method == 'POST':
-        # Przetwarzanie danych z całego formularza
         checkout_form = CheckoutForm(request.POST)
-        shipping_form = ShippingForm(request.POST, prefix='shipping') # Używamy prefiksu
-
-        # Sprawdzamy, czy checkbox "inny adres" był zaznaczony
+        shipping_form = ShippingForm(request.POST, prefix='shipping')
         is_different_shipping = 'shipping-address-checkbox' in request.POST
 
         if checkout_form.is_valid() and (not is_different_shipping or shipping_form.is_valid()):
-            # Logika tworzenia zamówienia (przeniesiona z process_order)
             try:
                 with transaction.atomic():
-                    # Tworzenie adresu do zapisu w modelu Order
+                    # Krok 1: Zbierz dane adresowe
                     if is_different_shipping:
-                        # Użyj danych z formularza wysyłki
                         data = shipping_form.cleaned_data
                         full_name = f"{data['shipping_first_name']} {data['shipping_last_name']}"
                         shipping_address_str = (
@@ -143,9 +138,8 @@ def checkout(request):
                             f"{data.get('shipping_address2', '')}\n"
                             f"{data['shipping_zipcode']} {data['shipping_city']}\n"
                             f"{data['shipping_country']}"
-                        )
+                        ).strip()
                     else:
-                        # Użyj danych z głównego formularza
                         data = checkout_form.cleaned_data
                         full_name = f"{data['first_name']} {data['last_name']}"
                         shipping_address_str = (
@@ -154,52 +148,77 @@ def checkout(request):
                             f"{data.get('address2', '')}\n"
                             f"{data['zipcode']} {data['city']}\n"
                             f"{data['country']}"
-                        )
+                        ).strip()
 
-                    # Pobranie kosztu dostawy z formularza
+                    # Krok 2: Oblicz całkowity koszt
                     delivery_cost = 0
                     if request.POST.get('delivery_method') == 'courier':
                         delivery_cost = 15.00
                     elif request.POST.get('delivery_method') == 'locker':
                         delivery_cost = 12.00
                     
-                    amount_paid = totals + decimal.Decimal(delivery_cost)
+                    amount_paid = totals + Decimal(str(delivery_cost))
 
-                    # Tworzenie obiektu Order
+                    # Krok 3: Stwórz obiekt Order
                     order = Order.objects.create(
                         user=request.user if request.user.is_authenticated else None,
                         full_name=full_name,
                         email=checkout_form.cleaned_data['email'],
-                        shipping_address=shipping_address_str.strip(),
+                        shipping_address=shipping_address_str,
                         amount_paid=amount_paid,
                     )
 
-                    # Tworzenie OrderItem dla każdego produktu w koszyku
+                    # Krok 4: Stwórz OrderItem dla każdego produktu w koszyku
                     for item in cart_items:
-                        variation = item['variation']
-                        OrderItem.objects.create(
-                            order=order,
-                            variation=variation,
-                            user=request.user if request.user.is_authenticated else None,
-                            quantity=item['quantity'],
-                            price=item['variation'].get_effective_price(),
-                        )
-                        # Opcjonalnie: zmniejszanie stanu magazynowego
-                        variation.stock -= item['quantity']
-                        variation.save()
+                        # === KLUCZOWA LOGIKA, KTÓRA NAPRAWIA BŁĄD ===
+                        if item.get('item_type') == 'variation':
+                            variation = item.get('item_object')
+                            OrderItem.objects.create(
+                                order=order,
+                                variation=variation,
+                                product=variation.product, # Zapisujemy też referencję do głównego produktu
+                                user=request.user if request.user.is_authenticated else None,
+                                quantity=item.get('quantity'),
+                                price=variation.get_effective_price(),
+                            )
+                            # Opcjonalnie: zmniejszanie stanu magazynowego
+                            variation.stock -= item.get('quantity')
+                            variation.save()
+                        else: # Jeśli produkt nie ma wariacji
+                            product = item.get('item_object')
+                            OrderItem.objects.create(
+                                order=order,
+                                product=product,
+                                user=request.user if request.user.is_authenticated else None,
+                                quantity=item.get('quantity'),
+                                price=product.price, # lub get_effective_price, jeśli masz
+                            )
+                            # Tutaj logika odejmowania stocku dla produktów bez wariacji, jeśli jest potrzebna
+                            # product.stock -= item.get('quantity')
+                            # product.save()
+                    # ===============================================
 
-                # Czyszczenie koszyka i przekierowanie
+                # Krok 5: Wyczyść koszyk i przekieruj
                 cart.clear()
+                if request.user.is_authenticated:
+                    try:
+                        profile = Profile.objects.get(user=request.user)
+                        profile.old_cart = ""
+                        profile.save()
+                    except Profile.DoesNotExist:
+                        pass
+
                 messages.success(request, "Zamówienie zostało złożone pomyślnie!")
                 return redirect('payment_success')
 
             except Exception as e:
+                # Dodajemy logowanie błędu, aby łatwiej go zdiagnozować
+                print(f"Błąd podczas tworzenia zamówienia: {e}")
                 messages.error(request, f"Wystąpił błąd podczas składania zamówienia: {e}")
                 return redirect('checkout')
         else:
-            # Jeśli formularze są nieprawidłowe, renderuj stronę ponownie z błędami
+            # Jeśli formularze są nieprawidłowe
             messages.error(request, "Proszę poprawić błędy w formularzu.")
-            # Przekaż formularze z błędami do szablonu
             context = {
                 "cart_items": cart_items,
                 "totals": totals,
@@ -209,15 +228,16 @@ def checkout(request):
             return render(request, "payment/checkout.html", context)
 
     else: # Metoda GET
-        # Przygotowanie pustych formularzy
-        # Można wstępnie wypełnić danymi zalogowanego użytkownika
         initial_data = {}
         if request.user.is_authenticated:
-            initial_data = {'email': request.user.email, 'first_name': request.user.first_name, 'last_name': request.user.last_name}
+            initial_data = {
+                'email': request.user.email, 
+                'first_name': request.user.first_name, 
+                'last_name': request.user.last_name
+            }
         
         checkout_form = CheckoutForm(initial=initial_data)
         shipping_form = ShippingForm(prefix='shipping')
-
         context = {
             "cart_items": cart_items,
             "totals": totals,
