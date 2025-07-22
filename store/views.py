@@ -1,121 +1,91 @@
 from django.shortcuts import render, get_object_or_404, redirect
-# Upewnij się, że importujesz ProductVariation i inne potrzebne modele
-from .models import Product, Category, Profile, Material, ProductVariation, Review
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from django import forms
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q, Case, When, DecimalField, Avg, Count, Min, Max
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 import json
+
+# Importy modeli z bieżącej aplikacji
+from .models import Product, Category, Profile, Material, ProductVariation, Review
+# Importy formularzy z bieżącej aplikacji
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+
+# Importy z innych aplikacji
 from cart.cart import Cart
 from payment.forms import ShippingForm
-from payment.models import ShippingAddress
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-# Upewnij się, że wszystkie potrzebne importy z django.db.models są tutaj
-from django.db.models import Q ,Case, When, DecimalField, Subquery, OuterRef, Avg, Count 
-from django.db import models
-# Dodaj importy dla agregacji - Nadal potrzebne do obliczenia ogólnego zakresu cen dla suwaka
-from django.db.models.aggregates import Min, Max
-from django.http import HttpResponseRedirect
-from django.urls import reverse # Do generowania URL po sukcesie
-from django.contrib.auth.decorators import login_required
+from payment.models import ShippingAddress, Order, OrderItem
 
-# ... (pozostałe widoki przed category - bez zmian) ...
+# --- Widoki publiczne i związane z produktami ---
+
+def home(request):
+    products = Product.objects.all()
+    categories = Category.objects.all()
+    return render(request, 'home.html', {'products': products, 'categories': categories})
+
+def about(request):
+    return render(request, 'about.html', {})
+
 def search(request):
-	# Determine if they filled out the form
-	if request.method == "POST":
-		searched = request.POST['searched']
-		# Query The Products DB Model
-		searched = Product.objects.filter(Q(name__icontains=searched) | Q(description__icontains=searched))
-		# Test for null
-		if not searched:
-			messages.success(request, "That Product Does Not Exist...Please try Again.")
-			return render(request, "search.html", {})
-		else:
-			return render(request, "search.html", {'searched':searched})
-	else:
-		return render(request, "search.html", {})	
+    if request.method == "POST":
+        searched = request.POST.get('searched', '')
+        if not searched:
+            messages.info(request, "Proszę wpisać frazę do wyszukania.")
+            return render(request, "search.html", {})
+            
+        products = Product.objects.filter(Q(name__icontains=searched) | Q(description__icontains=searched))
+        
+        if not products.exists():
+            messages.success(request, "Nie znaleziono produktów pasujących do zapytania.")
+            return render(request, "search.html", {})
+        else:
+            return render(request, "search.html", {'searched': products})
+    else:
+        return render(request, "search.html", {})
 
+def product(request, pk):
+    product_obj = get_object_or_404(Product, pk=pk)
+    variations = product_obj.variations.all().order_by('size')
+    
+    # Recenzje i oceny
+    all_reviews = product_obj.reviews.all().order_by('-created_at')
+    paginator = Paginator(all_reviews, 5)
+    page_number = request.GET.get('page')
+    reviews_page = paginator.get_page(page_number)
+    
+    reviews_with_rating = all_reviews.filter(rating__isnull=False)
+    average_rating_agg = reviews_with_rating.aggregate(Avg('rating'))
+    average_rating = round(average_rating_agg['rating__avg'], 1) if average_rating_agg['rating__avg'] is not None else None
+    rating_count = reviews_with_rating.count()
+    
+    rating_distribution = reviews_with_rating.values('rating').annotate(count=Count('rating')).order_by('rating')
+    rating_distribution_dict = {item['rating']: item['count'] for item in rating_distribution}
+    full_rating_distribution = {i: rating_distribution_dict.get(i, 0) for i in range(1, 6)}
 
-def update_info(request):
-	if request.user.is_authenticated:
-		# Get Current User
-		current_user = Profile.objects.get(user__id=request.user.id)
-		# Get Current User's Shipping Info
-		shipping_user = ShippingAddress.objects.get(id=request.user.id)
-		
-		# Get original User Form
-		form = UserInfoForm(request.POST or None, instance=current_user)
-		# Get User's Shipping Form
-		shipping_form = ShippingForm(request.POST or None, instance=shipping_user)		
-		if form.is_valid() or shipping_form.is_valid():
-			# Save original form
-			form.save()
-			# Save shipping form
-			shipping_form.save()
+    # Podobne produkty
+    product_materials = product_obj.materials.all()
+    similar_products = Product.objects.none()
+    if product_materials.exists():
+        material_q_objects = Q()
+        for material in product_materials:
+            material_q_objects |= Q(materials=material)
+        similar_products = Product.objects.filter(material_q_objects).distinct().exclude(pk=product_obj.pk)[:6]
 
-			messages.success(request, "Your Info Has Been Updated!!")
-			return redirect('home')
-		return render(request, "update_info.html", {'form':form, 'shipping_form':shipping_form})
-	else:
-		messages.success(request, "You Must Be Logged In To Access That Page!!")
-		return redirect('home')
-
-
-def update_password(request):
-	if request.user.is_authenticated:
-		current_user = request.user
-		# Did they fill out the form
-		if request.method  == 'POST':
-			form = ChangePasswordForm(current_user, request.POST)
-			# Is the form valid
-			if form.is_valid():
-				form.save()
-				messages.success(request, "Your Password Has Been Updated...")
-				login(request, current_user)
-				return redirect('update_user')
-			else:
-				for error in list(form.errors.values()):
-					messages.error(request, error)
-					return redirect('update_password')
-		else:
-			form = ChangePasswordForm(current_user)
-			return render(request, "update_password.html", {'form':form})
-	else:
-		messages.success(request, "You Must Be Logged In To View That Page...")
-		return redirect('home')
-	
-def update_user(request):
-	if request.user.is_authenticated:
-		current_user = User.objects.get(id=request.user.id)
-		user_form = UpdateUserForm(request.POST or None, instance=current_user)
-
-		if user_form.is_valid():
-			user_form.save()
-
-			login(request, current_user)
-			messages.success(request, "User Has Been Updated!!")
-			return redirect('home')
-		return render(request, "update_user.html", {'user_form':user_form})
-	else:
-		messages.success(request, "You Must Be Logged In To Access That Page!!")
-		return redirect('home')
-
-# Create your views here.
-
-# def category(request, foo):
-# 	# Replace Hyphens with Spaces
-# 	foo = foo.replace('-', ' ')
-# 	# Grab the category from the url
-# 	try:
-# 		# Look Up The Category
-# 		category = Category.objects.get(name=foo)
-# 		products = Product.objects.filter(category=category)
-# 		return render(request, 'category.html', {'products':products, 'category':category})
-# 	except:
-# 		messages.success(request, ("That Category Doesn't Exist..."))
-# 		return redirect('home')
+    context = {
+        'product': product_obj,
+        'variations': variations,
+        'similar_products': similar_products,
+        'reviews_page': reviews_page,
+        'average_rating': average_rating,
+        'rating_count': rating_count,
+        'rating_distribution': full_rating_distribution,
+        'rating_values': range(5, 0, -1),
+    }
+    return render(request, 'product.html', context)
 
 def category(request, foo):
     # ... (początek funkcji) ...
@@ -313,94 +283,9 @@ def category(request, foo):
 
     return render(request, 'category.html', context)
 
-# --- Widok szczegółów produktu ---
-def product(request, pk):
-    """
-    Widok wyświetlający szczegóły produktu, jego wariacje (rozmiary),
-    recenzje/oceny i produkty z tym samym materiałem.
-    Argument 'pk' przyjmuje ID produktu z URL.
-    """
-    print(f"--- Debugging product view ---")
-    print(f"Requested product ID (pk): {pk}")
-
-    try:
-        product = get_object_or_404(Product, pk=pk)
-        print(f"Product found: {product.name}")
-    except Exception as e:
-        print(f"Error getting product with pk '{pk}': {e}")
-        raise
-
-    # --- Pobierz Recenzje dla tego produktu ---
-    all_reviews = product.reviews.all().order_by('-created_at') # Pobierz wszystkie recenzje, posortowane
-    print(f"Found {all_reviews.count()} total reviews for product '{product.name}'.")
-
-    # === NOWA SEKCJA: PAGINACJA RECENZJI ===
-    # Utwórz obiekt Paginator, dzieląc recenzje na strony po 5
-    paginator = Paginator(all_reviews, 5)  # 5 recenzji na stronę
-    
-    # Pobierz numer strony z parametrów GET (np. ?page=2)
-    page_number = request.GET.get('page')
-    
-    # Pobierz obiekt strony (zawierający 5 recenzji i informacje o paginacji)
-    reviews_page = paginator.get_page(page_number)
-    # === KONIEC SEKCJI PAGINACJI ===
-
-
-    # --- Oblicz średnią ocenę i liczbę ocen (w widoku) ---
-    # Filtruj recenzje, które mają ustawioną ocenę (rating is not null)
-    reviews_with_rating = all_reviews.filter(rating__isnull=False)
-
-    # Oblicz średnią ocenę
-    average_rating_agg = reviews_with_rating.aggregate(Avg('rating'))
-    average_rating = average_rating_agg['rating__avg']
-
-    # Zaokrąglij średnią ocenę do np. 1 miejsca po przecinku
-    if average_rating is not None:
-        average_rating = round(average_rating, 1)
-    print(f"Average rating: {average_rating}")
-
-    # Oblicz liczbę recenzji z oceną
-    rating_count = reviews_with_rating.count()
-    print(f"Number of reviews with rating: {rating_count}")
-
-    # --- Oblicz rozkład ocen (ile recenzji dla każdej oceny 1-5) ---
-    rating_distribution = reviews_with_rating.values('rating').annotate(count=Count('rating')).order_by('rating')
-    rating_distribution_dict = {item['rating']: item['count'] for item in rating_distribution}
-    full_rating_distribution = {i: rating_distribution_dict.get(i, 0) for i in range(1, 6)}
-    print(f"Rating distribution: {full_rating_distribution}")
-
-
-    # --- Pobierz Wariacje Produktu (posortowane) ---
-    variations = product.variations.all().order_by('size')
-    print(f"Found {variations.count()} variations for product '{product.name}'.")
-
-    # --- Pobierz Produkty z Tym Samym Materiałem (Podobne Produkty) ---
-    product_materials = product.materials.all()
-    similar_products = Product.objects.none()
-    if product_materials.exists():
-        material_q_objects = Q()
-        for material in product_materials:
-            material_q_objects |= Q(materials=material)
-        similar_products = Product.objects.filter(material_q_objects).distinct().exclude(pk=product.pk)[:6]
-    print(f"Found {similar_products.count()} similar products based on materials.")
-
-
-    context = {
-        'product': product,
-        'variations': variations,
-        'similar_products': similar_products,
-        'reviews_page': reviews_page, # <-- ZMIENIONO: Przekazujemy obiekt strony, a nie wszystkie recenzje
-        'average_rating': average_rating,
-        'rating_count': rating_count,
-        'rating_distribution': full_rating_distribution,
-        'rating_values': range(5, 0, -1),
-    }
-
-    print(f"Context keys: {context.keys()}")
-    print(f"--- End product view ---")
-
-    return render(request, 'product.html', context)
-
+def categories_all(request):
+    categories = Category.objects.all()
+    return render(request, 'cat.html', {'categories': categories})
 
 def stones_detail(request, material_name):
     # ... (początek funkcji) ...
@@ -569,153 +454,166 @@ def home(request):
 	categories = Category.objects.all()
 	return render(request, 'home.html', {'products': products, 'categories': categories})
 
-def about(request):
-    return render(request, 'about.html', {})
-
-def login_user(request):
-	if request.method == "POST":
-		username = request.POST['username']
-		password = request.POST['password']
-		user = authenticate(request, username=username, password=password)
-		if user is not None:
-			login(request, user)
-
-			# Do some shopping cart stuff
-			current_user = Profile.objects.get(user__id=request.user.id)
-			# Get their saved cart from database
-			saved_cart = current_user.old_cart
-			# Convert database string to python dictionary
-			if saved_cart:
-				# Convert to dictionary using JSON
-				converted_cart = json.loads(saved_cart)
-				# Add the loaded cart dictionary to our session
-				# Get the cart
-				cart = Cart(request)
-				# Loop thru the cart and add the items from the database
-				for key,value in converted_cart.items():
-					cart.db_add(product=key, quantity=value)
-
-			messages.success(request, ("You Have Been Logged In!"))
-			return redirect('home')
-		else:
-			messages.success(request, ("There was an error, please try again..."))
-			return redirect('login')
-
-	else:
-		return render(request, 'login.html', {})
-
-def Logout_user(request):
-     logout(request)
-     messages.success(request,("You have been logged out"))
-     return redirect('home')
-
-def register_user(request):
-    form = SignUpForm()
-    if request.method == "POST":
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            # log in user
-            user = authenticate(username=username, password=password)
-            login(request,user)
-			
-            messages.success(request, ("Username Created - Please fill out Your user info below"))
-            return redirect("update_info")
-        else:
-            messages.success(request,("Please try again"))
-            return redirect("register")
-    else:  
-        return render(request, 'register.html', {'form':form})
-
-
-def categories_all(request):
-    # Fetch all categories
-	categories = Category.objects.all()
-	return render(request, 'cat.html', {'categories': categories})
-
-
 def add_review(request, product_id):
-    """
-    Handles adding a new review for a product.
-    Expects POST request with 'rating' (optional) and 'comment'.
-    Redirects back to the product page after submission.
-    """
-    # Upewnij się, że żądanie jest POST
     if request.method == 'POST':
-        # Pobierz produkt, do którego dodawana jest recenzja
         product = get_object_or_404(Product, id=product_id)
-
-        # Pobierz dane z formularza POST
         rating_str = request.POST.get('rating')
         comment = request.POST.get('comment')
 
-        # Walidacja danych
         if not comment:
             messages.error(request, "Komentarz nie może być pusty.")
-            # Przekieruj z powrotem do strony produktu
             return HttpResponseRedirect(reverse('product', args=[product.id]))
 
-        # Walidacja oceny (jeśli jest ustawiona)
-        rating = None # Domyślnie brak oceny
+        rating = None
         if rating_str:
             try:
                 rating = int(rating_str)
-                # Użyj walidatorów z modelu lub sprawdź ręcznie
                 if not (1 <= rating <= 5):
-                    messages.error(request, "Ocena musi być liczbą od 1 do 5.")
-                    return HttpResponseRedirect(reverse('product', args=[product.id]))
+                    raise ValueError()
             except ValueError:
                 messages.error(request, "Nieprawidłowa wartość oceny.")
                 return HttpResponseRedirect(reverse('product', args=[product.id]))
 
-        # Utwórz nowy obiekt Review
-        review = Review(
+        Review.objects.create(
             product=product,
             comment=comment,
             rating=rating,
-            # Ustaw użytkownika tylko jeśli jest zalogowany
             user=request.user if request.user.is_authenticated else None
-            # Jeśli pozwalasz niezarejestrowanym, pobierz imię/email z POST
-            # name=request.POST.get('name', '') if not request.user.is_authenticated else '',
-            # email=request.POST.get('email', '') if not request.user.is_authenticated else '',
         )
-
-        try:
-            # Zapisz recenzję do bazy danych
-            review.full_clean() # Wywołaj pełną walidację modelu (w tym walidatory)
-            review.save()
-            messages.success(request, "Twoja recenzja została dodana.")
-        except Exception as e:
-            # Obsłuż błędy zapisu lub walidacji
-            messages.error(request, f"Wystąpił błąd podczas zapisywania recenzji: {e}")
-            print(f"Error saving review: {e}") # Logowanie błędu na serwerze
-
-
-        # Przekieruj z powrotem do strony produktu
-        # Użyj HttpResponseRedirect z reverse, aby wygenerować URL
+        messages.success(request, "Twoja recenzja została dodana.")
         return HttpResponseRedirect(reverse('product', args=[product.id]))
+    
+    return redirect('home')
 
-    # Jeśli żądanie nie jest POST, przekieruj na stronę główną lub stronę produktu
-    messages.warning(request, "Nieprawidłowe żądanie dodania recenzji.")
-    # Możesz przekierować z powrotem na stronę produktu, nawet jeśli to GET
-    return HttpResponseRedirect(reverse('product', args=[product_id]))
-
-
-# Załóżmy, że Twoja funkcja widoku nazywa się category_detail
-# Przyjmuje slug kategorii jako argument, np. /category/electronics/
 def get_reviews_page(request, product_id):
-    """
-    Widok AJAX, który zwraca tylko wyrenderowany fragment HTML 
-    z listą recenzji dla danej strony.
-    """
     product = get_object_or_404(Product, id=product_id)
     all_reviews = product.reviews.all().order_by('-created_at')
-    
-    paginator = Paginator(all_reviews, 5)  # 5 recenzji na stronę
+    paginator = Paginator(all_reviews, 5)
     page_number = request.GET.get('page')
     reviews_page = paginator.get_page(page_number)
-    
-    # Renderuj tylko częściowy szablon i zwróć go jako odpowiedź
     return render(request, 'partials/reviews_section.html', {'reviews_page': reviews_page, 'product': product})
+
+# --- Widoki związane z uwierzytelnianiem ---
+
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Logika ładowania koszyka z profilu
+            cart = Cart(request) # To wywoła _load_from_db w __init__
+            messages.success(request, "Zostałeś pomyślnie zalogowany!")
+            
+            # Przekieruj na poprzednią stronę lub na stronę główną
+            next_page = request.GET.get('next')
+            if next_page:
+                return redirect(next_page)
+            return redirect('home')
+        else:
+            messages.error(request, "Nieprawidłowa nazwa użytkownika lub hasło.")
+            return redirect('login')
+    else:
+        return render(request, 'login.html', {})
+
+def Logout_user(request):
+    logout(request)
+    messages.success(request, "Zostałeś pomyślnie wylogowany.")
+    return redirect('home')
+
+def register_user(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Konto zostało utworzone! Uzupełnij swoje dane poniżej.")
+            return redirect("update_info")
+        else:
+            # Przekaż błędy do szablonu, zamiast tylko komunikatu
+            return render(request, 'register.html', {'form': form})
+    else:
+        form = SignUpForm()
+        return render(request, 'register.html', {'form': form})
+
+# --- NOWE, SKONSOLIDOWANE WIDOKI PANELU KLIENTA ---
+
+@login_required
+def account_dashboard(request):
+    """Główny widok panelu klienta."""
+    return render(request, 'account_dashboard.html', {})
+
+@login_required
+def order_history(request):
+    """Wyświetla historię zamówień zalogowanego użytkownika."""
+    orders = Order.objects.filter(user=request.user).order_by('-date_ordered')
+    return render(request, 'order_history.html', {'orders': orders})
+
+@login_required
+def order_detail(request, order_id):
+    """Wyświetla szczegóły konkretnego zamówienia użytkownika."""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = OrderItem.objects.filter(order=order)
+    return render(request, 'order_detail.html', {'order': order, 'items': items})
+
+@login_required
+def update_info(request):
+    """
+    Obsługuje aktualizację danych profilu (UserInfoForm) i adresu wysyłki (ShippingForm).
+    """
+    profile = get_object_or_404(Profile, user=request.user)
+    shipping_address, created = ShippingAddress.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        # Sprawdzamy, który formularz został wysłany, na podstawie nazwy przycisku submit
+        if 'update_profile_submit' in request.POST:
+            form = UserInfoForm(request.POST, instance=profile)
+            shipping_form = ShippingForm(request.POST, instance=shipping_address)
+            if form.is_valid() and shipping_form.is_valid():
+                form.save()
+                shipping_form.save()
+                messages.success(request, "Twoje dane zostały zaktualizowane!")
+                return redirect('update_info')
+        else:
+            # Jeśli nie jest to submit profilu, to musi być to formularz hasła,
+            # ale jego obsługa jest w `update_password`. Tutaj po prostu tworzymy puste formularze.
+            form = UserInfoForm(instance=profile)
+            shipping_form = ShippingForm(instance=shipping_address)
+    else:
+        form = UserInfoForm(instance=profile)
+        shipping_form = ShippingForm(instance=shipping_address)
+
+    # Zawsze przekazujemy też pusty formularz zmiany hasła do szablonu
+    password_form = ChangePasswordForm(request.user)
+
+    context = {
+        'form': form,
+        'shipping_form': shipping_form,
+        'password_form': password_form
+    }
+    return render(request, "update_info.html", context)
+
+
+@login_required
+def update_password(request):
+    """
+    Obsługuje tylko logikę zmiany hasła.
+    """
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Ważne, aby nie wylogować użytkownika!
+            messages.success(request, "Twoje hasło zostało pomyślnie zmienione.")
+            return redirect('update_info')
+        else:
+            # Przekaż błędy formularza hasła z powrotem do widoku `update_info`
+            # To jest bardziej złożone, więc na razie użyjemy komunikatów flash
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields[field].label}: {error}")
+            return redirect('update_info')
+    
+    # Jeśli metoda to GET, po prostu przekieruj, bo formularz jest na stronie `update_info`
+    return redirect('update_info')

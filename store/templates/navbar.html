@@ -61,9 +61,11 @@
               <!-- KLASA "dropdown-menu-end" JEST KLUCZOWA DLA POPRAWNEGO WYRÓWNANIA -->
               <div class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
                 {% if user.is_authenticated %}
-                <a class="dropdown-item" href="{% url 'update_user' %}">User Profile</a>
-                <a class="dropdown-item" href="{% url 'update_info' %}">User Info</a>
-                <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
+                <a class="dropdown-item" href="{% url 'account_dashboard' %}">Moje konto</a>
+                <a class="dropdown-item" href="{% url 'order_history' %}">Zamówienia</a>
+                <a class="dropdown-item" href="{% url 'update_info' %}">Moje dane</a>
+            
+                <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj się</a>
                 {% else %}
                 <a class="dropdown-item" href="{% url 'login' %}">ZALOGUJ SIĘ</a>
                 <a class="dropdown-item" href="{% url 'register' %}">UTWÓRZ KONTO</a>

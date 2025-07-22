@@ -1,53 +1,29 @@
-{% extends 'base.html' %}
-{% block content %}
+{% extends 'account_dashboard.html' %}
 
-<!-- Header-->
-        <header class="bg-dark py-5">
-            <div class="container px-4 px-lg-5 my-5">
-                <div class="text-center text-white">
-                    <h1 class="display-4 fw-bolder">Update Info</h1>
-                    <p class="lead fw-normal text-white-50 mb-0">Update User Info...</p>
-                </div>
-            </div>
-        </header>
+{% block account_content %}
+<h4 class="card-title mb-4">Moje dane</h4>
+<p>Zaktualizuj swoje dane osobowe, adresowe oraz hasło.</p>
+<hr>
 
-        <div class="container">
-        	<div class="row">
-        		
-        			<div class="col-md-6 offset-md-3">
-
-        				<br/><br/>
-        <strong>Billing Information</strong>
-            <br/><br/>
+<!-- Formularz danych osobowych i adresowych -->
 <form method="POST" action="{% url 'update_info' %}">
     {% csrf_token %}
-    
+    <h5>Dane do faktury / Główne dane kontaktowe</h5>
     {{ form.as_p }}
-
-    <strong>Shipping Information</strong>
-    <br/><br/>
-    
+    <hr>
+    <h5>Adres do wysyłki</h5>
+    <p class="text-muted small">Uzupełnij, jeśli jest inny niż adres główny. Te dane zostaną użyte przy składaniu zamówienia.</p>
     {{ shipping_form.as_p }}
-
-    <br/><br/>
-    <button type="submit" class="btn btn-secondary">
-      Update Profile
-    </button>
+    <button type="submit" class="btn btn-dark mt-3">Zapisz zmiany w danych</button>
 </form>
 
-<br/><br/>
+<hr class="my-4">
 
-
-<br/><br/>
-<br/><br/>
-<br/><br/>
-<br/><br/>
-<br/><br/>
-<br/><br/>
-<br/><br/>
-        			</div>
-        		
-        	</div>
-        </div>
-
+<!-- Formularz zmiany hasła -->
+<h5 class="mt-4">Zmień hasło</h5>
+<form method="POST" action="{% url 'update_password' %}">
+    {% csrf_token %}
+    {{ password_form.as_p }}
+    <button type="submit" class="btn btn-dark mt-3">Zmień hasło</button>
+</form>
 {% endblock %}

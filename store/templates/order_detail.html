@@ -1,0 +1,55 @@
+{% extends 'account_dashboard.html' %}
+
+{% block account_content %}
+<h4 class="card-title mb-4">Szczegóły zamówienia nr {{ order.order_number }}</h4>
+
+<div class="row">
+    <div class="col-md-6">
+        <h5>Informacje ogólne</h5>
+        <p>
+            <strong>Data zamówienia:</strong> {{ order.date_ordered|date:"d M Y, H:i" }}<br>
+            <strong>Status:</strong> 
+            {% if order.shipped %}
+                Wysłane ({{ order.date_shipped|date:"d M Y" }})
+            {% else %}
+                W trakcie realizacji
+            {% endif %}<br>
+            <strong>Suma:</strong> {{ order.amount_paid|floatformat:2 }} zł
+        </p>
+    </div>
+    <div class="col-md-6">
+        <h5>Adres dostawy</h5>
+        <p>
+            <strong>{{ order.full_name }}</strong><br>
+            <pre style="font-family: inherit; font-size: inherit; margin: 0; padding: 0; white-space: pre-wrap;">{{ order.shipping_address }}</pre>
+        </p>
+    </div>
+</div>
+
+<hr>
+
+<h5 class="mt-4">Zamówione produkty</h5>
+<ul class="list-group list-group-flush">
+    {% for item in items %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+            {% if item.variation %}
+                {{ item.variation.product.name }} <strong>({{ item.variation.size }})</strong>
+            {% elif item.product %}
+                {{ item.product.name }}
+            {% endif %}
+            <br>
+            <small class="text-muted">Ilość: {{ item.quantity }} x {{ item.price|floatformat:2 }} zł</small>
+        </div>
+        <span class="fw-bold">{{ item.quantity|multiply:item.price|floatformat:2 }} zł</span>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="mt-4">
+    <a href="{% url 'order_history' %}" class="btn btn-outline-dark"><i class="fas fa-arrow-left me-2"></i>Wróć do listy zamówień</a>
+</div>
+
+{% comment %} Prosty filtr do mnożenia w szablonie {% endcomment %}
+{% load template_filters %} 
+{% endblock %}

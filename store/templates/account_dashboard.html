@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Moje konto</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Zarządzaj swoimi danymi i zamówieniami</p>
+        </div>
+    </div>
+</header>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Lewe Menu Nawigacyjne -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="{% url 'account_dashboard' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'account_dashboard' %}active{% endif %}">
+                    <i class="fas fa-user-circle me-2"></i>Twoje konto
+                </a>
+                <a href="{% url 'order_history' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'order_history' %}active{% endif %}">
+                    <i class="fas fa-box-open me-2"></i>Zamówienia
+                </a>
+                <a href="{% url 'update_info' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'update_info' %}active{% endif %}">
+                    <i class="fas fa-edit me-2"></i>Moje dane
+                </a>
+                <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Wyloguj się
+                </a>
+            </div>
+        </div>
+
+        <!-- Prawa Kolumna z Treścią -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    {% block account_content %}
+                        <!-- Domyślna treść panelu -->
+                        <h4 class="card-title">Witaj, {{ user.first_name|default:user.username }}!</h4>
+                        <p>Wybierz opcję z menu po lewej stronie, aby zarządzać swoim kontem.</p>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
