@@ -3,18 +3,34 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPassw
 from django import forms
 from .models import Profile
 
-class UserInfoForm(forms.ModelForm):
-	phone = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Phone'}), required=False)
-	address1 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address 1'}), required=False)
-	address2 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Address 2'}), required=False)
-	city = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'City'}), required=False)
-	state = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'State'}), required=False)
-	zipcode = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Zipcode'}), required=False)
-	country = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Country'}), required=False)
+class UserBaseInfoForm(forms.ModelForm):
+    """Formularz do edycji imienia i nazwiska."""
+    first_name = forms.CharField(required=True, label="Imię", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(required=True, label="Nazwisko", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name')
 
-	class Meta:
-		model = Profile
-		fields = ('phone', 'address1', 'address2', 'city', 'state', 'zipcode', 'country', )
+class UserProfileForm(forms.ModelForm):
+    """Formularz do edycji danych z profilu (tylko telefon)."""
+    class Meta:
+        model = Profile
+        fields = ('phone',)
+        labels = {
+            'phone': 'Numer telefonu',
+        }
+        widgets = {
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+class UserEmailForm(forms.ModelForm):
+    """Formularz do edycji adresu e-mail."""
+    email = forms.EmailField(required=True, label="Adres e-mail", widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    
+    class Meta:
+        model = User
+        fields = ('email',)
 
 class ChangePasswordForm(SetPasswordForm):
 	class Meta:

@@ -1,0 +1,145 @@
+{% extends 'account_dashboard.html' %}
+{% block account_content %}
+<style>
+    .address-card { border: 1px solid #eee; border-radius: 0.25rem; padding: 1.5rem; margin-bottom: 1rem; }
+    .address-card h6 { font-weight: 600; }
+    .address-card .badge { font-weight: 500; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="card-title mb-0">Twoje adresy</h4>
+        <p class="text-muted mb-0">Zarządzaj swoimi adresami do wysyłki i rozliczeń.</p>
+    </div>
+    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+        <i class="fas fa-plus me-1"></i> Dodaj nowy adres
+    </button>
+</div>
+
+{% if addresses %}
+    {% for address in addresses %}
+    <div class="address-card">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <p class="mb-1"><strong>{{ address.shipping_full_name }}</strong></p>
+                <p class="mb-1">{{ address.shipping_address1 }}{% if address.shipping_address2 %}, {{ address.shipping_address2 }}{% endif %}</p>
+                <p class="mb-1">{{ address.shipping_zipcode }} {{ address.shipping_city }}</p>
+                <p class="mb-0">{{ address.shipping_email }}</p>
+            </div>
+            <div>
+                {% if address.default_shipping %}<span class="badge bg-success mb-1 d-block">Domyślny adres dostawy</span>{% endif %}
+                {% if address.default_billing %}<span class="badge bg-primary mb-1 d-block">Domyślny adres rachunku</span>{% endif %}
+            </div>
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-outline-dark btn-sm edit-btn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#editAddressModal"
+                    data-address-id="{{ address.id }}"
+                    data-action="{% url 'edit_address' address.id %}"
+                    data-full-name="{{ address.shipping_full_name }}"
+                    data-email="{{ address.shipping_email }}"
+                    data-address1="{{ address.shipping_address1 }}"
+                    data-address2="{{ address.shipping_address2|default_if_none:'' }}"
+                    data-city="{{ address.shipping_city }}"
+                    data-state="{{ address.shipping_state|default_if_none:'' }}"
+                    data-zipcode="{{ address.shipping_zipcode }}"
+                    data-country="{{ address.shipping_country }}"
+                    data-default-shipping="{{ address.default_shipping|yesno:'true,false' }}"
+                    data-default-billing="{{ address.default_billing|yesno:'true,false' }}">
+                <i class="fas fa-pencil-alt me-1"></i> Edytuj
+            </button>
+            <button class="btn btn-outline-danger btn-sm delete-btn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#deleteAddressModal"
+                    data-action="{% url 'delete_address' address.id %}">
+                <i class="fas fa-trash-alt me-1"></i> Usuń
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>Nie dodałeś jeszcze żadnych adresów.</p>
+{% endif %}
+
+<!-- Okno Modalne: DODAJ Adres -->
+<div class="modal fade" id="addAddressModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <form action="{% url 'add_address' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Dodaj nowy adres</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">{{ add_form.as_p }}</div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-dark">Dodaj adres</button></div>
+    </form>
+</div></div></div>
+
+<!-- Okno Modalne: EDYTUJ Adres (jedno dla wszystkich) -->
+<div class="modal fade" id="editAddressModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <form id="editAddressForm" method="POST">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Edytuj adres</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <!-- Pola formularza zostaną wypełnione przez JavaScript -->
+            <!-- Używamy tego samego formularza co do dodawania, ale z innymi ID -->
+            <p><label for="id_edit_shipping_full_name">Imię i nazwisko:</label><input type="text" name="shipping_full_name" class="form-control" required id="id_edit_shipping_full_name"></p>
+            <p><label for="id_edit_shipping_email">Adres e-mail:</label><input type="email" name="shipping_email" class="form-control" required id="id_edit_shipping_email"></p>
+            <p><label for="id_edit_shipping_address1">Ulica i numer domu:</label><input type="text" name="shipping_address1" class="form-control" required id="id_edit_shipping_address1"></p>
+            <p><label for="id_edit_shipping_address2">Numer mieszkania (opcjonalnie):</label><input type="text" name="shipping_address2" class="form-control" id="id_edit_shipping_address2"></p>
+            <p><label for="id_edit_shipping_city">Miasto:</label><input type="text" name="shipping_city" class="form-control" required id="id_edit_shipping_city"></p>
+            <p><label for="id_edit_shipping_state">Województwo (opcjonalnie):</label><input type="text" name="shipping_state" class="form-control" id="id_edit_shipping_state"></p>
+            <p><label for="id_edit_shipping_zipcode">Kod pocztowy:</label><input type="text" name="shipping_zipcode" class="form-control" required id="id_edit_shipping_zipcode"></p>
+            <p><label for="id_edit_shipping_country">Kraj:</label><input type="text" name="shipping_country" class="form-control" required id="id_edit_shipping_country"></p>
+            <div class="form-check"><input type="checkbox" name="default_shipping" class="form-check-input" id="id_edit_default_shipping"><label class="form-check-label" for="id_edit_default_shipping">Ustaw jako domyślny adres dostawy</label></div>
+            <div class="form-check"><input type="checkbox" name="default_billing" class="form-check-input" id="id_edit_default_billing"><label class="form-check-label" for="id_edit_default_billing">Ustaw jako domyślny adres rachunku</label></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-dark">Zapisz zmiany</button></div>
+    </form>
+</div></div></div>
+
+<!-- Okno Modalne: POTWIERDŹ Usunięcie -->
+<div class="modal fade" id="deleteAddressModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <form id="deleteAddressForm" method="POST">
+        {% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Potwierdź usunięcie</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><p>Czy na pewno chcesz usunąć ten adres? Tej operacji nie można cofnąć.</p></div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-danger">Tak, usuń</button></div>
+    </form>
+</div></div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Obsługa modala do EDYCJI
+    const editModal = document.getElementById('editAddressModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Przycisk, który otworzył modal
+            const form = document.getElementById('editAddressForm');
+            
+            // Ustaw akcję formularza
+            form.action = button.dataset.action;
+            
+            // Wypełnij pola formularza danymi z atrybutów data-*
+            form.querySelector('#id_edit_shipping_full_name').value = button.dataset.fullName;
+            form.querySelector('#id_edit_shipping_email').value = button.dataset.email;
+            form.querySelector('#id_edit_shipping_address1').value = button.dataset.address1;
+            form.querySelector('#id_edit_shipping_address2').value = button.dataset.address2;
+            form.querySelector('#id_edit_shipping_city').value = button.dataset.city;
+            form.querySelector('#id_edit_shipping_state').value = button.dataset.state;
+            form.querySelector('#id_edit_shipping_zipcode').value = button.dataset.zipcode;
+            form.querySelector('#id_edit_shipping_country').value = button.dataset.country;
+            form.querySelector('#id_edit_default_shipping').checked = (button.dataset.defaultShipping === 'true');
+            form.querySelector('#id_edit_default_billing').checked = (button.dataset.defaultBilling === 'true');
+        });
+    }
+
+    // Obsługa modala do USUNIĘCIA
+    const deleteModal = document.getElementById('deleteAddressModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const form = document.getElementById('deleteAddressForm');
+            form.action = button.dataset.action;
+        });
+    }
+});
+</script>
+{% endblock %}

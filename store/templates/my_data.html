@@ -1,0 +1,46 @@
+{% extends 'account_dashboard.html' %}
+{% block account_content %}
+<style>
+    .data-section { border-bottom: 1px solid #eee; }
+    .data-section .icon-col { font-size: 1.5rem; color: #555; }
+    .data-label { font-weight: 600; font-size: 0.9rem; color: #333; }
+    .data-value { font-size: 0.9rem; color: #666; }
+</style>
+<h4 class="card-title">Moje dane</h4>
+<p class="text-muted">Tutaj możesz zobaczyć i zaktualizować swoje dane. Tutaj możesz zarządzać swoimi możliwościami logowania oraz hasłami.</p>
+<!-- Sekcja Danych Osobowych -->
+<div class="data-section py-4">
+    <div class="d-flex align-items-center">
+        <div class="col-1 icon-col"><i class="fas fa-user-circle"></i></div>
+        <div class="col-8">
+            <div class="row">
+                <div class="col-md-6"><div class="data-label">Imię i nazwisko</div><div class="data-value">{{ user.first_name }} {{ user.last_name }}</div></div>
+                <div class="col-md-6"><div class="data-label">Numer telefonu komórkowego</div><div class="data-value">{{ user.profile.phone|default:"-" }}</div></div>
+            </div>
+        </div>
+        <div class="col-3 text-end"><button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#personalInfoModal"><i class="fas fa-pencil-alt me-1"></i> Edytuj</button></div>
+    </div>
+</div>
+<!-- Sekcja E-mail -->
+<div class="data-section py-4">
+    <div class="d-flex align-items-center">
+        <div class="col-1 icon-col"><i class="fas fa-envelope"></i></div>
+        <div class="col-8"><div class="data-label">Twój e-mail</div><div class="data-value">{{ user.email }}</div></div>
+        <div class="col-3 text-end"><button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#emailModal"><i class="fas fa-pencil-alt me-1"></i> Edytuj</button></div>
+    </div>
+</div>
+<!-- Sekcja Hasło -->
+<div class="data-section py-4">
+    <div class="d-flex align-items-center">
+        <div class="col-1 icon-col"><i class="fas fa-lock"></i></div>
+        <div class="col-8"><div class="data-label">Twoje hasło</div><div class="data-value">************</div></div>
+        <div class="col-3 text-end"><button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#passwordModal"><i class="fas fa-pencil-alt me-1"></i> Edytuj</button></div>
+    </div>
+</div>
+<!-- Okno Modalne: Dane Osobowe -->
+<div class="modal fade" id="personalInfoModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form action="{% url 'update_personal_info' %}" method="POST"><div class="modal-header"><h5 class="modal-title">Edytuj dane osobowe</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row"><div class="col-md-6 mb-3">{{ personal_info_form.first_name.label_tag }}{{ personal_info_form.first_name }}</div><div class="col-md-6 mb-3">{{ personal_info_form.last_name.label_tag }}{{ personal_info_form.last_name }}</div><div class="col-md-6 mb-3">{{ profile_form.phone.label_tag }}{{ profile_form.phone }}</div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-dark">Zapisz zmiany</button></div>{% csrf_token %}</form></div></div></div>
+<!-- Okno Modalne: E-mail -->
+<div class="modal fade" id="emailModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="{% url 'update_email' %}" method="POST"><div class="modal-header"><h5 class="modal-title">Zmień adres e-mail</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">{{ email_form.as_p }}</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-dark">Zapisz e-mail</button></div>{% csrf_token %}</form></div></div></div>
+<!-- Okno Modalne: Hasło -->
+<div class="modal fade" id="passwordModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="{% url 'update_password' %}" method="POST"><div class="modal-header"><h5 class="modal-title">Zmień hasło</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">{{ password_form.as_p }}</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button><button type="submit" class="btn btn-dark">Zmień hasło</button></div>{% csrf_token %}</form></div></div></div>
+{% endblock %}

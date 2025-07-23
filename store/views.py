@@ -13,7 +13,7 @@ import json
 # Importy modeli z bieżącej aplikacji
 from .models import Product, Category, Profile, Material, ProductVariation, Review
 # Importy formularzy z bieżącej aplikacji
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UserInfoForm
+from .forms import SignUpForm, UserBaseInfoForm, UserProfileForm, UserEmailForm, ChangePasswordForm
 
 # Importy z innych aplikacji
 from cart.cart import Cart
@@ -558,62 +558,109 @@ def order_detail(request, order_id):
     return render(request, 'order_detail.html', {'order': order, 'items': items})
 
 @login_required
-def update_info(request):
-    """
-    Obsługuje aktualizację danych profilu (UserInfoForm) i adresu wysyłki (ShippingForm).
-    """
-    profile = get_object_or_404(Profile, user=request.user)
-    shipping_address, created = ShippingAddress.objects.get_or_create(user=request.user)
-
-    if request.method == 'POST':
-        # Sprawdzamy, który formularz został wysłany, na podstawie nazwy przycisku submit
-        if 'update_profile_submit' in request.POST:
-            form = UserInfoForm(request.POST, instance=profile)
-            shipping_form = ShippingForm(request.POST, instance=shipping_address)
-            if form.is_valid() and shipping_form.is_valid():
-                form.save()
-                shipping_form.save()
-                messages.success(request, "Twoje dane zostały zaktualizowane!")
-                return redirect('update_info')
-        else:
-            # Jeśli nie jest to submit profilu, to musi być to formularz hasła,
-            # ale jego obsługa jest w `update_password`. Tutaj po prostu tworzymy puste formularze.
-            form = UserInfoForm(instance=profile)
-            shipping_form = ShippingForm(instance=shipping_address)
-    else:
-        form = UserInfoForm(instance=profile)
-        shipping_form = ShippingForm(instance=shipping_address)
-
-    # Zawsze przekazujemy też pusty formularz zmiany hasła do szablonu
-    password_form = ChangePasswordForm(request.user)
-
+def my_data_view(request):
+    """Główny widok strony 'Moje dane', który wyświetla dane i formularze."""
+    user = request.user
+    profile = get_object_or_404(Profile, user=user)
+    
     context = {
-        'form': form,
-        'shipping_form': shipping_form,
-        'password_form': password_form
+        'personal_info_form': UserBaseInfoForm(instance=user),
+        'profile_form': UserProfileForm(instance=profile),
+        'email_form': UserEmailForm(instance=user),
+        'password_form': ChangePasswordForm(user),
     }
-    return render(request, "update_info.html", context)
+    return render(request, 'my_data.html', context)
+
+@login_required
+def account_addresses(request):
+    """Wyświetla listę adresów użytkownika."""
+    # Pobierz wszystkie adresy dla zalogowanego użytkownika
+    addresses = ShippingAddress.objects.filter(user=request.user).order_by('-default_shipping', '-default_billing')
+    
+    # Przygotuj pusty formularz do dodawania nowego adresu
+    add_form = ShippingForm()
+    
+    context = {
+        'addresses': addresses,
+        'add_form': add_form,
+    }
+    return render(request, 'account_addresses.html', context)
+
+@login_required
+def add_address(request):
+    """Przetwarza formularz dodawania nowego adresu."""
+    if request.method == 'POST':
+        form = ShippingForm(request.POST)
+        if form.is_valid():
+            # Zapisz formularz, ale jeszcze nie do bazy danych
+            new_address = form.save(commit=False)
+            # Przypisz zalogowanego użytkownika do nowego adresu
+            new_address.user = request.user
+            # Teraz zapisz w bazie (to wywoła naszą logikę w save() modelu)
+            new_address.save()
+            messages.success(request, "Nowy adres został dodany.")
+        else:
+            messages.error(request, "Wystąpił błąd w formularzu.")
+    return redirect('account_addresses')
+
+@login_required
+def edit_address(request, address_id):
+    """Przetwarza formularz edycji istniejącego adresu."""
+    if request.method == 'POST':
+        # Pobierz adres, upewniając się, że należy do zalogowanego użytkownika
+        address = get_object_or_404(ShippingAddress, pk=address_id, user=request.user)
+        form = ShippingForm(request.POST, instance=address)
+        if form.is_valid():
+            form.save() # Metoda save() w modelu zadba o logikę domyślnych adresów
+            messages.success(request, "Adres został zaktualizowany.")
+        else:
+            messages.error(request, "Wystąpił błąd w formularzu.")
+    return redirect('account_addresses')
+
+@login_required
+def delete_address(request, address_id):
+    """Usuwa adres."""
+    if request.method == 'POST':
+        address = get_object_or_404(ShippingAddress, pk=address_id, user=request.user)
+        address.delete()
+        messages.success(request, "Adres został usunięty.")
+    return redirect('account_addresses')
 
 
 @login_required
+def update_personal_info(request):
+    if request.method == 'POST':
+        user_form = UserBaseInfoForm(request.POST, instance=request.user)
+        profile_form = UserProfileForm(request.POST, instance=request.user.profile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, "Dane osobowe zostały zaktualizowane.")
+        else:
+            messages.error(request, "Wystąpił błąd. Sprawdź poprawność danych.")
+    return redirect('my_data')
+
+@login_required
+def update_email(request):
+    if request.method == 'POST':
+        form = UserEmailForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Adres e-mail został zaktualizowany.")
+        else:
+            messages.error(request, "Wprowadzono niepoprawny adres e-mail.")
+    return redirect('my_data')
+
+@login_required
 def update_password(request):
-    """
-    Obsługuje tylko logikę zmiany hasła.
-    """
     if request.method == 'POST':
         form = ChangePasswordForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Ważne, aby nie wylogować użytkownika!
-            messages.success(request, "Twoje hasło zostało pomyślnie zmienione.")
-            return redirect('update_info')
+            update_session_auth_hash(request, user)
+            messages.success(request, "Hasło zostało pomyślnie zmienione.")
         else:
-            # Przekaż błędy formularza hasła z powrotem do widoku `update_info`
-            # To jest bardziej złożone, więc na razie użyjemy komunikatów flash
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{form.fields[field].label}: {error}")
-            return redirect('update_info')
-    
-    # Jeśli metoda to GET, po prostu przekieruj, bo formularz jest na stronie `update_info`
-    return redirect('update_info')
+            for error_list in form.errors.values():
+                for error in error_list:
+                    messages.error(request, error)
+    return redirect('my_data')

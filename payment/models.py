@@ -37,21 +37,45 @@ def generate_order_number():
 # --- Modele ---
 
 class ShippingAddress(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-	shipping_full_name = models.CharField(max_length=255)
-	shipping_email = models.CharField(max_length=255)
-	shipping_address1 = models.CharField(max_length=255)
-	shipping_address2 = models.CharField(max_length=255, null=True, blank=True)
-	shipping_city = models.CharField(max_length=255)
-	shipping_state = models.CharField(max_length=255, null=True, blank=True)
-	shipping_zipcode = models.CharField(max_length=255, null=True, blank=True)
-	shipping_country = models.CharField(max_length=255)
-	
-	class Meta:
-		verbose_name_plural = "Shipping Address"
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    shipping_full_name = models.CharField(max_length=255)
+    shipping_email = models.CharField(max_length=255)
+    shipping_address1 = models.CharField(max_length=255)
+    shipping_address2 = models.CharField(max_length=255, null=True, blank=True)
+    shipping_city = models.CharField(max_length=255)
+    shipping_state = models.CharField(max_length=255, null=True, blank=True)
+    shipping_zipcode = models.CharField(max_length=255, null=True, blank=True)
+    shipping_country = models.CharField(max_length=255)
 
-	def __str__(self):
-		return f'Shipping Address - {str(self.id)}'
+    # === NOWE POLA ===
+    default_billing = models.BooleanField(default=False)
+    default_shipping = models.BooleanField(default=False)
+    # =================
+
+    class Meta:
+        verbose_name_plural = "Shipping Address"
+
+    def __str__(self):
+        return f'Shipping Address for {self.user.username}'
+
+    def save(self, *args, **kwargs):
+        """
+        Nadpisana metoda save, aby zapewnić, że tylko jeden adres
+        może być domyślnym adresem rozliczeniowym/wysyłkowym.
+        """
+        # Jeśli ten adres jest ustawiany jako domyślny wysyłkowy...
+        if self.default_shipping:
+            # ...znajdź wszystkie INNE adresy tego użytkownika i odznacz je.
+            # exclude(pk=self.pk) jest kluczowe, aby nie odznaczyć samego siebie.
+            ShippingAddress.objects.filter(user=self.user).exclude(pk=self.pk).update(default_shipping=False)
+
+        # Ta sama logika dla adresu rozliczeniowego
+        if self.default_billing:
+            ShippingAddress.objects.filter(user=self.user).exclude(pk=self.pk).update(default_billing=False)
+        
+        # Wywołaj oryginalną metodę save
+        super(ShippingAddress, self).save(*args, **kwargs)
+
 
 class Order(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
