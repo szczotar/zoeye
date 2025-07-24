@@ -1,24 +1,106 @@
+<!-- store/templates/order_history.html -->
 {% extends 'account_dashboard.html' %}
+
 {% block account_content %}
+<style>
+    .order-card {
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem;
+        margin-bottom: 1.5rem;
+    }
+    .order-header {
+        background-color: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .order-header-item {
+        font-size: 0.9rem;
+    }
+    .order-header-item strong {
+        display: block;
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+    .order-body {
+        padding: 1.5rem;
+    }
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    .order-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .order-item-image {
+        width: 150px; /* Zwiększona szerokość */
+        height: 150px; /* Zwiększona wysokość */
+        object-fit: cover;
+        border-radius: 0.25rem;
+        margin-right: 1.5rem;
+    }
+    .order-item-details {
+        flex-grow: 1;
+    }
+</style>
+
 <h4 class="card-title mb-4">Historia Twoich zamówień</h4>
+
 {% if orders %}
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead><tr><th scope="col">Numer zamówienia</th><th scope="col">Data</th><th scope="col">Kwota</th><th scope="col">Status wysyłki</th><th scope="col"></th></tr></thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td><strong>{{ order.order_number }}</strong></td>
-                    <td>{{ order.date_ordered|date:"d M Y" }}</td>
-                    <td>{{ order.amount_paid|floatformat:2 }} zł</td>
-                    <td>{% if order.shipped %}<span class="badge bg-success">Wysłane</span>{% else %}<span class="badge bg-warning text-dark">W trakcie realizacji</span>{% endif %}</td>
-                    <td><a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-dark">Szczegóły</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    {% for order in orders %}
+    <div class="order-card">
+        <div class="order-header">
+            <div class="order-header-item">
+                <strong>Data zamówienia</strong>
+                {{ order.date_ordered|date:"d M Y" }}
+            </div>
+            <div class="order-header-item">
+                <strong>Suma</strong>
+                {{ order.amount_paid|floatformat:2 }} zł
+            </div>
+            <div class="order-header-item">
+                <strong>Numer zamówienia</strong>
+                {{ order.order_number }}
+            </div>
+            <div class="order-header-item">
+                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-dark">Zobacz szczegóły</a>
+            </div>
+        </div>
+        <div class="order-body">
+            <h6 class="mb-3">
+                {% if order.shipped %}
+                    <span class="badge bg-success">Wysłane</span> {{ order.date_shipped|date:"d M Y" }}
+                {% else %}
+                    <span class="badge bg-warning text-dark">W trakcie realizacji</span>
+                {% endif %}
+            </h6>
+            
+            {% for item in order.orderitem_set.all %}
+            <div class="order-item">
+                {% with product=item.variation.product|default:item.product %}
+                <img src="{{ product.get_main_image }}" alt="{{ product.name }}" class="order-item-image">
+                <div class="order-item-details">
+                    <a href="{% url 'product' product.id %}" class="text-dark text-decoration-none fw-bold">{{ product.name }}</a>
+                    {% if item.variation and item.variation.size %}
+                    <p class="text-muted small mb-1">Rozmiar: {{ item.variation.size }}</p>
+                    {% endif %}
+                    <p class="text-muted small mb-0">{{ item.quantity }} szt. x {{ item.price|floatformat:2 }} zł</p>
+                </div>
+                {% endwith %}
+            </div>
+            {% endfor %}
+        </div>
     </div>
+    {% endfor %}
 {% else %}
     <p>Nie złożyłeś jeszcze żadnych zamówień.</p>
 {% endif %}
+
 {% endblock %}
