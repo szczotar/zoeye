@@ -28,13 +28,19 @@
         <link rel="stylesheet" href="{% static 'css/custom.css' %}"> 
        
          <!-- Google fonts-->
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Martel:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Martel:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
         
 
           <!--font awesome-->
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+          <!-- Inpost -->
+        <!-- <link rel="stylesheet" href="https://geowidget.inpost.pl/inpost-geowidget.css"/>
+        <script src='https://geowidget.inpost.pl/inpost-geowidget.js' defer></script> -->
+      
+
     </head>
      
     <body>
@@ -58,7 +64,7 @@
                  
       
         {% include 'footer.html' %}
-
+       <script src="https://geowidget.inpost.pl/inpost-geowidget.js" defer></script>
         {% include 'scripts.html' %}
         
         {% block scripts %}{% endblock %}

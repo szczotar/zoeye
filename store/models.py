@@ -37,15 +37,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = 'categories'
 
-class Customer(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=10)
-    email = models.EmailField(max_length=100)
-    password = models.CharField(max_length=100)
 
-    def __str__(self):
-        return f'{self.first_name} {self.last_name}'
 
 class Material(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -192,42 +184,6 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name} (Order: {self.order})"
-
-# --- ZMIANA W MODELU ORDER ---
-# Zamiast wskazywać na Product, wskazuje na ProductVariation
-# Zakładając, że Twój model Order reprezentuje pojedynczy "item" w zamówieniu
-class Order(models.Model):
-    # ZMIANA: ForeignKey wskazuje na ProductVariation
-    variation = models.ForeignKey(ProductVariation, on_delete=models.CASCADE, null=True, blank=True) # Dodano null/blank=True na wypadek usunięcia wariacji
-    # Alternatywnie, jeśli chcesz zamawiać produkty bez wariacji bezpośrednio:
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True) # Dodaj pole Product
-    # Musisz upewnić się, że albo variation, albo product jest ustawione, ale nie oba.
-    # Możesz dodać clean() metodę do modelu, aby to sprawdzić.
-
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
-    address = models.CharField(max_length=150, default='', blank=True)
-    phone = models.CharField(max_length=20, default='', blank = True)
-    date = models.DateField(default=datetime.datetime.today)
-    status = models.BooleanField(default=False) # Czy zamówienie zostało zrealizowane?
-
-    def __str__(self):
-        # Zwracaj reprezentację wariacji lub produktu
-        if self.variation:
-            return f"Order for {self.variation.__str__()} (x{self.quantity})"
-        elif self.product:
-             return f"Order for {self.product.name} (x{self.quantity})"
-        return f"Order (ID: {self.pk})" # Fallback
-
-    # Dodaj metodę clean, aby upewnić się, że tylko jedno z pól (variation lub product) jest ustawione
-    def clean(self):
-        if self.variation and self.product:
-            from django.core.exceptions import ValidationError
-            raise ValidationError("Zamówienie musi dotyczyć albo wariacji, albo produktu, ale nie obu.")
-        if not self.variation and not self.product:
-             from django.core.exceptions import ValidationError
-             raise ValidationError("Zamówienie musi dotyczyć wariacji lub produktu.")
-        
 
 class Review(models.Model):
     """

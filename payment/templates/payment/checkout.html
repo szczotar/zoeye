@@ -3,6 +3,7 @@
 {% load l10n %}
 
 {% block content %}
+
 <style>
 
     .accordion-body {
@@ -50,6 +51,13 @@
     .accordion-body p, .form-check-label {
         font-size: 0.9rem;
     }
+
+        inpost-geowidget {
+        display: block; /* Upewnij się, że jest traktowany jak blok */
+        width: 100%;    /* Szerokość na 100% kontenera */
+        height: 500px;  /* Ustaw pożądaną wysokość, np. 500px */
+    }
+    
 
     
 </style>
@@ -216,7 +224,7 @@
         </div>
     </div>
 </div>
-                    <!-- KROK 3: METODA DOSTAWY -->
+                  <!-- KROK 3: METODA DOSTAWY (PRZEBUDOWANY) -->
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="headingThree">
                             <button id="btn-collapseThree" class="accordion-button collapsed disabled" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
@@ -225,14 +233,31 @@
                         </h2>
                         <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#checkoutAccordion">
                             <div class="accordion-body" data-step="3">
-                                <div class="form-check">
-                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_courier" value="courier" data-cost="15.00" required>
-                                    <label class="form-check-label" for="inpost_courier">InPost Kurier (15.00 zł)</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_courier" value="courier" data-cost="18.99" required>
+                                    <label class="form-check-label" for="inpost_courier">InPost Kurier (18.99 zł)</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_paczkomat" value="locker" data-cost="12.00" required>
-                                    <label class="form-check-label" for="inpost_paczkomat">InPost Paczkomat (12.00 zł)</label>
+                                    <input class="form-check-input delivery-method" type="radio" name="delivery_method" id="inpost_paczkomat" value="locker" data-cost="14.99" required>
+                                    <label class="form-check-label" for="inpost_paczkomat">InPost Paczkomat (14.99 zł)</label>
                                 </div>
+
+                                <!-- NOWA SEKCJA Z KOMPONENTEM INPOST -->
+                                <div id="paczkomat-section" class="mt-3" style="display: none;">
+                                    <p class="text-muted small">Wyszukaj lub wybierz paczkomat z mapy poniżej.</p>
+                                    
+                                    <!-- WAŻNE: Musisz uzyskać swój własny token API od InPost i wkleić go poniżej! -->
+                                    <inpost-geowidget 
+                                        onpoint="afterPointSelected" 
+                                        token= "{{ INPOST_KEY }}"
+                                        language="pl"  
+                                        config="parcelCollect">
+                                    </inpost-geowidget>
+
+                                    <div id="inpost-selected-point" class="mt-2 p-2 border rounded bg-light" style="display: none; font-size: 0.9rem;"></div>
+                                    <input type="hidden" name="paczkomat_id" id="paczkomat-id-input">
+                                </div>
+                                
                                 <button type="button" class="btn btn-primary mt-3" data-next-step="collapseFour" disabled>Kontynuuj</button>
                             </div>
                         </div>
@@ -334,29 +359,117 @@
         </div>
     </div>
 </div>
+
+
 {% endblock %}
 {% block scripts %}
 <script>
+// Ta funkcja MUSI być w globalnym zasięgu, aby komponent <inpost-geowidget> mógł ją znaleźć.
+function afterPointSelected(point) {
+    console.log('Selected point:', point);
+    const selectedPointDiv = document.getElementById('inpost-selected-point');
+    const paczkomatIdInput = document.getElementById('paczkomat-id-input');
+    
+    selectedPointDiv.innerHTML = `<strong>Wybrany paczkomat:</strong><br>${point.name}, ${point.address.line1}, ${point.address.line2}`;
+    selectedPointDiv.style.display = 'block';
+    paczkomatIdInput.value = point.name; // Zapisujemy ID (nazwę) paczkomatu
+    
+    // Uruchom walidację przycisku "Kontynuuj" po wybraniu punktu
+    const stepBody = paczkomatIdInput.closest('.accordion-body');
+    if (stepBody) {
+        const continueBtn = stepBody.querySelector('button[data-next-step]');
+        if (continueBtn) {
+            continueBtn.disabled = false;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const accordion = document.getElementById('checkoutAccordion');
+    if (!accordion) return;
+
+    // --- LOGIKA DLA INPOST ---
+    const deliveryRadios = document.querySelectorAll('.delivery-method');
+    const paczkomatSection = document.getElementById('paczkomat-section');
+    const paczkomatIdInput = document.getElementById('paczkomat-id-input');
+    const selectedPointDiv = document.getElementById('inpost-selected-point');
+
+    const checkStep3Button = () => {
+        const stepBody = document.querySelector('.accordion-body[data-step="3"]');
+        if (!stepBody) return;
+        const continueBtn = stepBody.querySelector('button[data-next-step]');
+        if (!continueBtn) return;
+
+        let canContinue = false;
+        const selectedRadio = stepBody.querySelector('.delivery-method:checked');
+        if (selectedRadio) {
+            if (selectedRadio.value === 'courier') {
+                canContinue = true;
+            } else if (selectedRadio.value === 'locker' && paczkomatIdInput.value) {
+                canContinue = true;
+            }
+        }
+        continueBtn.disabled = !canContinue;
+    };
+
+    deliveryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'locker') {
+                paczkomatSection.style.display = 'block';
+            } else {
+                paczkomatSection.style.display = 'none';
+                paczkomatIdInput.value = '';
+                selectedPointDiv.style.display = 'none';
+            }
+            checkStep3Button();
+        });
+    });
+    // --- KONIEC LOGIKI INPOST ---
+
+    // --- Reszta logiki dla akordeonu i walidacji (bez zmian) ---
+    const accordionItems = accordion.querySelectorAll('.accordion-item');
+    const submitBtn = document.getElementById('submit-order-btn');
+    
+    const validateInput = (input) => { /* ... (bez zmian) ... */ };
+    const validateStep = (stepBody) => { /* ... (bez zmian) ... */ };
+    const checkAndEnableContinueButton = (stepBody) => { /* ... (bez zmian, ale teraz prostsza) ... */ };
+
+    // ... (wklej tutaj resztę swojego działającego kodu JS dla akordeonu,
+    //      formularzy, podsumowania, etc. z poprzedniej wersji) ...
+    // Poniżej jest kompletna, działająca wersja.
+});
+
+// === CAŁY, KOMPLETNY SKRYPT DLA checkout.html ===
+function afterPointSelected(point) {
+    console.log('Selected point:', point);
+    const selectedPointDiv = document.getElementById('inpost-selected-point');
+    const paczkomatIdInput = document.getElementById('paczkomat-id-input');
+    if (selectedPointDiv && paczkomatIdInput) {
+        selectedPointDiv.innerHTML = `<strong>Wybrany paczkomat:</strong><br>${point.name}, ${point.address.line1}, ${point.address.line2}`;
+        selectedPointDiv.style.display = 'block';
+        paczkomatIdInput.value = point.name;
+        
+        const stepBody = paczkomatIdInput.closest('.accordion-body');
+        const continueBtn = stepBody.querySelector('button[data-next-step]');
+        if (continueBtn) continueBtn.disabled = false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const accordion = document.getElementById('checkoutAccordion');
     if (!accordion) return;
 
     const accordionItems = accordion.querySelectorAll('.accordion-item');
     const submitBtn = document.getElementById('submit-order-btn');
-
-    // --- FUNKCJE POMOCNICZE ---
-
+    
     const validateInput = (input) => {
         input.classList.remove('is-invalid');
         let isValid = true;
-        if (input.required) {
-            if (input.offsetParent !== null) { // Waliduj tylko widoczne
-                if (input.type === 'radio' || input.type === 'checkbox') {
-                    const groupName = input.name;
-                    if (!input.closest('.accordion-body').querySelector(`input[name="${groupName}"]:checked`)) isValid = false;
-                } else if (!input.value.trim()) {
-                    isValid = false;
-                }
+        if (input.required && input.offsetParent !== null) {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                if (!input.closest('.accordion-body').querySelector(`input[name="${input.name}"]:checked`)) isValid = false;
+            } else if (!input.value.trim()) {
+                isValid = false;
             }
         }
         if (input.type === 'email' && input.value.trim() && !/^\S+@\S+\.\S+$/.test(input.value)) isValid = false;
@@ -366,8 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const validateStep = (stepBody) => {
         let allValid = true;
-        const inputs = stepBody.querySelectorAll('input[required], select[required], textarea[required]');
-        inputs.forEach(input => {
+        stepBody.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
             if (!validateInput(input)) allValid = false;
         });
         return allValid;
@@ -375,39 +487,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const checkAndEnableContinueButton = (stepBody) => {
         const continueBtn = stepBody.querySelector('button[data-next-step]');
-        if (continueBtn) {
-            let canContinue = true;
-            const inputs = stepBody.querySelectorAll('input[required]');
-            inputs.forEach(input => {
-                if (input.offsetParent !== null) {
-                    if (input.type === 'radio' || input.type === 'checkbox') {
-                        if (!stepBody.querySelector(`input[name="${input.name}"]:checked`)) canContinue = false;
-                    } else if (!input.value.trim()) {
-                        canContinue = false;
-                    }
+        if (!continueBtn) return;
+
+        let canContinue = true;
+        stepBody.querySelectorAll('input[required]').forEach(input => {
+            if (input.offsetParent !== null) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (!stepBody.querySelector(`input[name="${input.name}"]:checked`)) canContinue = false;
+                } else if (!input.value.trim()) {
+                    canContinue = false;
                 }
-            });
-            continueBtn.disabled = !canContinue;
+            }
+        });
+        
+        if (stepBody.dataset.step === '3') {
+            const selectedRadio = stepBody.querySelector('.delivery-method:checked');
+            if (selectedRadio) {
+                if (selectedRadio.value === 'locker' && !stepBody.querySelector('#paczkomat-id-input').value) {
+                    canContinue = false;
+                }
+            } else {
+                canContinue = false;
+            }
         }
+        continueBtn.disabled = !canContinue;
     };
 
-    // --- LOGIKA GŁÓWNA ---
-
-    // 1. Logika przycisków "Kontynuuj"
     accordion.querySelectorAll('button[data-next-step]').forEach(button => {
         button.addEventListener('click', function() {
             const currentStepBody = this.closest('.accordion-body');
-            
-            // Dla kroku 1 nie ma pól do walidacji, więc zawsze przechodzi
             const isStep1 = !currentStepBody.hasAttribute('data-step');
-            
             if (isStep1 || validateStep(currentStepBody)) {
                 const nextStepId = this.dataset.nextStep;
                 if (nextStepId) {
                     const nextAccordionButton = document.getElementById('btn-' + nextStepId);
                     if (nextAccordionButton) {
                         nextAccordionButton.classList.remove('disabled');
-                        // === KLUCZOWA ZMIANA: Symulujemy kliknięcie ===
                         nextAccordionButton.click();
                     }
                 }
@@ -415,39 +530,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 2. Logika blokowania przyszłych kroków po powrocie
     accordion.addEventListener('show.bs.collapse', function (event) {
         const openingItem = event.target.closest('.accordion-item');
         let openingIndex = -1;
-        accordionItems.forEach((item, index) => {
-            if (item === openingItem) openingIndex = index;
-        });
-
+        accordionItems.forEach((item, index) => { if (item === openingItem) openingIndex = index; });
         if (openingIndex !== -1) {
             accordionItems.forEach((item, index) => {
                 if (index > openingIndex) {
                     const futureButton = item.querySelector('.accordion-button');
-                    const futureCollapse = item.querySelector('.accordion-collapse');
                     if (futureButton) futureButton.classList.add('disabled');
-                    // Nie musimy już programowo zwijać, Bootstrap zrobi to sam
                 }
             });
         }
     });
 
-    // 3. Dodajemy event listenery do pól formularza
     accordion.querySelectorAll('input, select, textarea').forEach(input => {
         const stepBody = input.closest('.accordion-body');
         if (stepBody) {
-            input.addEventListener('input', () => {
-                validateInput(input);
-                checkAndEnableContinueButton(stepBody);
-            });
+            input.addEventListener('input', () => { validateInput(input); checkAndEnableContinueButton(stepBody); });
             input.addEventListener('change', () => checkAndEnableContinueButton(stepBody));
         }
     });
 
-    // 4. Obsługa checkboxa "inny adres"
     const shippingCheckbox = document.getElementById('shipping-address-checkbox');
     const shippingForm = document.getElementById('shipping-address-form');
     if (shippingCheckbox && shippingForm) {
@@ -455,26 +559,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const toggleShippingForm = () => {
             const isChecked = shippingCheckbox.checked;
             shippingForm.style.display = isChecked ? 'block' : 'none';
-            shippingInputs.forEach(input => {
-                input.required = isChecked;
-                if (!isChecked) input.classList.remove('is-invalid');
-            });
+            shippingInputs.forEach(input => { input.required = isChecked; if (!isChecked) input.classList.remove('is-invalid'); });
             checkAndEnableContinueButton(document.querySelector('.accordion-body[data-step="2"]'));
         };
         shippingCheckbox.addEventListener('change', toggleShippingForm);
         toggleShippingForm();
     }
 
-    // 5. Obsługa checkboxa z regulaminem
     const termsCheckbox = document.getElementById('terms-checkbox');
     if (termsCheckbox && submitBtn) {
-        termsCheckbox.addEventListener('change', function() {
-            submitBtn.disabled = !this.checked;
-        });
+        termsCheckbox.addEventListener('change', function() { submitBtn.disabled = !this.checked; });
     }
 
-    // 6. Aktualizacja podsumowania
-    const deliveryRadios = document.querySelectorAll('.delivery-method');
+    const summaryDeliveryRadios = document.querySelectorAll('.delivery-method');
     const updateSummary = () => {
         const productsTotal = parseFloat("{{ totals|unlocalize }}");
         let deliveryCost = 0;
@@ -485,7 +582,24 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('summary-delivery').textContent = deliveryCost.toFixed(2) + ' zł';
         document.getElementById('summary-grand-total').textContent = grandTotal.toFixed(2) + ' zł';
     };
-    deliveryRadios.forEach(radio => radio.addEventListener('change', updateSummary));
+    
+    const paczkomatSection = document.getElementById('paczkomat-section');
+    const paczkomatIdInput = document.getElementById('paczkomat-id-input');
+    const selectedPointDiv = document.getElementById('inpost-selected-point');
+
+    summaryDeliveryRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            updateSummary();
+            if (this.value === 'locker') {
+                paczkomatSection.style.display = 'block';
+            } else {
+                paczkomatSection.style.display = 'none';
+                paczkomatIdInput.value = '';
+                selectedPointDiv.style.display = 'none';
+            }
+            checkAndEnableContinueButton(this.closest('.accordion-body'));
+        });
+    });
     updateSummary();
 });
 </script>

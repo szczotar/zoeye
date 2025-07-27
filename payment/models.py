@@ -78,19 +78,20 @@ class ShippingAddress(models.Model):
 
 
 class Order(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 	# Ostateczna, poprawna definicja pola
-	order_number = models.CharField(max_length=12, unique=True, editable=False)
-	full_name = models.CharField(max_length=250)
-	email = models.EmailField(max_length=250)
-	shipping_address = models.TextField(max_length=15000)
-	amount_paid = models.DecimalField(max_digits=7, decimal_places=2)
-	date_ordered = models.DateTimeField(auto_now_add=True)	
-	shipped = models.BooleanField(default=False)
-	date_shipped = models.DateTimeField(blank=True, null=True)
-	
-	def __str__(self):
-		return f'Order - {self.order_number}'
+    order_number = models.CharField(max_length=12, unique=True, editable=False) 
+    full_name = models.CharField(max_length=250)
+    email = models.EmailField(max_length=250)
+    shipping_address = models.TextField(max_length=15000)
+    amount_paid = models.DecimalField(max_digits=7, decimal_places=2)
+    date_ordered = models.DateTimeField(auto_now_add=True)	
+    shipped = models.BooleanField(default=False)
+    date_shipped = models.DateTimeField(blank=True, null=True)
+    payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return f'Order - {self.order_number}'
 
 class OrderItem(models.Model):
 	order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)

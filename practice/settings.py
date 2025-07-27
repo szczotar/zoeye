@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -30,6 +31,7 @@ DEBUG = True
 
 # ALLOWED_HOSTS = ['https://zoeye.pl','zoeye.pl','eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']
 # CSRF_TRUSTED_ORIGINS = ['https://zoeye.pl','https://eccomestore-production.up.railway.app']
+INPOST_KEY = os.getenv('INPOST_KEY')
 
 ALLOWED_HOSTS = []
 
@@ -62,7 +64,7 @@ ROOT_URLCONF = 'practice.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,6 +73,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
                 'store.context_processors.site_data',
+                'store.context_processors.api_keys',
+            
             ],
         },
     },
