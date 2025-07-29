@@ -16,7 +16,7 @@ def api_keys(request):
     Dodaje klucze API do kontekstu szablonów.
     """
     return {
-        'INPOST_API_TOKEN': settings.INPOST_KEY,
+        'INPOST_KEY': settings.INPOST_KEY,
         # W przyszłości możesz tu dodać inne klucze, np. publiczny klucz Stripe
         # 'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY,
     }
