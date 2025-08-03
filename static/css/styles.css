@@ -11388,10 +11388,9 @@ textarea.form-control-lg {
   transition: .2s ease all;
 }
 
-@media (min-width: 992px) {
-  .navbar .dropdown-menu {
-    display: block;
-  }
+.navbar .dropdown-menu.dropdown-menu-end::before {
+  left: auto;  /* Usuwa pozycjonowanie od lewej */
+  right: 1rem; /* Ustawia pozycjonowanie od prawej */
 }
 
 @media (max-width: 991.98px) {
@@ -11455,6 +11454,27 @@ textarea.form-control-lg {
   transition: all 0.3s;
 }
 
+
+@media (max-width: 991.98px) {
+
+  /* 
+    Gdy dropdown użytkownika jest otwarty (.show), 
+    blokujemy zmianę jego pozycji przez JavaScript.
+    To uniemożliwia "wyskoczenie" ikony z rzędu.
+  */
+  .navbar .nav-item.dropdown.show {
+    position: static !important;
+  }
+
+  /*
+    Ponieważ zablokowaliśmy pozycjonowanie <li>, musimy jawnie
+    nakazać, aby samo menu pozycjonowało się absolutnie 
+    względem całego paska nawigacji.
+  */
+  .navbar .nav-item.dropdown .dropdown-menu {
+    position: absolute !important;
+  }
+}
 /*
  * Podswietlanie menu  menu
  */
@@ -11560,6 +11580,51 @@ textarea.form-control-lg {
       font-family: "Martel", serif;/* Zmien 'Nazwa Wybranej Czcionki' */
     /* font-weight: 600; */ /* Przyciski czesto sa pogrubione */
 }
+/*
+*
+* ==========================================
+* STICKY NAVBAR ON SCROLL (Wersja zoptymalizowana)
+* ==========================================
+*
+*/
+
+/* 1. Ustawienie "przyklejenia" i bazowych przejść */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    width: 100%;
+    /* background-color: #FFE4C6; Ustaw bazowy kolor tła od razu */
+}
+
+.navbar {
+    /* Animujemy tylko padding, co jest główną zmianą wysokości */
+    transition: padding-top 0.3s ease-in-out, padding-bottom 0.3s ease-in-out;
+}
+
+/* 2. Ustawienie bazowego stanu logo i jego przejścia */
+.navbar-brand img {
+    /* Używamy 'height' zamiast 'max-height' dla większej stabilności animacji */
+    height: 60px; /* <<< DOSTOSUJ: Wpisz tutaj oryginalną, dużą wysokość Twojego logo */
+    width: auto; /* Zachowaj proporcje */
+    /* Animujemy tylko wysokość obrazka */
+    transition: height 0.3s ease-in-out;
+}
+
+/* 3. Definiujemy style dla nawigacji po przewinięciu strony */
+.navbar.navbar-scrolled {
+    /* Zmniejszamy pionowy padding, aby pasek był niższy */
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    
+   
+}
+
+/* 4. Zmniejszamy logo, gdy nawigacja jest w stanie "scrolled" */
+.navbar.navbar-scrolled .navbar-brand img {
+    /* Ustawiamy docelową, mniejszą wysokość logo */
+    height: 45px; /* <<< DOSTOSUJ: Wpisz tutaj docelową, mniejszą wysokość logo */
+}
 
 /*
 *
@@ -11609,7 +11674,8 @@ textarea.form-control-lg {
 
 /* Stylizacja aktywnej miniatury */
 .product-thumbnails-list .thumbnail-item.active {
-    border-color: #007bff; /* Kolor ramki aktywnej miniatury (dostosuj) */
+    border-color: #FFE4C6; /* Kolor ramki aktywnej miniatury (dostosuj) */
+    border-width: 0.25cap;
     opacity: 1; /* Pełna przezroczystość */
 }
 
@@ -11620,32 +11686,39 @@ textarea.form-control-lg {
 
 /* --- Stylizacja głównego zdjęcia --- */
 .product-main-image-container {
-    /* === Ustawienie stałego rozmiaru lub maksymalnego rozmiaru === */
-    /* Przykład: maksymalna szerokość i wysokość z zachowaniem responsywności */
-    /* (często lepsze w układach responsywnych) */
-    width: 100%; /* Kontener zajmuje całą szerokość kolumny (col-md-6) */
-    max-height: 600px; /* Dostosuj maksymalną wysokość głównego zdjęcia */
-    overflow: hidden; /* Ukryj ewentualny nadmiar */
-    /* ========================================================== */
+    width: 100%;
+    /* Ustawiamy proporcje kontenera na 4:3. Wysokość automatycznie dostosuje się do szerokości. */
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    position: relative; /* Potrzebne do pozycjonowania linku */
+    background-color: #f8f9fa; /* Opcjonalne tło, jeśli obrazek nie wypełnia całego kontenera */
+    cursor: pointer; /* Zmieniamy kursor, aby sugerował możliwość kliknięcia */
+}
+.product-main-image-container .main-product-image-wrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .product-main-image-container .main-product-image,
 .product-main-image-container .main-product-image-fallback {
     display: block;
-    /* === Dopasowanie obrazka do kontenera === */
     width: 100%;
-    height: 100%; /* Obrazek zajmuje 100% wymiarów kontenera */
-    object-fit: contain; /* Dopasuj obrazek do kontenera, zachowując proporcje (może pojawić się puste miejsce) */
-    /* Jeśli chcesz, aby obrazek zawsze wypełniał kontener, przycinając nadmiar, użyj object-fit: cover; */
-    /* object-fit: cover; */
-    /* ====================================== */
+    height: 100%;
+    /* 'contain' gwarantuje, że cały obrazek będzie widoczny bez przycinania. */
+    object-fit: contain;
+}
+
+/* --- Stylizacja prawej kolumny (informacje) --- */
+.product-info-box {
+    padding: 1.5rem;
 }
 
 /* --- Stylizacja prawej kolumny (informacje) --- */
 .product-info-box {
     /* Dodatkowe style dla prawej kolumny - możesz dodać więcej paddingu, zmienić tło itp. */
     padding: 1.5rem; /* Przykład paddingu */
-    /* background-color: #f8f9fa; */
+    background-color: #f8f9fa;
 }
 
 /* Dostosowanie odstępów i stylów dla elementów w prawej kolumnie */
@@ -11670,13 +11743,17 @@ textarea.form-control-lg {
 /* Na małych ekranach (poniżej md) miniatury są ukryte przez d-none d-md-block */
 /* Główne zdjęcie i informacje zajmują całą szerokość (col-12) */
 /* Możesz dodać specyficzne reguły dla małych ekranów, jeśli potrzebujesz */
-@media (max-width: 767.98px) { /* breakpoint md */
+@media (max-width: 991.98px) { /* Zmieniamy breakpoint na LG, aby pasował do siatki (d-lg-none) */
     .product-main-image-container {
-        max-height: 400px; /* Mniejsza maksymalna wysokość na małych ekranach */
-        margin-bottom: 1rem; /* Dodaj margines pod zdjęciem na małych ekranach */
+        /* Na mniejszych ekranach możemy chcieć innych proporcji, np. 1:1 */
+        aspect-ratio: 1 / 1;
+        margin-bottom: 1rem;
     }
+}
+
+@media (max-width: 767.98px) { /* breakpoint md */
     .product-info-box {
-        padding: 1rem; /* Mniejszy padding na małych ekranach */
+        padding: 1rem;
     }
 }
 

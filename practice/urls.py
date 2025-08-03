@@ -18,11 +18,11 @@ from django.contrib import admin
 from django.urls import path, include
 from . import settings
 from django.conf.urls.static import static
-
+from store.admin_site import site
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', site.urls),
     path('', include('store.urls')),
     path('cart/', include('cart.urls')),
     path('payment/', include('payment.urls')),

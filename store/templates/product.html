@@ -4,13 +4,13 @@
 {% load rating_filters %}
 {% load custom_filters %}
 
-
-{# Upewnij się, że te linki są poprawne i Swiper jest zainstalowany/dostępny #}
+{# Linki do Swipera #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+{# NOWOŚĆ: Link do CSS biblioteki Fancybox #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
 
-{# Upewnij się, że masz załadowane jQuery, jeśli używasz $.ajax #}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 
 <div class="container mt-4">
@@ -36,9 +36,12 @@
                     </div>
                 </div>
                 <div class="col-10">
+                    <!-- ZMIANA: Dodajemy link <a> wokół obrazka dla Fancybox -->
                     <div class="product-main-image-container">
                         {% if product.images.all %}
-                        <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}">
+                        <a href="{{ product.images.first.image.url }}" data-fancybox="gallery" class="main-product-image-wrapper" id="mainProductImageLink">
+                            <img src="{{ product.images.first.image.url }}" id="mainProductImage" class="img-fluid main-product-image" alt="{{ product.name }}">
+                        </a>
                         {% else %}
                         <img src="{% static 'img/kolczyki.png' %}" id="mainProductImage" class="img-fluid main-product-image-fallback" alt="Brak zdjęcia dla produktu">
                         {% endif %}
@@ -47,7 +50,7 @@
             </div>
         </div>
 
-        <!-- WIDOK ZDJĘĆ NA MOBILE -->
+        <!-- WIDOK ZDJĘĆ NA MOBILE (bez zmian) -->
         <div class="col-12 d-lg-none">
             <div class="swiper product-swiper-mobile">
                 <div class="swiper-wrapper">
@@ -68,9 +71,11 @@
         </div>
 
 
-        {# Prawa kolumna - Informacje o produkcie #}
-       <div class="col-12 col-lg-4">
-            <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
+        {# Prawa kolumna - Informacje o produkcie (bez zmian) #}
+        <div class="col-12 col-lg-4">
+            {# ... reszta Twojego kodu dla informacji o produkcie, formularza, etc. ... #}
+            {# ... bez zmian ... #}
+             <form action="{% url 'cart_add' %}" method="post" id="product_addtocart_form">
                 {% csrf_token %}
                 <input type="hidden" name="item_id" id="selected-item-id" value="">
                 <input type="hidden" name="quantity" id="qty" value="1">
@@ -90,8 +95,8 @@
                            <p class="product-price-detail h4 mb-0">{{ product.price }} zł</p>
                        {% endif %}
                     </div>
-                    {% if product.has_multiple_variations %} 
-                        <div class="variation-select-section my-4 text-center p-3 "> 
+                    {% if product.has_multiple_variations %}
+                        <div class="variation-select-section my-4 text-center p-3 ">
                             <div class="form-group">
                                 <label for="size-select">obwód nadgarstka:</label>
                                 <select class="form-control" id="size-select">
@@ -143,6 +148,8 @@
         </div>
     </div>
 
+    {# ... reszta Twojego kodu (Opis, Opinie, Podobne produkty) ... #}
+    {# ... bez zmian ... #}
     <br>
 
     <div class="product-description-section-detail mt-5">
@@ -221,7 +228,7 @@
                             <p><a href="{% url 'login' %}?next={{ request.get_full_path }}">Zaloguj się</a></p>
                         {% endif %}
                     </div>
-                    
+
                     <!-- === KONTENER NA DYNAMICZNIE ŁADOWANE RECENZJE === -->
                     <div id="reviews-container" data-product-id="{{ product.id }}">
                         {% include 'partials/reviews_section.html' %}
@@ -294,19 +301,44 @@
 
 </div>
 
+{# NOWOŚĆ: Skrypt JS biblioteki Fancybox #}
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 <script>
     $(document).ready(function() {
-        // === SKRYPT JS DO ZMIANY GŁÓWNEGO ZDJĘCIA PO KLIKNIĘCIU MINIATURY ===
+        // === ZMIANA: Zaktualizowany skrypt do zmiany głównego zdjęcia ===
         $('.thumbnail-item').on('click', function() {
             $('.thumbnail-item').removeClass('active');
             $(this).addClass('active');
-            var mainImageUrl = $(this).data('src');
-            $('#mainProductImage').attr('src', mainImageUrl);
+
+            var newImageUrl = $(this).data('src');
             var altText = $(this).find('img').attr('alt');
-            $('#mainProductImage').attr('alt', altText);
+
+            // Aktualizuj zarówno obrazek (src) jak i link do pop-upu (href)
+            $('#mainProductImage').attr('src', newImageUrl).attr('alt', altText);
+            $('#mainProductImageLink').attr('href', newImageUrl);
         });
 
-        // === SKRYPT JS DO OBSŁUGI WYBORU WARIAcji (ROZMIARU) I PRZYCISKU DODAJ DO KOSZYKA ===
+        // === NOWOŚĆ: Inicjalizacja Fancybox ===
+        // Wystarczy dodać atrybut data-fancybox do linku,
+        // ale możemy też dodać opcje konfiguracyjne tutaj, jeśli zajdzie potrzeba.
+        Fancybox.bind("[data-fancybox]", {
+          // Twoje opcje konfiguracyjne, np. tłumaczenia
+          l10n: {
+            CLOSE: "Zamknij",
+            NEXT: "Następny",
+            PREV: "Poprzedni",
+            MODAL: "Możesz zamknąć to okno klawiszem ESC",
+            ERROR: "Wystąpił błąd, nie można załadować zawartości.",
+            IMAGE_ERROR: "Nie znaleziono obrazka.",
+            ELEMENT_NOT_FOUND: "Nie znaleziono elementu HTML.",
+            AJAX_NOT_FOUND: "Błąd wczytywania AJAX: Nie znaleziono",
+            AJAX_FORBIDDEN: "Błąd wczytywania AJAX: Brak uprawnień",
+            IFRAME_ERROR: "Błąd podczas ładowania strony.",
+          }
+        });
+
+
+        // === Reszta Twoich skryptów (bez zmian) ===
         const sizeSelect = document.getElementById('size-select');
         const selectedItemIdInput = document.getElementById('selected-item-id');
         const addToCartButton = document.getElementById('add-cart');
@@ -455,7 +487,7 @@
 
         // === SKRYPT: INICJALIZACJA SWIPERA DLA ZDJĘĆ PRODUKTU NA MOBILE ===
         let productSwiperMobile;
-        const breakpoint = 992; 
+        const breakpoint = 992;
         function initOrDestroyProductSwiper() {
             const swiperEl = document.querySelector('.product-swiper-mobile');
             if (!swiperEl) return;

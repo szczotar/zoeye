@@ -219,4 +219,14 @@ class Review(models.Model):
     def __str__(self):
         return f"Review for {self.product.name} by {self.user.username if self.user else 'Anonymous'} ({self.rating}/5)"
 
-# --- KONIEC NOWYCH MODELI ---   
+
+class PageView(models.Model):
+    path = models.CharField(max_length=255) # Ścieżka URL, np. '/product/5'
+    timestamp = models.DateTimeField(auto_now_add=True) # Kiedy nastąpiła odsłona
+    
+    # Opcjonalnie, aby śledzić unikalnych użytkowników
+    session_key = models.CharField(max_length=40, null=True, blank=True) # Klucz sesji dla gości
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL) # Zalogowany użytkownik
+
+    def __str__(self):
+        return f"View on {self.path} at {self.timestamp}"

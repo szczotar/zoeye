@@ -550,8 +550,8 @@
 
 /* Upewnienie się, że logo jest responsywne */
 .navbar-brand img {
-  height: 100px; /* Dostosuj wysokość logo */
-  max-height: 100%;
+  height: 90px; /* Dostosuj wysokość logo */
+  max-height: 90%;
   width: auto;
 }
 

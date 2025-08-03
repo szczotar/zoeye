@@ -2,7 +2,7 @@
 
 <!-- navbar-->
 <header class="header">
-  <div class="container no-margin px-0 px-lg-3">
+  <div class="container no-margin px-0 px-lg-1">
     <!-- Dodano position-relative dla poprawnego centrowania absolutnego logo -->
     <nav class="navbar navbar-expand-lg navbar-light my-higher-navbar position-relative" style="background-color: #FFE4C6;">
 
@@ -53,26 +53,25 @@
               </a>
             </li>
 
-            <!-- Użytkownik (dodano ms-3 dla większego odstępu) -->
-            <li class="nav-item dropdown ms-3">
-              <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user nav-icon-fa"></i>
-              </a>
-              <!-- KLASA "dropdown-menu-end" JEST KLUCZOWA DLA POPRAWNEGO WYRÓWNANIA -->
-              <div class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
-                {% if user.is_authenticated %}
-                <a class="dropdown-item" href="{% url 'account_dashboard' %}">Moje konto</a>
-                <a class="dropdown-item" href="{% url 'order_history' %}">Zamówienia</a>
-                <a class="dropdown-item" href="{% url 'my_data' %}">Moje dane</a>
-                <a class="dropdown-item" href="{% url 'account_addresses' %}">Adresy</a>
-            
-                <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj się</a>
-                {% else %}
-                <a class="dropdown-item" href="{% url 'login' %}">ZALOGUJ SIĘ</a>
-                <a class="dropdown-item" href="{% url 'register' %}">UTWÓRZ KONTO</a>
-                {% endif %}
-              </div>
-            </li>
+             <!-- PRAWA STRONA: user  -->
+<li class="nav-item dropdown ms-3">
+  <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="fas fa-user nav-icon-fa"></i>
+  </a>
+  <div class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
+    {% if user.is_authenticated %}
+    <a class="dropdown-item" href="{% url 'account_dashboard' %}">Moje konto</a>
+    <a class="dropdown-item" href="{% url 'order_history' %}">Zamówienia</a>
+    <a class="dropdown-item" href="{% url 'my_data' %}">Moje dane</a>
+    <a class="dropdown-item" href="{% url 'account_addresses' %}">Adresy</a>
+
+    <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj się</a>
+    {% else %}
+    <a class="dropdown-item" href="{% url 'login' %}">ZALOGUJ SIĘ</a>
+    <a class="dropdown-item" href="{% url 'register' %}">UTWÓRZ KONTO</a>
+    {% endif %}
+  </div>
+</li>
 
             <!-- Koszyk (dodano ms-3 dla większego odstępu) -->
             <li class="nav-item ms-3">
@@ -81,7 +80,7 @@
                   <i class="fas fa-shopping-bag nav-icon-fa"></i>
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark {% if cart|length == 0 %}d-none{% endif %}" id="cart_quantity">{{ cart|length }}</span>
                 </div>
-                <span id="cart_total_price" class="ms-2 d-none d-md-inline {% if cart|length == 0 %}d-none{% endif %}">{{ cart.get_total }} zł</span>
+                <span id="cart_total_price" class="ms-2 d-none d-md-inline {% if cart|length == 0 %}d-none{% endif %}">{{ cart.get_total }} </span>
               </a>
             </li>
           </ul>

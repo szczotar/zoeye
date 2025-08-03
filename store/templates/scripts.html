@@ -203,4 +203,31 @@
         });
 
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Znajdź element nawigacji
+    const navbar = document.querySelector('.my-higher-navbar');
+    
+    // Ustaw próg przewinięcia (w pikselach), po którym zmieni się wygląd nawigacji
+    const scrollThreshold = 50; 
+
+    if (navbar) {
+        // Funkcja, która będzie sprawdzać pozycję scrolla
+        const handleScroll = () => {
+            if (window.scrollY > scrollThreshold) {
+                // Jeśli użytkownik przewinął stronę poniżej progu, dodaj klasę
+                navbar.classList.add('navbar-scrolled');
+            } else {
+                // W przeciwnym razie, usuń klasę
+                navbar.classList.remove('navbar-scrolled');
+            }
+        };
+
+        // Uruchom funkcję przy każdym zdarzeniu przewijania
+        window.addEventListener('scroll', handleScroll);
+        
+        // Sprawdź stan od razu po załadowaniu strony (na wypadek, gdyby strona była przeładowana w połowie)
+        handleScroll();
+    }
+});
 </script>

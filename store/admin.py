@@ -1,29 +1,33 @@
 from django.contrib import admin
-# Z linii importu usunięto 'Customer' i 'Order'
-from .models import Category, Product, Profile, ProductImage, Material, ProductVariation, Review
 from django.contrib.auth.models import User
+from .models import (
+    Category, Product, Profile, ProductImage, Material, 
+    ProductVariation, Review, PageView
+)
 from django.db.models.aggregates import Sum
 
-# Rejestracja modeli, które istnieją
-admin.site.register(Category)
-admin.site.register(Profile)
-admin.site.register(Material)
+# === WAŻNA ZMIANA: Importujemy naszą niestandardową stronę ===
+from .admin_site import site
 
-# Mix profile info and user info
+# --- Rejestracja prostych modeli w naszej niestandardowej stronie ---
+site.register(Category)
+site.register(Profile)
+site.register(Material)
+
+# --- Definicje klas Admin ---
+
 class ProfileInline(admin.StackedInline):
     model = Profile
 
-# Extend User Model
 class UserAdmin(admin.ModelAdmin):
     model = User
     fields = ["username", "first_name", "last_name", "email"]
     inlines = [ProfileInline]
 
-# --- INLINES DLA PRODUKTU ---
+# --- Inlines dla ProductAdmin ---
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
-    fields = ['image', 'alt_text', 'order']
 
 class ProductVariationInline(admin.TabularInline):
     model = ProductVariation
@@ -36,9 +40,11 @@ class ReviewInline(admin.TabularInline):
     readonly_fields = ('user', 'created_at')
     fields = ('user', 'rating', 'comment', 'created_at')
 
-# --- GŁÓWNY ADMIN DLA PRODUKTU ---
+# --- Główny Admin dla Product ---
+@admin.register(Product, site=site)
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline, ProductVariationInline, ReviewInline]
+    # ... (reszta Twojej klasy ProductAdmin bez zmian) ...
     fields = [
         'name', 'category', 'price', 'is_sale', 'sale_price',
         'stock', 'description', 'gender', 'materials',
@@ -82,18 +88,31 @@ class ProductAdmin(admin.ModelAdmin):
     display_price_info.short_description = 'Cena'
     display_price_info.admin_order_field = 'price'
 
-# Rejestracja Product z nowym adminem
-admin.site.register(Product, ProductAdmin)
-
-# --- ADMIN DLA RECENZJI ---
+# --- Admin dla Review ---
+@admin.register(Review, site=site)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
     list_filter = ('rating', 'created_at', 'product__name')
     search_fields = ('comment', 'product__name', 'user__username')
     date_hierarchy = 'created_at'
 
-admin.site.register(Review, ReviewAdmin)
+# --- Admin dla PageView ---
+@admin.register(PageView, site=site)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ('path', 'user', 'session_key', 'timestamp')
+    list_filter = ('timestamp',)
+    search_fields = ('path', 'user__username')
+    date_hierarchy = 'timestamp'
+    def has_add_permission(self, request): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return True
 
-# Unregister i Re-Register User z nowym adminem
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# === POPRAWIONA LOGIKA REJESTRACJI UŻYTKOWNIKA ===
+# 1. Wyrejestruj User z domyślnej strony admin.site
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+
+# 2. Zarejestruj User z naszą niestandardową klasą UserAdmin w naszej niestandardowej stronie 'site'
+site.register(User, UserAdmin)

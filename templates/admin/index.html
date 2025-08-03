@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    <!-- Usunęliśmy {{ block.super }} -->
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- WAŻNE: W bloku 'content' {{ block.super }} jest potrzebny, aby wyświetlić listę modeli! -->
+    {{ block.super }}
+
+    <h2 style="margin-top: 2rem;">Statystyki strony</h2>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Odsłony dzisiaj</h3>
+            <div class="stat-value">{{ stats.views_today }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Unikalni goście dzisiaj</h3>
+            <div class="stat-value">{{ stats.unique_visitors_today }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Wszystkie odsłony</h3>
+            <div class="stat-value">{{ stats.total_views }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Wszyscy unikalni goście</h3>
+            <div class="stat-value">{{ stats.total_unique_visitors }}</div>
+        </div>
+    </div>
+
+    {% if top_pages %}
+    <h2>Najpopularniejsze strony (dziś)</h2>
+    <div class="module">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ścieżka URL</th>
+                    <th>Liczba odsłon</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for page in top_pages %}
+                <tr>
+                    <td>{{ page.path }}</td>
+                    <td>{{ page.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+{% endblock %}
