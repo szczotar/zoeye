@@ -2,15 +2,19 @@
 
 {% block content %}
 
-       <!-- Header-->
-       <header class="bg-dark py-5">
-        <div class="container px-4 px-lg-5 my-5">
-            <div class="text-center text-white">
-                <h1 class="display-4 fw-bolder">Log in to your account</h1>
-                <p class="lead fw-normal text-white-50 mb-0"></p>
-            </div>
+  <div class="container">
+  <!-- HERO SECTION-->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+        <div class="col-lg-6">
+          <h1 class="h2 text-uppercase mb-0">Logowanie</h1>
+    
         </div>
-    </header>
+      </div>
+    </div>
+  </section>
+</div>
 
     <div class = "container"?
         <div class = "row">
@@ -21,18 +25,18 @@
                       {% csrf_token %}
                         <div class="mb-3">
                          
-                          <input type="text" class="form-control" name = "username" placeholder="Enter your username">
+                          <input type="text" class="form-control" name = "username" placeholder="użytkownik">
                
                         </div>
                         <div class="mb-3">
              
-                          <input type="password" class="form-control" name= "password", placeholder="Enter your password">
+                          <input type="password" class="form-control" name= "password", placeholder="hasło">
                         </div>
                  
     
 
                         </div>
-                        <button type="submit" class="btn btn-secondary">Login</button>
+                        <button type="submit" class="btn btn-secondary">Zaloguj</button>
                       </form>
 
 

@@ -72,6 +72,38 @@ tags.async=!0,tags.src="https://zoeye.containers.piwik.pro/"+id+".js"+qPString,s
       
         {% include 'footer.html' %}
        <script src="https://geowidget.inpost.pl/inpost-geowidget.js" defer></script>
+         <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalLabel">Zaloguj się</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="login-form" method="POST" action="{% url 'login' %}">
+                            {% csrf_token %}
+                            <!-- Ukryte pole do przekierowania po zalogowaniu -->
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            
+                            <div class="mb-3">
+                                <label for="login-username" class="form-label">Nazwa użytkownika</label>
+                                <input type="text" class="form-control" name="username" id="login-username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="login-password" class="form-label">Hasło</label>
+                                <input type="password" class="form-control" name="password" id="login-password" required>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100">Zaloguj się</button>
+                        </form>
+                        <hr>
+                        <div class="text-center">
+                            <p class="mb-0">Nie masz jeszcze konta?</p>
+                            <a href="{% url 'register' %}" class="btn btn-outline-dark w-100">Zarejestruj się</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% include 'scripts.html' %}
         
         {% block scripts %}{% endblock %}

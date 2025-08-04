@@ -496,26 +496,29 @@ def get_reviews_page(request, product_id):
 # --- Widoki związane z uwierzytelnianiem ---
 
 def login_user(request):
+    # Widok obsługuje teraz tylko żądania POST z formularza w oknie modalnym
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Pobierz URL, na który mamy wrócić po zalogowaniu
+        next_page = request.POST.get('next', '/') # Domyślnie wracamy na stronę główną
+
         user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             login(request, user)
             # Logika ładowania koszyka z profilu
-            cart = Cart(request) # To wywoła _load_from_db w __init__
-            messages.success(request, "Zostałeś pomyślnie zalogowany!")
-            
-            # Przekieruj na poprzednią stronę lub na stronę główną
-            next_page = request.GET.get('next')
-            if next_page:
-                return redirect(next_page)
-            return redirect('home')
+            cart = Cart(request)
+            messages.success(request, f"Witaj ponownie, {user.username}!")
+            return redirect(next_page)
         else:
-            messages.error(request, "Nieprawidłowa nazwa użytkownika lub hasło.")
-            return redirect('login')
-    else:
-        return render(request, 'login.html', {})
+            messages.error(request, "Nieprawidłowa nazwa użytkownika lub hasło. Spróbuj ponownie.")
+            # Wróć na stronę, z której użytkownik próbował się zalogować
+            return redirect(next_page)
+
+    # Jeśli ktoś spróbuje wejść na /login/ metodą GET, po prostu przekieruj go na stronę główną
+    return redirect('home')
 
 def Logout_user(request):
     logout(request)
