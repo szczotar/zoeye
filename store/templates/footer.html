@@ -1,43 +1,90 @@
-<footer class="bg-dark text-white">
-        <div class="container py-4">
-          <div class="row py-5">
-            <div class="col-md-4 mb-3 mb-md-0">
-              <h6 class="text-uppercase mb-3">Customer services</h6>
-              <ul class="list-unstyled mb-0">
-                <li><a class="footer-link" href="#">Help &amp; Contact Us</a></li>
-                <li><a class="footer-link" href="#">Returns &amp; Refunds</a></li>
-                <li><a class="footer-link" href="#">Online Stores</a></li>
-                <li><a class="footer-link" href="#">Terms &amp; Conditions</a></li>
-              </ul>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-              <h6 class="text-uppercase mb-3">Company</h6>
-              <ul class="list-unstyled mb-0">
-                <li><a class="footer-link" href="#">What We Do</a></li>
-                <li><a class="footer-link" href="#">Available Services</a></li>
-                <li><a class="footer-link" href="#">Latest Posts</a></li>
-                <li><a class="footer-link" href="#">FAQs</a></li>
-              </ul>
-            </div>
-            <div class="col-md-4">
-              <h6 class="text-uppercase mb-3">Social media</h6>
-              <ul class="list-unstyled mb-0">
-                <li><a class="footer-link" href="#">Twitter</a></li>
-                <li><a class="footer-link" href="#">Instagram</a></li>
-                <li><a class="footer-link" href="#">Tumblr</a></li>
-                <li><a class="footer-link" href="#">Pinterest</a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="border-top pt-4" style="border-color: #1d1d1d !important">
-            <div class="row">
-              <div class="col-lg-6">
-                <p class="small text-muted mb-0">&copy; 2025 All rights reserved.</p>
-              </div>
-              <div class="col-lg-6 text-lg-right">
-                <p class="small text-muted mb-0">Website by <a class="text-white reset-anchor" href="" target="_blank">Szczotar</a></p>
-              </div>
-            </div>
+<style>
+    .footer-custom {
+        background-color: #FFE4C6; /* Kolor tła taki jak navbar */
+        color: #333; /* Ciemny kolor tekstu dla lepszego kontrastu */
+    }
+    .footer-custom .footer-link {
+        color: #555; /* Kolor linków */
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .footer-custom .footer-link:hover {
+        color: #000; /* Kolor linków po najechaniu */
+    }
+    .footer-custom .social-link {
+        font-size: 1.5rem; /* Rozmiar ikon social media */
+        color: #333;
+        transition: color 0.2s;
+    }
+    .footer-custom .social-link:hover {
+        color: #000;
+    }
+    .footer-custom .border-top-custom {
+        border-color: rgba(0, 0, 0, 0.1) !important; /* Subtelna linia oddzielająca */
+    }
+    .footer-custom .text-muted-custom {
+        color: #555 !important;
+    }
+    .footer-custom .reset-anchor-custom {
+        color: #333;
+        text-decoration: none;
+    }
+    .footer-custom .reset-anchor-custom:hover {
+        color: #000;
+    }
+</style>
+
+<footer class="footer-custom">
+    <div class="container py-4">
+      <div class="row py-5">
+        
+        <!-- Kolumna: Informacje -->
+        <div class="col-md-4 mb-3 mb-md-0">
+          <h6 class="text-uppercase mb-3">Informacje</h6>
+          <ul class="list-unstyled mb-0">
+            <li><a class="footer-link" href="{% url 'terms_page' %}">Regulamin</a></li>
+            <li><a class="footer-link" href="{% url 'privacy_policy' %}">Polityka Prywatności</a></li>
+            <!-- Link do zarządzania ciasteczkami - wymaga specjalnej funkcji JS z Twojego narzędzia do cookies -->
+            <li><a class="footer-link" href="#" id="manage-cookies-link">Zarządzaj Ciasteczkami</a></li>
+          </ul>
+        </div>
+        
+        <!-- Kolumna: Obsługa Klienta -->
+        <div class="col-md-4 mb-3 mb-md-0">
+          <h6 class="text-uppercase mb-3">Obsługa Klienta</h6>
+          <ul class="list-unstyled mb-0">
+            <li><a class="footer-link" href="{% url 'delivery_returns' %}">Dostawa i zwroty</a></li>
+            <li><a class="footer-link" href="{% url 'payment_methods' %}">Formy płatności</a></li>
+            <li><a class="footer-link" href="{% url 'contact' %}">Kontakt</a></li>
+          </ul>
+        </div>
+
+        <!-- Kolumna: Social Media -->
+        <div class="col-md-4">
+          <h6 class="text-uppercase mb-3">Social media</h6>
+          <div>
+            <!-- Używamy Font Awesome dla ikon -->
+            <a class="social-link me-3" href="https://www.facebook.com/profile.php?id=61551256974737" target="_blank" aria-label="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a class="social-link" href="https://www.instagram.com/zoeye.design/" target="_blank" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
           </div>
         </div>
-      </footer>
+      </div>
+
+      <div class="border-top border-top-custom pt-4">
+        <div class="row">
+          <div class="col-lg-6">
+            <p class="small text-muted-custom mb-0">&copy; {% now "Y" %} Zoeye. All rights reserved.</p>
+          </div>
+          <div class="col-lg-6 text-lg-end">
+            <p class="small text-muted-custom mb-0">
+                Website by <a class="reset-anchor-custom" href="https://www.linkedin.com/in/twojprofil/" target="_blank">Szczotar</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+</footer>

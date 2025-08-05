@@ -3,7 +3,6 @@
 <!-- navbar-->
 <header class="header">
   <div class="container no-margin px-0 px-lg-1">
-    <!-- Dodano position-relative dla poprawnego centrowania absolutnego logo -->
     <nav class="navbar navbar-expand-lg navbar-light my-higher-navbar position-relative" style="background-color: #FFE4C6;">
 
       <!-- Kontener Flex dla elementów lewo/prawo -->
@@ -43,6 +42,14 @@
           </div>
         </div>
 
+        <!-- =================================================================== -->
+        <!-- ZMIANA: LOGO PRZENIESIONE TUTAJ, DO ŚRODKA UKŁADU FLEXBOX -->
+        <!-- Usunięto klasy: position-absolute top-50 start-50 translate-middle -->
+        <a class="navbar-brand" href="{% url 'home' %}">
+          <img src="{% static 'img/zoeye_logo.png' %}" alt="Zoeye">
+        </a>
+        <!-- =================================================================== -->
+
         <!-- PRAWA STRONA: Ikony -->
         <div class="d-flex align-items-center">
           <ul class="navbar-nav flex-row align-items-center">
@@ -53,27 +60,26 @@
               </a>
             </li>
 
-             <!-- PRAWA STRONA: user  -->
-<li class="nav-item dropdown ms-3">
-  <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="fas fa-user nav-icon-fa"></i>
-  </a>
-  <div class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
-    {% if user.is_authenticated %}
-    <a class="dropdown-item" href="{% url 'account_dashboard' %}">Moje konto</a>
-    <a class="dropdown-item" href="{% url 'order_history' %}">Zamówienia</a>
-    <a class="dropdown-item" href="{% url 'my_data' %}">Moje dane</a>
-    <a class="dropdown-item" href="{% url 'account_addresses' %}">Adresy</a>
-
-    <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj się</a>
-    {% else %}
-    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#loginModal">
-    ZALOGUJ SIĘ
-</button>
-    <a class="dropdown-item" href="{% url 'register' %}">UTWÓRZ KONTO</a>
-    {% endif %}
-  </div>
-</li>
+            <!-- PRAWA STRONA: user -->
+            <li class="nav-item dropdown ms-3">
+              <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user nav-icon-fa"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end mt-3" aria-labelledby="userDropdown">
+                {% if user.is_authenticated %}
+                <a class="dropdown-item" href="{% url 'account_dashboard' %}">Moje konto</a>
+                <a class="dropdown-item" href="{% url 'order_history' %}">Zamówienia</a>
+                <a class="dropdown-item" href="{% url 'my_data' %}">Moje dane</a>
+                <a class="dropdown-item" href="{% url 'account_addresses' %}">Adresy</a>
+                <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj się</a>
+                {% else %}
+                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#loginModal">
+                ZALOGUJ SIĘ
+                </button>
+                <a class="dropdown-item" href="{% url 'register' %}">UTWÓRZ KONTO</a>
+                {% endif %}
+              </div>
+            </li>
 
             <!-- Koszyk (dodano ms-3 dla większego odstępu) -->
             <li class="nav-item ms-3">
@@ -89,12 +95,6 @@
         </div>
 
       </div>
-
-      <!-- LOGO (WYPOZYCJONOWANE ABSOLUTNIE, ZAWSZE NA ŚRODKU) -->
-      <a class="navbar-brand position-absolute top-50 start-50 translate-middle" href="{% url 'home' %}">
-        <img src="{% static 'img/zoeye_logo.png' %}" alt="Zoeye">
-      </a>
-
     </nav>
   </div>
 </header>

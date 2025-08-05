@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% comment %} Użyjemy headera w stylu "wciętej karty", który Ci się spodobał {% endcomment %}
+<style>
+    .header-background { background-color: #ffffff; height: 100px; margin-bottom: -60px; }
+    .header-card { background-color: #fff; border: 1px solid #e9ecef; border-radius: 0.25rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); padding: 1.25rem 1.75rem; position: relative; z-index: 10; }
+    .header-card h1 { font-size: 1.5rem; }
+</style>
+
+<div class="header-background"></div>
+
+<div class="container">
+    <div class="header-card">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="text-uppercase mb-0">Regulamin</h1>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end bg-transparent p-0 m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Strona główna</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Regulamin</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <h2>1. Postanowienia ogólne</h2>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+
+            <h2>2. Składanie zamówień</h2>
+            <p>
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </p>
+
+            <h2>3. Płatności i dostawa</h2>
+            <p>
+                Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, 
+                est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
+            </p>
+
+            <!-- Dodaj więcej sekcji regulaminu zgodnie z potrzebami -->
+
+        </div>
+    </div>
+</div>
+{% endblock %}

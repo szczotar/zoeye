@@ -5,27 +5,49 @@
 
 <div class="container">
     <!-- HERO SECTION-->
-    <section class="py-5 bg-light">
-        <div class="container">
-            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="h2 text-uppercase mb-0">{{category.name}}</h1>
-                </div>
-                <div class="col-lg-6 text-lg-right">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
-                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                            <li class="breadcrumb-item"><a href="{% url 'categories_all' %}">Categories</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">{{category.name}}</li>
-                        </ol>
-                    </nav>
-                </div>
+<style>
+    .header-background {
+        background-color: #ffffff; /* Ciemny kolor, pasujący do navbara */
+        height: 110px;
+        margin-bottom: -80px; /* Kluczowy element - "wciąga" treść pod siebie */
+    }
+    .header-card {
+        background-color: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 0.25rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 1.25rem 1.75rem;
+        position: relative; /* Ważne dla z-index */
+        z-index: 10;
+    }
+     .header-card h1 {
+        font-size: 1.5rem; /* ZMNIEJSZONO czcionkę (standardowo h2 ma 2rem) */
+    }
+</style>
+
+<div class="header-background"></div>
+
+<div class="container">
+    <div class="header-card">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="h2 text-uppercase mb-0">{{category.name}}</h1>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end bg-transparent p-0 m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Strona główna</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{category.name}}</li>
+                    </ol>
+                </nav>
             </div>
         </div>
-    </section>
-    <section class="py-5">
+    </div>
+</div>
+         <section class="py-5">
         <div class="container p-0">
-
+             
             <button class="btn btn-secondary mb-3"  type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
                 <i class="fa fa-sliders fa-lg" ></i>   Filtry
             </button>

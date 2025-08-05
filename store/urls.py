@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
+
 
 urlpatterns = [
     # --- Główne ścieżki Twojej strony ---
@@ -56,6 +58,12 @@ urlpatterns = [
     path('account/update-personal-info/', views.update_personal_info, name='update_personal_info'),
     path('account/update-email/', views.update_email, name='update_email'),
     path('account/update_password/', views.update_password, name='update_password'),
+    
+    
+    path('privacy-policy/', TemplateView.as_view(template_name="privacy_policy.html"), name='privacy_policy'),
+    path('delivery-returns/', TemplateView.as_view(template_name="delivery_returns.html"), name='delivery_returns'),
+    path('payment-methods/', TemplateView.as_view(template_name="payment_methods.html"), name='payment_methods'),
+    path('contact/', TemplateView.as_view(template_name="contact.html"), name='contact'),
 
     # STARE ŚCIEŻKI, KTÓRE ZOSTAŁY USUNIĘTE, PONIEWAŻ SĄ TERAZ CZĘŚCIĄ NOWEGO PANELU:
     # path('update_user/', views.update_user, name='update_user'),
