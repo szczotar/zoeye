@@ -230,4 +230,22 @@
         handleScroll();
     }
 });
+
+  document.addEventListener('DOMContentLoaded', function() {
+        const manageCookiesLink = document.getElementById('manage-cookies-link');
+
+        if (manageCookiesLink) {
+            manageCookiesLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Zapobiegaj domyślnej akcji linku
+
+                // Sprawdź, czy API Piwik PRO jest dostępne, zanim go użyjesz
+                if (typeof ppms !== 'undefined' && ppms.cm && typeof ppms.cm.api === 'function') {
+                    ppms.cm.api('renderConsentForm');
+                } else {
+                    console.error('Piwik PRO Consent Manager (ppms.cm.api) is not available.');
+                    alert('Nie można w tej chwili otworzyć ustawień zgód. Spróbuj odświeżyć stronę.');
+                }
+            });
+        }
+    });
 </script>

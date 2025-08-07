@@ -24,9 +24,19 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@*(ukbxi6&)li3bdxd(@vsv9pii4lrobyh5$&$=dop)$no!n9)'
-
+SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465)) # Port 587 używa TLS
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER # Domyślny adres "od"
+EMAIL_USE_TLS = False  # Wyłączamy STARTTLS (dla portu 587)
+EMAIL_USE_SSL = True   # Włączamy jawne SSL (dla portu 465)
+SITE_URL = 'http://127.0.0.1:8000'
 DEBUG = True
 
 # ALLOWED_HOSTS = ['https://zoeye.pl','zoeye.pl','eccomestore-production.up.railway.app', 'https://eccomestore-production.up.railway.app']

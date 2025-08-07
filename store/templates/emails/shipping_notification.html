@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twoje zamówienie zostało wysłane</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; border: 1px solid #dddddd;">
+        <!-- === HEADER Z LOGO I KOLOREM === -->
+        <tr>
+            <td align="center" bgcolor="#FFE4C6" style="padding: 20px 0 20px 0;">
+                <!-- ZASTĄP PONIŻSZY URL PEŁNYM ADRESEM DO TWOJEGO LOGO -->
+                <img src="{{ logo_url }}" alt="Zoeye Logo" width="150" style="display: block;" />
+            </td>
+        </tr>
+        <!-- === GŁÓWNA TREŚĆ === -->
+        <tr>
+            <td bgcolor="#ffffff" style="padding: 40px 30px 40px 30px;">
+                <h1 style="color: #333333;">Twoje zamówienie jest w drodze!</h1>
+                <p style="color: #555555; line-height: 1.5;">Witaj {{ order.full_name }},</p>
+                <p style="color: #555555; line-height: 1.5;">
+                    Świetna wiadomość! Twoje zamówienie o numerze <strong>{{ order.order_number }}</strong> zostało wysłane i jest już w drodze do Ciebie.
+                </p>
+                
+                <h3 style="color: #333333; border-top: 1px solid #eeeeee; padding-top: 20px; margin-top: 20px;">Adres dostawy:</h3>
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; color: #555555; line-height: 1.5;">
+                    <pre style="margin: 0; font-family: Arial, sans-serif; white-space: pre-wrap;">{{ order.shipping_address }}</pre>
+                </div>
+
+                <p style="color: #555555; line-height: 1.5; margin-top: 30px;">
+                    Możesz śledzić status swoich zamówień w panelu klienta na naszej stronie.
+                </p>
+            </td>
+        </tr>
+        <!-- === FOOTER === -->
+        <tr>
+            <td bgcolor="#FFE4C6" style="padding: 20px 30px;">
+                <p style="color: #555555; text-align: center; margin: 0;">Dziękujemy za zakupy,<br>Zespół Zoeye</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

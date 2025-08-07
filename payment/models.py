@@ -5,7 +5,11 @@ from store.models import Product, ProductVariation
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver 
 import datetime
-
+from django.conf import settings
+from django.templatetags.static import static
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template
+from django.db.models.signals import post_save, pre_save
 # --- Funkcja pomocnicza do generowania numeru zamówienia ---
 def generate_order_number():
     """
@@ -131,3 +135,47 @@ def set_order_details_on_save(sender, instance, **kwargs):
                 instance.date_shipped = datetime.datetime.now()
         except sender.DoesNotExist:
             pass
+
+@receiver(pre_save, sender=Order)
+def before_order_save(sender, instance, **kwargs):
+    """
+    Logika wykonywana tuż PRZED zapisaniem obiektu Order.
+    1. Przypisuje numer zamówienia dla nowych obiektów.
+    2. Sprawdza zmianę statusu 'shipped' i wysyła e-mail.
+    3. Ustawia datę wysyłki.
+    """
+    # 1. Przypisz numer zamówienia, jeśli to nowy obiekt
+    if not instance.pk:
+        instance.order_number = generate_order_number()
+        return # Zakończ, nie ma sensu sprawdzać statusu wysyłki dla nowego zamówienia
+
+    # 2. Sprawdź zmianę statusu i wyślij e-mail (tylko dla istniejących obiektów)
+    try:
+        # Pobierz stan obiektu prosto z bazy danych (stan PRZED zapisem)
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return # Obiekt jeszcze nie istnieje, nic nie rób
+
+    # Sprawdź, czy status 'shipped' zmienił się z False na True
+    if instance.shipped and not old_instance.shipped:
+        # 3. Ustaw datę wysyłki
+        instance.date_shipped = datetime.datetime.now()
+        
+        # Wyślij e-mail z powiadomieniem
+        print(f"WARUNEK SPEŁNIONY: Wysyłanie e-maila o wysyłce do {instance.email}...")
+        try:
+            subject = f"Twoje zamówienie nr {instance.order_number} zostało wysłane!"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to_email = instance.email
+            logo_url = settings.SITE_URL + static('images/logo.png')
+            context = {'order': instance, 'logo_url': logo_url}
+            html_template = get_template('emails/shipping_notification.html')
+            html_content = html_template.render(context)
+            text_content = f"Witaj {instance.full_name},\n\nTwoje zamówienie o numerze {instance.order_number} zostało wysłane."
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            print("E-MAIL O WYSYŁCE POMYŚLNIE PRZEKAZANY DO WYSŁANIA!")
+        except Exception as e:
+            print(f"BŁĄD KRYTYCZNY PODCZAS WYSYŁANIA E-MAILA O WYSYŁCE: {e}")

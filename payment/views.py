@@ -18,6 +18,10 @@ from .models import ShippingAddress, Order, OrderItem
 from django.views.decorators.csrf import csrf_exempt
 import stripe
 from django.http import HttpResponse
+from django.conf import settings
+from django.templatetags.static import static
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import get_template
 import os
 from dotenv import load_dotenv
 
@@ -352,6 +356,23 @@ def stripe_webhook(request):
                         # Zmniejsz stan magazynowy
                         product.stock = F('stock') - quantity
                         product.save()
+
+                # mail do klienta
+                try:
+                    subject = f"Potwierdzenie zamówienia nr {order.order_number}"
+                    from_email = settings.DEFAULT_FROM_EMAIL
+                    to_email = order.email
+                    logo_url = settings.SITE_URL + static('images/logo.png')
+                    context = {'order': order, 'logo_url': logo_url}
+                    html_template = get_template('emails/order_confirmation.html')
+                    html_content = html_template.render(context)
+
+                    msg = EmailMultiAlternatives(subject, "Dziękujemy za zamówienie!", from_email, [to_email])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send()
+                except Exception as e:
+                    print(f"Błąd podczas wysyłania e-maila z potwierdzeniem dla zamówienia {order.order_number}: {e}")
+                
 
         except Exception as e:
             print(f"Błąd krytyczny podczas tworzenia zamówienia z webhooka: {e}")
