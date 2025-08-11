@@ -19,6 +19,10 @@
         background-color: #FFE4C6;
         box-shadow: none;
     }
+    .accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(141, 44, 44, 0.548); /* Opcjonalnie: przywraca domyślny kolor ramki */
+}
     .accordion-button.disabled {
         background-color: #e9ecef;
         color: #6c757d;
@@ -131,10 +135,12 @@
                 <p class="mb-0">Jesteś zalogowany jako: <strong>{{ user.email }}</strong>.</p>
             {% else %}
                 <p>Masz już konto? Zaloguj się, aby przyspieszyć proces.</p>
-                <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-sm btn-outline-dark">Zaloguj się</a>
+                  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                ZALOGUJ SIĘ
+                </button>
                 <hr>
                 <p>Nie masz konta? Możesz kontynuować jako gość.</p>
-                <button type="button" class="btn btn-sm btn-dark" data-next-step="collapseTwo">Kontynuuj jako gość</button>
+                <button type="button" class="btn btn-primary"collapseTwo">Kontynuuj jako gość</button>
             {% endif %}
         </div>
     </div>

@@ -56,10 +56,10 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Product</strong></th>
-                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Price</strong></th>
-                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Quantity</strong></th>
-                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Total</strong></th>
+                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Produkt</strong></th>
+                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Cena</strong></th>
+                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Ilość</strong></th>
+                                <th class="border-0 p-3" scope="col"> <strong class="text-small text-uppercase">Suma</strong></th>
                                 <th class="border-0 p-3" scope="col"></th>
                             </tr>
                         </thead>
@@ -94,7 +94,7 @@
                                             </td>
                                             <td class="align-middle border-0">
                                                 <div class="border d-flex align-items-center justify-content-between px-3">
-                                                    <span class="small text-uppercase text-gray quantities">Quantity</span>
+                                                    <span class="small text-uppercase text-gray quantities">Ilość</span>
                                                     <div class="quantity">
                                                         <input type="number" name="quantity" value="{{ item.quantity }}" class="form-control form-control-sm border-0 shadow-0 quantity-input" data-item-key="{{ item.item_key }}" min="0" style="width: 60px; display: inline-block; text-align: center;">
                                                     </div>
@@ -113,7 +113,7 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="5" class="text-center border-0">Your cart is empty.</td>
+                                    <td colspan="5" class="text-center border-0">Twój koszyk jest pusty.</td>
                                 </tr>
                             {% endif %}
                         </tbody>
@@ -122,8 +122,8 @@
                 <div class="bg-light px-4 py-3">
                     <div class="row align-items-center text-center">
                         <div class="col-md-6 mb-3 mb-md-0 text-md-left">
-                            <a class="btn btn-link p-0 text-dark btn-sm" href="{% url 'categories_all' %}">
-                                <i class="fas fa-long-arrow-alt-left mr-2"> </i> Continue shopping
+                            <a class="btn btn-link p-0 text-dark btn-sm" href="{% url 'home' %}">
+                                <i class="fas fa-long-arrow-alt-left mr-2"> </i> Kontynuuj zakupy
                             </a>
                         </div>
                         <div class="col-md-6 text-md-right"></div>
@@ -133,19 +133,19 @@
             <div class="col-lg-4">
                 <div class="card border-0 rounded-0 p-lg-4 bg-light">
                     <div class="card-body">
-                        <h5 class="text-uppercase mb-4">Order total</h5>
+                        <h5 class="text-uppercase mb-4">PODSUMOWANIE</h5>
                         <ul class="list-unstyled mb-0">
                             <li class="d-flex align-items-center justify-content-between mb-4">
-                                <strong class="text-uppercase small font-weight-bold">Subtotal</strong>
+                                <strong class="text-uppercase small font-weight-bold">Wartość produktu</strong>
                                 <span id="cart-total-display">{{ totals|default:0|floatformat:2 }} zł</span>
                             </li>
                             <li class="border-bottom my-2"></li>
                             <li class="d-flex align-items-center justify-content-between mb-4">
-                                <strong class="text-uppercase small font-weight-bold">Total</strong>
+                                <strong class="text-uppercase small font-weight-bold">Suma do zapłaty</strong>
                                 <span id="order-total-display">{{ totals|default:0|floatformat:2 }} zł</span>
                             </li>
                             <li>
-                                <a class="btn btn-dark btn-block {% if not cart_items %}disabled{% endif %}" href="{% url 'checkout' %}">Proceed to checkout</a>
+                                <a class="btn btn-primary {% if not cart_items %}disabled{% endif %}" href="{% url 'checkout' %}">ZREALIZUJ ZAMÓWIENIE</a>
                             </li>
                         </ul>
                     </div>

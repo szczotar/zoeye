@@ -134,9 +134,9 @@
                     {% endif %}
                     <div class="add-to-cart-section-detail my-4 text-center p-3">
                         {% if product.is_available %}
-                            <button type="submit" id="add-cart" class="btn btn-dark custom-add-to-cart-button">Dodaj do koszyka</button>
+                            <button type="submit" id="add-cart" class="btn btn-primary"><b>Dodaj do koszyka</b></button>
                         {% else %}
-                            <button type="button" class="btn btn-secondary custom-add-to-cart-button" disabled>Brak w magazynie</button>
+                            <button type="button" class="btn btn-secondary" disabled>Brak w magazynie</button>
                         {% endif %}
                         <div class="small text-muted mt-3">
                             <p class="mb-0">Wysyłka: 1 dzień roboczy</p>
@@ -154,7 +154,7 @@
 
     <div class="product-description-section-detail mt-5">
         <div class="collapse-trigger d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDescription" aria-expanded="false" aria-controls="collapseDescription" role="button">
-             <h4 class="reviews-heading-detail mb-0">Opis produktu</h4>
+             <h4 class="reviews-heading-detail mb-0">Szczegóły</h4>
              <i class="fas fa-chevron-down"></i>
         </div>
         <hr class="description-separator-detail mt-2 mb-3" />

@@ -116,7 +116,7 @@ def cart_add(request):
             'item_key': item_key, # Key of the item added
             'item_name': item_name, # Name for the message
             'quantity_added': quantity, # Quantity added in THIS operation
-            'message': f"Dodano {quantity}x '{item_name}' do koszyka.", # Message for simple popup
+            'message': f"Dodano {item_name} do koszyka.", # Message for simple popup
             'type': 'add', # <-- DODANO TĘ LINIĘ
         }
 
@@ -174,7 +174,7 @@ def cart_delete(request):
                  'qty': cart.get_total_quantity(),
                  'cart_total': str(cart.cart_total()),
                  'item_key': item_key,
-                 'message': f"Przedmiot '{deleted_item_name}' nie znaleziono w koszyku (może już usunięty?).", # Message for simple popup
+                 'message': f"Przedmiot {deleted_item_name} nie znaleziono w koszyku (może już usunięty?).", # Message for simple popup
                  'type': 'delete', # <-- DODANO TĘ LINIĘ (również w przypadku braku itemu w koszyku)
              }
              return JsonResponse(response_data)
@@ -193,7 +193,7 @@ def cart_delete(request):
             'cart_total': str(cart_total), # Convert Decimal to string
             'item_key': item_key,
             'item_name': deleted_item_name, # Pass the name for the message
-            'message': f"Przedmiot '{deleted_item_name}' usunięty z koszyka.", # Message for simple popup
+            'message': f"Przedmiot {deleted_item_name} usunięty z koszyka.", # Message for simple popup
             'type': 'delete', # <-- DODANO TĘ LINIĘ
         }
 
@@ -278,7 +278,7 @@ def cart_update(request):
              'item_subtotal': str(item_subtotal), # Convert Decimal to string
              'item_name': item_name, # Pass the name for the message
              'new_quantity': quantity, # Pass the new quantity for the message
-             'message': f"Ilość dla produktu '{item_name}' zaktualizowana na {quantity}.", # Message for simple popup
+             'message': f"Ilość dla produktu {item_name} zaktualizowana na {quantity}.", # Message for simple popup
              'type': 'update', # <-- DODANO TĘ LINIĘ
          }
 

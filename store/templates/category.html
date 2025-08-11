@@ -170,7 +170,6 @@
 {# === OFFCANVAS STRUCTURE (OUTSIDE THE MAIN CONTAINER) === #}
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Filters</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
@@ -188,25 +187,25 @@
             {% endfor %}
             <input type="hidden" name="page" value="1">
 
-            <h5 class="text-uppercase mb-4">For Whom</h5>
+            <h5 class="text-uppercase mb-4">Dla Kogo</h5>
             <div class="form-check mb-1">
                 <input class="form-check-input" type="radio" name="gender" value="" id="genderAll" {% if not selected_gender or selected_gender == 'all' %}checked{% endif %}>
-                <label class="form-check-label" for="genderAll">All</label>
-            </div>
-            <div class="form-check mb-1">
-                <input class="form-check-input" type="radio" name="gender" value="men" id="genderMen" {% if selected_gender == 'men' %}checked{% endif %}>
-                <label class="form-check-label" for="genderMen">Men</label>
+                <label class="form-check-label" for="genderAll">Wszyscy</label>
             </div>
             <div class="form-check mb-1">
                 <input class="form-check-input" type="radio" name="gender" value="women" id="genderWomen" {% if selected_gender == 'women' %}checked{% endif %}>
-                <label class="form-check-label" for="genderWomen">Women</label>
+                <label class="form-check-label" for="genderWomen">Ona</label>
+            </div>
+             <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="gender" value="men" id="genderMen" {% if selected_gender == 'men' %}checked{% endif %}>
+                <label class="form-check-label" for="genderMen">On</label>
             </div>
             <div class="form-check mb-1">
                 <input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}>
                 <label class="form-check-label" for="genderUnisex">Unisex</label>
             </div>
 
-            <h5 class="text-uppercase mb-4 mt-4">Material</h5>
+            <h5 class="text-uppercase mb-4 mt-4">Materiał</h5>
             <ul class="list-unstyled small text-muted pl-lg-4 font-weight-normal">
                 {% for material in all_materials %}
                     <li class="mb-1">
@@ -218,31 +217,30 @@
                 {% endfor %}
             </ul>
 
-            <h5 class="text-uppercase mb-4 mt-4">Price Filter</h5>
+            <h5 class="text-uppercase mb-4 mt-4">Cena</h5>
             <div class="d-flex align-items-center mb-3">
                 <input type="number" name="min_price" placeholder="Min" value="{{ selected_min_price|default:'' }}" class="form-control form-control-sm w-50 me-2">
                 <input type="number" name="max_price" placeholder="Max" value="{{ selected_max_price|default:'' }}" class="form-control form-control-sm w-50">
             </div>
 
-            <div class="form-check form-switch mb-1">
+          <div class="form-check form-switch mb-1">
                 <input class="form-check-input" type="checkbox" name="sale_only" value="true" id="filterSaleOnly" {% if selected_sale_only %}checked{% endif %} role="switch">
-                <label class="form-check-label" for="filterSaleOnly">Show only Sale items</label>
+                <label class="form-check-label" for="filterSaleOnly">Pokaż tylko promocje</label>
             </div>
 
             <div class="form-check form-switch mb-1">
                 <input class="form-check-input" type="checkbox" name="available_only" value="true" id="filterAvailableOnly" {% if selected_available_only %}checked{% endif %} role="switch">
-                <label class="form-check-label" for="filterAvailableOnly">Show only available items</label>
+                <label class="form-check-label" for="filterAvailableOnly">Pokaż tylko dostępne</label>
             </div>
-
-            <button type="submit" class="btn btn-outline-dark btn-sm w-100 mt-3">Apply Filters</button>
+            <br>
+            <button type="submit" class="btn btn-secondary btn-sm w-100"><b>Zasotsuj Filtry</b></button>
         </form>
 
-        <div class="mt-4">
-            <a href="{% url 'category' category.name %}" class="btn btn-secondary btn-sm w-100">Reset Filters</a>
+        <div class="mt-2">
+            <a href="{% url 'category' category.name %}" class="btn btn-secondary btn-sm w-100"><b>Resetuj Filtry</b></a>
         </div>
     </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- NOWY KOD: EFEKT ZMIANY ZDJĘCIA PO NAJECHANIU ---

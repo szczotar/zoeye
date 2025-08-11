@@ -233,7 +233,7 @@
 
 /* Styl po najechaniu myszką na link zawierający ikonkę SVG */
 .nav-item a:hover .nav-icon-svg {
-    fill: #ffd700; /* Zmień kolor na złoty po najechaniu */
+    fill: #FFD32C; /* Zmień kolor na złoty po najechaniu */
     /* Możesz użyć kodu hex, np. */
     /* fill: #FFD700; */
 }
@@ -392,7 +392,7 @@
 }
 .product-info .product-sale-price,
 .product-info .product-price-sale {
-    color: #ffd700;
+    color: #FFD32C;
     margin-bottom: 0.25rem;
     /* font-weight: bold; */
     line-height: 1; /* Poprawia odstęp między liniami cen */
@@ -503,19 +503,19 @@
 }
 
 .custom-add-to-cart-button:hover {
-     background-color: #e6c619;
-     border-color: #e6c619;
+     background-color: #FFD32C;
+     border-color: #FFD32C;
      color: #fff;
 }
 .custom-add-to-cart-button:active {
-     background-color: sienna;
-     border-color: sienna;
+     background-color: #FFD32C;
+     border-color:#FFD32C;
 }
 
 
 
 .text-sale-price {
-    color: #dcb14a;
+    color: #FFD32C;
     /* Opcjonalnie: jeśli nadal jest czarny, spróbuj dodać !important, ale lepiej rozwiązać konflikty CSS inaczej */
     /* color: #dcb14a !important; */
 }
@@ -532,7 +532,7 @@
 
 /* Efekt hover dla linków z ikonami */
 .navbar-nav .nav-link:hover .nav-icon-fa {
-    color: #e6c619; /* Ciemniejszy kolor po najechaniu */
+    color: #FFD32C; /* Ciemniejszy kolor po najechaniu */
 }
 
 /* Ukrycie strzałki przy dropdownie użytkownika */
@@ -588,7 +588,7 @@
     transition: color 0.2s;
 }
 .offcanvas .accordion-body a:hover {
-    color: #e6c619;
+    color: #FFD32C;
  
 }
 
