@@ -26,3 +26,10 @@ def get_item(dictionary, key):
         # Opcjonalnie: zwróć None lub pusty string, jeśli wejście nie jest słownikiem
         return None
     return dictionary.get(key)
+
+@register.filter(name='is_list')
+def is_list(value):
+    """
+    Filtr szablonu, który sprawdza, czy przekazana wartość jest listą.
+    """
+    return isinstance(value, list)

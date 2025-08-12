@@ -11623,7 +11623,7 @@ textarea.form-control-lg {
 .product-main-image-container {
     width: 100%;
     /* Ustawiamy proporcje kontenera na 4:3. Wysokość automatycznie dostosuje się do szerokości. */
-    aspect-ratio: 4 / 3;
+    aspect-ratio:  4/ 3;
     overflow: hidden;
     position: relative; /* Potrzebne do pozycjonowania linku */
     background-color: #f8f9fa; /* Opcjonalne tło, jeśli obrazek nie wypełnia całego kontenera */

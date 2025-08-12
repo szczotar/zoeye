@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+<div class="container">
+    <!-- HERO SECTION-->
+<style>
+    .header-background {
+        background-color: #ffffff;
+        height: 110px;
+        margin-bottom: -80px;
+    }
+    .header-card {
+        background-color: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 0.25rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 1.25rem 1.75rem;
+        position: relative;
+        z-index: 10;
+    }
+     .header-card h1 {
+        font-size: 1.5rem;
+    }
+</style>
+
+<div class="header-background"></div>
+
+<div class="container">
+    <div class="header-card">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="h2 text-uppercase mb-0">Promocje</h1>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end bg-transparent p-0 m-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Strona główna</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Promocje</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+         <section class="py-5">
+        <div class="container p-0">
+             
+            <button class="btn btn-secondary mb-3"  type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+                <i class="fa fa-sliders fa-lg" ></i>   Filtry
+            </button>
+
+            <div class="row">
+                <div class="col-12 order-1 mb-5 mb-lg-0">
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-lg-6 mb-2 mb-lg-0">
+                            <p class="text-small text-muted mb-0">Pokazano {{ products_page.start_index }}–{{ products_page.end_index }} z {{ products_page.paginator.count }} wyników</p>
+                        </div>
+                        <div class="col-lg-6">
+                            <ul class="list-inline d-flex align-items-center justify-content-lg-end mb-0">
+                                <li class="list-inline-item d-flex align-items-center">
+                                    <form method="get" action="{% url 'sale' %}" id="sortingForm" class="d-flex align-items-center">
+                                        <label for="sortingSelect" class="me-2">Sortuj:</label>
+                                        <select class="form-select form-select-sm" style="width: auto;" name="sorting" id="sortingSelect" onchange="this.form.submit();">
+                                            <option value="default" {% if current_sorting == 'default' %}selected{% endif %}>Domyślnie</option>
+                                            <option value="low-high" {% if current_sorting == 'low-high' %}selected{% endif %}>Ceny: Rosnąco</option>
+                                            <option value="high-low" {% if current_sorting == 'high-low' %}selected{% endif %}>Ceny: Malejąco</option>
+                                        </select>
+                                        
+                                        {% for key, value in request.GET.items %} {% if key != 'sorting' %}
+                                            {% if value|is_list %}
+                                                {% for item in value %}
+                                                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                                                {% endfor %}
+                                            {% else %}
+                                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                            {% endif %}
+                                        {% endif %}{% endfor %}
+                                        <input type="hidden" name="page" value="1">
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        {% if products_page %}
+                            {% for product in products_page %}
+                                <div class="col-lg-4 col-sm-6 mb-4">
+                                    <div class="product text-center">
+                                        <div class="mb-3 position-relative">
+                                            <div class="badge text-white badge-"></div>
+                                            <a class="d-block" href="{% url 'product' product.id %}">
+                                                {% if product.images.all %}
+                                                <div id="productCardCarousel{{ product.id }}" class="carousel slide card-product-carousel" data-bs-ride="false" data-bs-interval="false">
+                                                    <div class="carousel-inner">
+                                                        {% for image_obj in product.images.all %}
+                                                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                                            <img src="{{ image_obj.image.url }}" class="d-block w-100 carousel-img" alt="{{ image_obj.alt_text|default:product.name }}">
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <img src="{% static 'img/kolczyki.png' %}" class="img-fluid w-100 card-fallback-img" alt="Brak zdjęcia dla produktu">
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                        <div class="product-info">
+                                            <a href="{% url 'product' product.id %}" style="text-decoration: none; color: inherit;">
+                                                <h6 class="product-name">{{ product.name }}</h6>
+                                            </a>
+                                            {% if product.is_sale %}
+                                            <p class="product-sale-price"> {{ product.sale_price }} zł</p>
+                                             <br>
+                                            <p class="small text-muted product-sale-price">Cena regularna: {{ product.price }} zł</p>
+                                            <p class="small text-muted product-sale-price lowest-price-line">Najniższa cena z 30 dni: {{ product.sale_price }} zł</p>
+                                            {% else %}
+                                            <p class="small text-muted product-price">{{ product.price }} zł</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <p>Brak produktów spełniających kryteria filtrów.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- PAGINATION-->
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center justify-content-lg-end">
+                            {% if products_page.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products_page.previous_page_number }}{% for key, value_list in request.GET.lists %}{% if key != 'page' %}{% for value in value_list %}&{{ key }}={{ value }}{% endfor %}{% endif %}{% endfor %}" aria-label="Previous">«</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">«</a></li>
+                            {% endif %}
+
+                            {% for num in products_page.paginator.page_range %}
+                                {% if products_page.number == num %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                {% elif num > products_page.number|add:'-3' and num < products_page.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value_list in request.GET.lists %}{% if key != 'page' %}{% for value in value_list %}&{{ key }}={{ value }}{% endfor %}{% endif %}{% endfor %}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if products_page.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ products_page.next_page_number }}{% for key, value_list in request.GET.lists %}{% if key != 'page' %}{% for value in value_list %}&{{ key }}={{ value }}{% endfor %}{% endif %}{% endfor %}" aria-label="Next">»</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">»</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+{# === OFFCANVAS STRUCTURE (OUTSIDE THE MAIN CONTAINER) === #}
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+    <div class="offcanvas-header">
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form method="get" action="{% url 'sale' %}" id="sidebarFilterForm">
+            {% for key, value_list in request.GET.lists %}
+                {% if key != 'gender' and key != 'material' and key != 'min_price' and key != 'max_price' and key != 'sale_only' and key != 'available_only' %}
+                    {% for value in value_list %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            <input type="hidden" name="page" value="1">
+
+            <h5 class="text-uppercase mb-4">Dla Kogo</h5>
+            <div class="form-check mb-1"><input class="form-check-input" type="radio" name="gender" value="" id="genderAll" {% if not selected_gender or selected_gender == 'all' %}checked{% endif %}><label class="form-check-label" for="genderAll">Wszyscy</label></div>
+            <div class="form-check mb-1"><input class="form-check-input" type="radio" name="gender" value="women" id="genderWomen" {% if selected_gender == 'women' %}checked{% endif %}><label class="form-check-label" for="genderWomen">Ona</label></div>
+            <div class="form-check mb-1"><input class="form-check-input" type="radio" name="gender" value="men" id="genderMen" {% if selected_gender == 'men' %}checked{% endif %}><label class="form-check-label" for="genderMen">On</label></div>
+            <div class="form-check mb-1"><input class="form-check-input" type="radio" name="gender" value="unisex" id="genderUnisex" {% if selected_gender == 'unisex' %}checked{% endif %}><label class="form-check-label" for="genderUnisex">Unisex</label></div>
+
+            <h5 class="text-uppercase mb-4 mt-4">Materiał</h5>
+            <ul class="list-unstyled small text-muted pl-lg-4 font-weight-normal">
+                {% for material in all_materials %}
+                    <li class="mb-1"><div class="form-check"><input class="form-check-input" type="checkbox" name="material" value="{{ material.name }}" id="material{{ material.id }}" {% if material.name in selected_materials %}checked{% endif %}><label class="form-check-label" for="material{{ material.id }}">{{ material.name }}</label></div></li>
+                {% endfor %}
+            </ul>
+
+            <h5 class="text-uppercase mb-4 mt-4">Cena</h5>
+            <div class="d-flex align-items-center mb-3">
+                <input type="number" name="min_price" placeholder="Min" value="{{ selected_min_price|default:'' }}" class="form-control form-control-sm w-50 me-2">
+                <input type="number" name="max_price" placeholder="Max" value="{{ selected_max_price|default:'' }}" class="form-control form-control-sm w-50">
+            </div>
+
+            <!-- Ukrywamy ten checkbox, bo na tej stronie jest zawsze aktywny -->
+            <div class="form-check form-switch mb-1" style="display: none;">
+                <input class="form-check-input" type="checkbox" name="sale_only" value="true" id="filterSaleOnly" checked>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input class="form-check-input" type="checkbox" name="available_only" value="true" id="filterAvailableOnly" {% if selected_available_only %}checked{% endif %} role="switch">
+                <label class="form-check-label" for="filterAvailableOnly">Pokaż tylko dostępne</label>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-secondary btn-sm w-100"><b>Zastosuj Filtry</b></button>
+        </form>
+
+        <div class="mt-2">
+            <a href="{% url 'sale' %}" class="btn btn-secondary btn-sm w-100"><b>Resetuj Filtry</b></a>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.product'); 
+    productCards.forEach(card => {
+        const carousel = card.querySelector('.card-product-carousel');
+        if (carousel) {
+            const firstItem = carousel.querySelector('.carousel-item:first-child');
+            const secondItem = carousel.querySelector('.carousel-item:nth-child(2)');
+
+            if (firstItem && secondItem) {
+                card.addEventListener('mouseenter', () => {
+                    firstItem.classList.remove('active');
+                    secondItem.classList.add('active');
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    secondItem.classList.remove('active');
+                    firstItem.classList.add('active');
+                });
+            }
+        }
+    });
+
+    // Poprawka dla filtra is_list
+    // Django < 4.0 nie ma tego filtra, więc używamy `if value|length > 1` jako alternatywy
+    // W nowszych Django `request.GET.lists` jest lepsze.
+    // Poniższy kod zakłada, że używasz nowszej wersji Django.
+    // Jeśli nie, zmień `is_list` na `length > 1`
+    // W Django 4.0+ `request.GET.items` nie zwraca list, więc używamy `request.GET.lists`
+    // dla paginacji.
+});
+</script>
+
+{% endblock content %}

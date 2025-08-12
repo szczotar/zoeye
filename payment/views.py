@@ -226,8 +226,41 @@ def checkout(request):
         context = {"cart_items": cart_items, "totals": totals, "checkout_form": checkout_form, "shipping_form": shipping_form}
         return render(request, "payment/checkout.html", context)
 
-def payment_success(request):
-    return render(request, "payment/payment_success.html", {})
+def payment_success_stripe(request):
+    """
+    Wyświetla stronę z podsumowaniem po udanej płatności.
+    Pobiera szczegóły zamówienia na podstawie sesji Stripe.
+    """
+    # Pobierz ID sesji Stripe, które zapisaliśmy w widoku checkout
+    stripe_session_id = request.session.get('stripe_session_id')
+    order = None
+
+    if stripe_session_id:
+        try:
+            # Pobierz obiekt sesji z API Stripe
+            session = stripe.checkout.Session.retrieve(stripe_session_id)
+            # Znajdź nasze zamówienie w bazie danych za pomocą payment_intent_id
+            order = Order.objects.get(payment_intent_id=session.payment_intent)
+        except Exception as e:
+            # Zaloguj błąd, ale nie psuj strony dla klienta
+            print(f"Błąd podczas pobierania zamówienia na stronie sukcesu: {e}")
+            # Jeśli wystąpi błąd, 'order' pozostanie None, a szablon wyświetli ogólną wiadomość
+
+    # Wyczyść koszyk i dane z sesji
+    cart = Cart(request)
+    cart.clear()
+    
+    if 'checkout_data' in request.session:
+        del request.session['checkout_data']
+    if 'shipping_data' in request.session:
+        del request.session['shipping_data']
+    if 'stripe_session_id' in request.session:
+        del request.session['stripe_session_id']
+
+    context = {
+        'order': order,
+    }
+    return render(request, "payment/payment_success.html", context)
 
 def terms_page(request):
     return render(request, "payment/terms_page.html", {})

@@ -449,6 +449,101 @@ def stones_detail(request, material_name):
 
     return render(request, 'stones.html', context)
 
+def sale_view(request):
+    """
+    Widok wyświetlający wszystkie produkty w promocji (is_sale=True)
+    z pełną funkcjonalnością filtrowania i sortowania.
+    """
+    # Zaczynamy od produktów w promocji
+    all_products_on_sale = Product.objects.filter(is_sale=True)
+    
+    all_materials = Material.objects.all().order_by('name')
+
+    price_aggregation = all_products_on_sale.aggregate(
+        min_price=Min('price'),
+        max_price=Max('price')
+    )
+    overall_min_price = price_aggregation['min_price'] if price_aggregation['min_price'] is not None else 0
+    overall_max_price = price_aggregation['max_price'] if price_aggregation['max_price'] is not None else 1000
+
+    product_list_base = all_products_on_sale.annotate(
+        effective_price=Case(
+            When(is_sale=True, then='sale_price'),
+            default='price',
+            output_field=DecimalField()
+        )
+    )
+
+    # --- Logika Filtrowania ---
+    selected_gender = request.GET.get('gender')
+    selected_min_price_str = request.GET.get('min_price')
+    selected_max_price_str = request.GET.get('max_price')
+    selected_materials = request.GET.getlist('material')
+    selected_available_only = request.GET.get('available_only') == 'true'
+
+    try:
+        selected_min_price = float(selected_min_price_str) if selected_min_price_str else overall_min_price
+    except (ValueError, TypeError):
+        selected_min_price = overall_min_price
+    try:
+        selected_max_price = float(selected_max_price_str) if selected_max_price_str else overall_max_price
+    except (ValueError, TypeError):
+        selected_max_price = overall_max_price
+
+    product_list = product_list_base
+
+    if selected_gender and selected_gender != 'all':
+        product_list = product_list.filter(gender=selected_gender)
+
+    if selected_materials:
+        product_list = product_list.filter(materials__name__in=selected_materials)
+
+    if selected_available_only:
+        product_list = product_list.filter(
+            Q(variations__isnull=True, stock__gt=0) |
+            Q(variations__isnull=False, variations__stock__gt=0)
+        )
+
+    product_list = product_list.distinct()
+
+    product_list = product_list.filter(
+        effective_price__gte=selected_min_price,
+        effective_price__lte=selected_max_price
+    )
+
+    # --- Logika Sortowania ---
+    sort_by = request.GET.get('sorting', 'default')
+    if sort_by == 'low-high':
+        product_list = product_list.order_by('effective_price', 'pk')
+    elif sort_by == 'high-low':
+        product_list = product_list.order_by('-effective_price', 'pk')
+    else:
+        product_list = product_list.order_by('name', 'pk')
+
+    # --- Logika Paginacji ---
+    paginator = Paginator(product_list, 9)
+    page_number = request.GET.get('page')
+    products_page = paginator.get_page(page_number)
+
+    context = {
+        'products_page': products_page,
+        'current_sorting': sort_by,
+        'request': request,
+        'all_materials': all_materials,
+        'selected_gender': selected_gender,
+        'selected_min_price': selected_min_price_str,
+        'selected_max_price': selected_max_price_str,
+        'selected_materials': selected_materials,
+        'selected_sale_only': True,
+        'selected_available_only': selected_available_only,
+        'overall_min_price': float(overall_min_price),
+        'overall_max_price': float(overall_max_price),
+        'is_sale_page': True, 
+    }
+
+    # Upewnij się, że na końcu funkcji jest ta linia
+    return render(request, 'sale.html', context)
+
 def home(request):
 	products = Product.objects.all()
 	categories = Category.objects.all()

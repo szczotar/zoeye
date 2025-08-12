@@ -248,4 +248,29 @@
             });
         }
     });
+
+     console.log("[Django Messages] Uruchomiono skrypt do obsługi wiadomości.");
+    const djangoMessages = $('#django-messages .django-message');
+
+    // Print 2: Sprawdź, czy znaleziono jakieś wiadomości
+    console.log(`[Django Messages] Znaleziono ${djangoMessages.length} wiadomości do wyświetlenia.`);
+
+    djangoMessages.each(function() {
+        const message = $(this).data('message');
+        let level = $(this).data('level');
+
+        // Print 3: Pokaż, co zostało odczytane z atrybutów data-*
+        console.log(`[Django Messages] Przetwarzanie wiadomości: Treść="${message}", Poziom="${level}"`);
+
+        if (level === 'error') {
+            level = 'danger';
+        }
+
+        // Wywołaj Twoją istniejącą funkcję, aby pokazać toast
+        showCustomAlert(message, level);
+    });
+    // ===================================================================
+
+
+
 </script>

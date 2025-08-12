@@ -30,6 +30,7 @@ urlpatterns = [
     path('category/<str:foo>', views.category, name='category'),
     path('categories/', views.categories_all, name="categories_all"),
     path('stones/<str:material_name>/', views.stones_detail, name='stones_detail'),
+    path('sale/', views.sale_view, name='sale'),
     
     # --- Ścieżki związane z recenzjami ---
     path('product/<int:product_id>/add_review/', views.add_review, name='add_review'),
